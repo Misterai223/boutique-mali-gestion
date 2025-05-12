@@ -1,13 +1,14 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus } from "lucide-react";
+import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus, Boxes } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
   { icon: Home, label: "Tableau de bord", path: "/" },
   { icon: Package, label: "Produits", path: "/products" },
   { icon: FolderPlus, label: "Catégories", path: "/categories" },
+  { icon: Boxes, label: "Gestion de stock", path: "/inventory" },
   { icon: DollarSign, label: "Finances", path: "/finances" },
   { icon: Users, label: "Employés", path: "/employees" },
   { icon: BarChart4, label: "Rapports", path: "/reports" },

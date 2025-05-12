@@ -13,8 +13,8 @@ import Employees from "./pages/Employees";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Categories from "./pages/Categories";
+import Inventory from "./pages/Inventory";
 import DashboardLayout from "./components/layout/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +63,14 @@ const App = () => {
                   } 
                 />
                 <Route 
+                  path="/inventory" 
+                  element={
+                    <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                      <Inventory />
+                    </DashboardLayout>
+                  } 
+                />
+                <Route 
                   path="/finances" 
                   element={
                     <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
@@ -100,6 +108,7 @@ const App = () => {
               <>
                 <Route path="/products" element={<Navigate to="/" />} />
                 <Route path="/categories" element={<Navigate to="/" />} />
+                <Route path="/inventory" element={<Navigate to="/" />} />
                 <Route path="/finances" element={<Navigate to="/" />} />
                 <Route path="/employees" element={<Navigate to="/" />} />
                 <Route path="/reports" element={<Navigate to="/" />} />
