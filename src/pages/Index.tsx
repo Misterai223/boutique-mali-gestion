@@ -46,7 +46,7 @@ const Index = ({
   
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
         <LoginForm onLogin={handleLogin} />
       </div>
     );

@@ -13,6 +13,7 @@ import Finances from "./pages/Finances";
 import Employees from "./pages/Employees";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Categories from "./pages/Categories";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index isAuthenticated={isAuthenticated} onAuthChange={setIsAuthenticated} />} />
             <Route path="/products" element={isAuthenticated ? <Products /> : <Navigate to="/" />} />
+            <Route path="/categories" element={isAuthenticated ? <Categories /> : <Navigate to="/" />} />
             <Route path="/finances" element={isAuthenticated ? <Finances /> : <Navigate to="/" />} />
             <Route path="/employees" element={isAuthenticated ? <Employees /> : <Navigate to="/" />} />
             <Route path="/reports" element={isAuthenticated ? <Reports /> : <Navigate to="/" />} />
