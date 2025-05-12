@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";

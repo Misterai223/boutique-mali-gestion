@@ -26,11 +26,13 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
     >
       {/* Logo */}
       <div className="p-4 flex items-center justify-center border-b border-sidebar-border h-16">
-        {collapsed ? (
-          <span className="text-2xl font-bold bg-sidebar-accent rounded-full h-10 w-10 flex items-center justify-center text-sidebar-accent-foreground">SM</span>
-        ) : (
-          <span className="text-xl font-bold">Shop Manager</span>
-        )}
+        <Link to="/" className="flex items-center justify-center w-full">
+          {collapsed ? (
+            <span className="text-2xl font-bold bg-sidebar-accent rounded-full h-10 w-10 flex items-center justify-center text-sidebar-accent-foreground animate-pulse">SM</span>
+          ) : (
+            <span className="text-xl font-bold hover:text-sidebar-accent-foreground transition-colors">Shop Manager</span>
+          )}
+        </Link>
       </div>
 
       {/* Menu Items */}
@@ -45,7 +47,7 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200",
-                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "",
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm" : "",
                       collapsed ? "px-2 justify-center" : "px-4"
                     )}
                   >
