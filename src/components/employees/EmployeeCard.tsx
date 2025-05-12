@@ -21,7 +21,7 @@ const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
       case "cashier":
         return "secondary";
       case "salesperson":
-        return "accent";
+        return "secondary"; // Changed from "accent" to "secondary"
       default:
         return "outline";
     }
