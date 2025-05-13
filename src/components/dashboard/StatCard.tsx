@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import React from "react";
 
 interface StatCardProps {
   title: string;
@@ -13,11 +14,12 @@ interface StatCardProps {
     isPositive: boolean;
   };
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const StatCard = ({ title, value, description, icon: Icon, trend, className }: StatCardProps) => {
+const StatCard = ({ title, value, description, icon: Icon, trend, className, style }: StatCardProps) => {
   return (
-    <Card className={cn("stat-card card-hover", className)}>
+    <Card className={cn("stat-card card-hover", className)} style={style}>
       <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
         <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
