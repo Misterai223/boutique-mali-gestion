@@ -36,41 +36,47 @@ export const useThemeSettings = () => {
   
   // Load saved settings from localStorage on initial render
   useEffect(() => {
-    const savedShopName = localStorage.getItem("shopName");
-    const savedCurrency = localStorage.getItem("currency");
-    const savedDarkMode = localStorage.getItem("darkMode");
-    const savedNotifications = localStorage.getItem("notifications");
-    const savedLogoUrl = localStorage.getItem("logoUrl");
-    const savedPrimaryColor = localStorage.getItem("primaryColor");
-    const savedAccentColor = localStorage.getItem("accentColor");
-    const savedSecondaryColor = localStorage.getItem("secondaryColor");
-    const savedBorderRadius = localStorage.getItem("borderRadius");
-    const savedFontFamily = localStorage.getItem("fontFamily");
+    const loadSettings = () => {
+      const savedShopName = localStorage.getItem("shopName");
+      const savedCurrency = localStorage.getItem("currency");
+      const savedDarkMode = localStorage.getItem("darkMode");
+      const savedNotifications = localStorage.getItem("notifications");
+      const savedLogoUrl = localStorage.getItem("logoUrl");
+      const savedPrimaryColor = localStorage.getItem("primaryColor");
+      const savedAccentColor = localStorage.getItem("accentColor");
+      const savedSecondaryColor = localStorage.getItem("secondaryColor");
+      const savedBorderRadius = localStorage.getItem("borderRadius");
+      const savedFontFamily = localStorage.getItem("fontFamily");
+      
+      if (savedShopName) setShopName(savedShopName);
+      if (savedCurrency) setCurrency(savedCurrency);
+      if (savedDarkMode !== null) setDarkMode(savedDarkMode === "true");
+      if (savedNotifications !== null) setNotifications(savedNotifications === "true");
+      if (savedLogoUrl) setLogoUrl(savedLogoUrl);
+      if (savedPrimaryColor) setPrimaryColor(savedPrimaryColor);
+      if (savedAccentColor) setAccentColor(savedAccentColor);
+      if (savedSecondaryColor) setSecondaryColor(savedSecondaryColor);
+      if (savedBorderRadius) setBorderRadius(savedBorderRadius);
+      if (savedFontFamily) setFontFamily(savedFontFamily);
+      
+      // Set initial values after loading from localStorage
+      setInitialValues({
+        shopName: savedShopName || "My Shop",
+        currency: savedCurrency || "XOF",
+        darkMode: savedDarkMode === "true",
+        notifications: savedNotifications === "true" || true,
+        logoUrl: savedLogoUrl || "",
+        primaryColor: savedPrimaryColor || "#1E3A8A",
+        accentColor: savedAccentColor || "#F59E0B",
+        secondaryColor: savedSecondaryColor || "#3B82F6",
+        borderRadius: savedBorderRadius || "0.5",
+        fontFamily: savedFontFamily || "Inter",
+      });
+    };
     
-    if (savedShopName) setShopName(savedShopName);
-    if (savedCurrency) setCurrency(savedCurrency);
-    if (savedDarkMode !== null) setDarkMode(savedDarkMode === "true");
-    if (savedNotifications !== null) setNotifications(savedNotifications === "true");
-    if (savedLogoUrl) setLogoUrl(savedLogoUrl);
-    if (savedPrimaryColor) setPrimaryColor(savedPrimaryColor);
-    if (savedAccentColor) setAccentColor(savedAccentColor);
-    if (savedSecondaryColor) setSecondaryColor(savedSecondaryColor);
-    if (savedBorderRadius) setBorderRadius(savedBorderRadius);
-    if (savedFontFamily) setFontFamily(savedFontFamily);
-    
-    // Set initial values after loading from localStorage
-    setInitialValues({
-      shopName: savedShopName || "My Shop",
-      currency: savedCurrency || "XOF",
-      darkMode: savedDarkMode === "true",
-      notifications: savedNotifications === "true" || true,
-      logoUrl: savedLogoUrl || "",
-      primaryColor: savedPrimaryColor || "#1E3A8A",
-      accentColor: savedAccentColor || "#F59E0B",
-      secondaryColor: savedSecondaryColor || "#3B82F6",
-      borderRadius: savedBorderRadius || "0.5",
-      fontFamily: savedFontFamily || "Inter",
-    });
+    loadSettings();
+    // Appliquer également les thèmes ici pour s'assurer qu'ils sont chargés correctement
+    applyTheme();
   }, []);
   
   // Track initial values to detect changes
@@ -87,8 +93,8 @@ export const useThemeSettings = () => {
     fontFamily,
   });
 
-  // Apply color theme changes immediately when values change
-  useEffect(() => {
+  // Appliquer le thème à l'application
+  const applyTheme = () => {
     const root = document.documentElement;
     
     // Convert hex to hsl for Tailwind CSS variables
@@ -141,10 +147,13 @@ export const useThemeSettings = () => {
     const accentHSL = hexToHSL(accentColor);
     const secondaryHSL = hexToHSL(secondaryColor);
     
-    // Set CSS variables for light mode
+    // Set CSS variables globally
     root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
     root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+    
+    // Mettre à jour également les variables pour la sidebar
+    root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     
     // Apply border radius
     root.style.setProperty('--radius', `${borderRadius}rem`);
@@ -162,6 +171,11 @@ export const useThemeSettings = () => {
 
     // Apply dark mode immediately
     document.documentElement.classList.toggle("dark", darkMode);
+  };
+
+  // Apply color theme changes immediately when values change
+  useEffect(() => {
+    applyTheme();
   }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode]);
 
   // Detect changes
@@ -221,6 +235,9 @@ export const useThemeSettings = () => {
       fontFamily,
     });
     
+    // Appliquer les changements à l'ensemble de l'application
+    applyTheme();
+    
     setHasChanges(false);
     return true; // Return true to indicate successful save
   };
@@ -237,6 +254,9 @@ export const useThemeSettings = () => {
     setSecondaryColor(initialValues.secondaryColor);
     setBorderRadius(initialValues.borderRadius);
     setFontFamily(initialValues.fontFamily);
+    
+    // Réappliquer le thème avec les valeurs initiales
+    applyTheme();
   };
 
   return {

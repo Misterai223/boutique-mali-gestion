@@ -5,7 +5,7 @@ import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus, Boxe
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
-  { icon: Home, label: "Tableau de bord", path: "/" },
+  { icon: Home, label: "Tableau de bord", path: "/dashboard" },
   { icon: Package, label: "Produits", path: "/products" },
   { icon: FolderPlus, label: "Catégories", path: "/categories" },
   { icon: Boxes, label: "Gestion de stock", path: "/inventory" },
@@ -27,7 +27,7 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
     >
       {/* Logo */}
       <div className="p-4 flex items-center justify-center border-b border-sidebar-border h-16">
-        <Link to="/" className="flex items-center justify-center w-full">
+        <Link to="/dashboard" className="flex items-center justify-center w-full">
           {collapsed ? (
             <span className="text-2xl font-bold bg-sidebar-accent rounded-full h-10 w-10 flex items-center justify-center text-sidebar-accent-foreground animate-pulse">SM</span>
           ) : (

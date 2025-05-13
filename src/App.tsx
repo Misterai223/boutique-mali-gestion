@@ -14,6 +14,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Categories from "./pages/Categories";
 import Inventory from "./pages/Inventory";
+import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./components/layout/DashboardLayout";
 
 const queryClient = new QueryClient();
@@ -146,6 +147,11 @@ const App = () => {
             {/* Protected routes with DashboardLayout */}
             {isAuthenticated ? (
               <>
+                <Route path="/dashboard" element={
+                  <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                    <Dashboard />
+                  </DashboardLayout>
+                } />
                 <Route 
                   path="/products" 
                   element={
@@ -206,6 +212,7 @@ const App = () => {
             ) : (
               // Redirect to login if not authenticated
               <>
+                <Route path="/dashboard" element={<Navigate to="/" />} />
                 <Route path="/products" element={<Navigate to="/" />} />
                 <Route path="/categories" element={<Navigate to="/" />} />
                 <Route path="/inventory" element={<Navigate to="/" />} />
