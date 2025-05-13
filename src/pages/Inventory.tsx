@@ -15,14 +15,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Plus, Search, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 
-// Sample inventory data
-const inventoryItems = [
+// Sample inventory data with proper typing
+interface InventoryItem {
+  id: number;
+  name: string;
+  sku: string;
+  quantity: number;
+  threshold: number;
+  category: string;
+}
+
+const initialInventoryItems: InventoryItem[] = [
   { id: 1, name: "Téléviseur 4K", sku: "TV-4K-001", quantity: 15, threshold: 5, category: "Électronique" },
   { id: 2, name: "Laptop Ultra", sku: "LAP-U-002", quantity: 8, threshold: 3, category: "Informatique" },
   { id: 3, name: "Casque Bluetooth", sku: "AUDIO-BT-003", quantity: 32, threshold: 10, category: "Audio" },
@@ -32,10 +50,22 @@ const inventoryItems = [
 
 const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<keyof InventoryItem | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(initialInventoryItems);
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [currentItem, setCurrentItem] = useState<InventoryItem | null>(null);
+  const [newQuantity, setNewQuantity] = useState<number>(0);
+  const [newItem, setNewItem] = useState<Omit<InventoryItem, "id">>({
+    name: "",
+    sku: "",
+    quantity: 0,
+    threshold: 5,
+    category: ""
+  });
   
-  const handleSort = (column: string) => {
+  const handleSort = (column: keyof InventoryItem) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -53,8 +83,8 @@ const Inventory = () => {
     .sort((a, b) => {
       if (!sortBy) return 0;
       
-      const compareA = a[sortBy as keyof typeof a];
-      const compareB = b[sortBy as keyof typeof b];
+      const compareA = a[sortBy];
+      const compareB = b[sortBy];
       
       if (typeof compareA === 'string' && typeof compareB === 'string') {
         return sortOrder === "asc" 
@@ -70,13 +100,50 @@ const Inventory = () => {
     });
   
   const handleAddItem = () => {
-    toast.success("Formulaire d'ajout de produit ouvert");
-    // This would open a modal form in a real implementation
+    setIsAddItemModalOpen(true);
   };
   
-  const handleUpdateStock = (id: number) => {
-    toast.success(`Mise à jour du stock pour l'article #${id}`);
-    // This would open a stock update form in a real implementation
+  const handleUpdateStock = (item: InventoryItem) => {
+    setCurrentItem(item);
+    setNewQuantity(item.quantity);
+    setIsStockModalOpen(true);
+  };
+
+  const handleSaveNewItem = () => {
+    if (!newItem.name || !newItem.sku || !newItem.category) {
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    const newId = Math.max(...inventoryItems.map(item => item.id)) + 1;
+    const itemToAdd = { 
+      ...newItem, 
+      id: newId 
+    } as InventoryItem;
+    
+    setInventoryItems([...inventoryItems, itemToAdd]);
+    setNewItem({
+      name: "",
+      sku: "",
+      quantity: 0,
+      threshold: 5,
+      category: ""
+    });
+    
+    setIsAddItemModalOpen(false);
+    toast.success(`Article ${newItem.name} ajouté avec succès`);
+  };
+
+  const handleSaveStockUpdate = () => {
+    if (!currentItem) return;
+    
+    const updatedItems = inventoryItems.map(item => 
+      item.id === currentItem.id ? { ...item, quantity: newQuantity } : item
+    );
+    
+    setInventoryItems(updatedItems);
+    setIsStockModalOpen(false);
+    toast.success(`Stock de ${currentItem.name} mis à jour à ${newQuantity} unités`);
   };
   
   return (
@@ -89,7 +156,7 @@ const Inventory = () => {
             <CardTitle>Inventaire</CardTitle>
             <CardDescription>Gérez votre stock et suivez les niveaux d'inventaire</CardDescription>
           </div>
-          <Button onClick={handleAddItem} className="animate-pulse hover:animate-none">
+          <Button onClick={handleAddItem} className="hover:bg-primary/90">
             <Plus className="mr-2 h-4 w-4" /> Ajouter un article
           </Button>
         </CardHeader>
@@ -151,7 +218,7 @@ const Inventory = () => {
                       <TableCell>{item.category}</TableCell>
                       <TableCell>
                         {item.quantity === 0 ? (
-                          <Badge variant="destructive" className="animate-pulse">Rupture</Badge>
+                          <Badge variant="destructive">Rupture</Badge>
                         ) : item.quantity <= item.threshold ? (
                           <Badge variant="outline" className="border-amber-500 text-amber-500">Faible</Badge>
                         ) : (
@@ -162,7 +229,7 @@ const Inventory = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleUpdateStock(item.id)}
+                          onClick={() => handleUpdateStock(item)}
                         >
                           Modifier
                         </Button>
@@ -181,6 +248,125 @@ const Inventory = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal pour mettre à jour le stock */}
+      <Dialog open={isStockModalOpen} onOpenChange={setIsStockModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Mettre à jour le stock</DialogTitle>
+            <DialogDescription>
+              {currentItem ? `Modifier la quantité en stock pour ${currentItem.name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantity" className="text-right">
+                Quantité
+              </Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={newQuantity}
+                onChange={(e) => setNewQuantity(Number(e.target.value))}
+                min={0}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStockModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveStockUpdate}>
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal pour ajouter un nouvel article */}
+      <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouvel article</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations pour ajouter un nouvel article à l'inventaire
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nom*
+              </Label>
+              <Input
+                id="name"
+                value={newItem.name}
+                onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sku" className="text-right">
+                SKU*
+              </Label>
+              <Input
+                id="sku"
+                value={newItem.sku}
+                onChange={(e) => setNewItem({...newItem, sku: e.target.value})}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="category" className="text-right">
+                Catégorie*
+              </Label>
+              <Input
+                id="category"
+                value={newItem.category}
+                onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                className="col-span-3"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantity" className="text-right">
+                Quantité
+              </Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={newItem.quantity}
+                onChange={(e) => setNewItem({...newItem, quantity: Number(e.target.value)})}
+                min={0}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="threshold" className="text-right">
+                Seuil d'alerte
+              </Label>
+              <Input
+                id="threshold"
+                type="number"
+                value={newItem.threshold}
+                onChange={(e) => setNewItem({...newItem, threshold: Number(e.target.value)})}
+                min={1}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddItemModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveNewItem}>
+              Ajouter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

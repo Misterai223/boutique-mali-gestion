@@ -25,6 +25,106 @@ const App = () => {
     // Check if user is authenticated
     const auth = localStorage.getItem("isAuthenticated") === "true";
     setIsAuthenticated(auth);
+    
+    // Apply saved theme on initial load
+    const applyTheme = () => {
+      // Retrieve and apply dark mode setting
+      const savedDarkMode = localStorage.getItem("darkMode") === "true";
+      document.documentElement.classList.toggle("dark", savedDarkMode);
+      
+      // Apply any saved CSS variables for theme colors
+      const savedPrimaryColor = localStorage.getItem("primaryColor");
+      const savedAccentColor = localStorage.getItem("accentColor");
+      const savedSecondaryColor = localStorage.getItem("secondaryColor");
+      const savedBorderRadius = localStorage.getItem("borderRadius");
+      const savedFontFamily = localStorage.getItem("fontFamily");
+      
+      if (savedPrimaryColor || savedAccentColor || savedSecondaryColor) {
+        const root = document.documentElement;
+        
+        const hexToHSL = (hex: string) => {
+          // Remove the # if present
+          hex = hex.replace(/^#/, '');
+          
+          // Parse the hex values
+          let r = parseInt(hex.substr(0, 2), 16) / 255;
+          let g = parseInt(hex.substr(2, 2), 16) / 255;
+          let b = parseInt(hex.substr(4, 2), 16) / 255;
+          
+          // Find greatest and smallest channel values
+          let cmin = Math.min(r, g, b);
+          let cmax = Math.max(r, g, b);
+          let delta = cmax - cmin;
+          let h = 0;
+          let s = 0;
+          let l = 0;
+          
+          // Calculate hue
+          if (delta === 0) {
+            h = 0;
+          } else if (cmax === r) {
+            h = ((g - b) / delta) % 6;
+          } else if (cmax === g) {
+            h = (b - r) / delta + 2;
+          } else {
+            h = (r - g) / delta + 4;
+          }
+          
+          h = Math.round(h * 60);
+          if (h < 0) h += 360;
+          
+          // Calculate lightness
+          l = (cmax + cmin) / 2;
+          
+          // Calculate saturation
+          s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+          
+          // Convert to percentages
+          s = +(s * 100).toFixed(1);
+          l = +(l * 100).toFixed(1);
+          
+          return { h, s, l };
+        };
+
+        if (savedPrimaryColor) {
+          const primaryHSL = hexToHSL(savedPrimaryColor);
+          root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+        }
+        
+        if (savedAccentColor) {
+          const accentHSL = hexToHSL(savedAccentColor);
+          root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
+        }
+        
+        if (savedSecondaryColor) {
+          const secondaryHSL = hexToHSL(savedSecondaryColor);
+          root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+        }
+      }
+      
+      if (savedBorderRadius) {
+        document.documentElement.style.setProperty('--radius', `${savedBorderRadius}rem`);
+      }
+      
+      if (savedFontFamily) {
+        switch(savedFontFamily) {
+          case "Inter": 
+            document.documentElement.style.fontFamily = "'Inter', sans-serif";
+            break;
+          case "Roboto": 
+            document.documentElement.style.fontFamily = "'Roboto', sans-serif";
+            break;
+          case "Poppins": 
+            document.documentElement.style.fontFamily = "'Poppins', sans-serif";
+            break;
+          case "Open Sans": 
+            document.documentElement.style.fontFamily = "'Open Sans', sans-serif";
+            break;
+        }
+      }
+    };
+    
+    applyTheme();
   }, []);
   
   if (isAuthenticated === null) {

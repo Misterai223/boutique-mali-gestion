@@ -34,8 +34,47 @@ export const useThemeSettings = () => {
   // Track if there are unsaved changes
   const [hasChanges, setHasChanges] = useState(false);
   
+  // Load saved settings from localStorage on initial render
+  useEffect(() => {
+    const savedShopName = localStorage.getItem("shopName");
+    const savedCurrency = localStorage.getItem("currency");
+    const savedDarkMode = localStorage.getItem("darkMode");
+    const savedNotifications = localStorage.getItem("notifications");
+    const savedLogoUrl = localStorage.getItem("logoUrl");
+    const savedPrimaryColor = localStorage.getItem("primaryColor");
+    const savedAccentColor = localStorage.getItem("accentColor");
+    const savedSecondaryColor = localStorage.getItem("secondaryColor");
+    const savedBorderRadius = localStorage.getItem("borderRadius");
+    const savedFontFamily = localStorage.getItem("fontFamily");
+    
+    if (savedShopName) setShopName(savedShopName);
+    if (savedCurrency) setCurrency(savedCurrency);
+    if (savedDarkMode !== null) setDarkMode(savedDarkMode === "true");
+    if (savedNotifications !== null) setNotifications(savedNotifications === "true");
+    if (savedLogoUrl) setLogoUrl(savedLogoUrl);
+    if (savedPrimaryColor) setPrimaryColor(savedPrimaryColor);
+    if (savedAccentColor) setAccentColor(savedAccentColor);
+    if (savedSecondaryColor) setSecondaryColor(savedSecondaryColor);
+    if (savedBorderRadius) setBorderRadius(savedBorderRadius);
+    if (savedFontFamily) setFontFamily(savedFontFamily);
+    
+    // Set initial values after loading from localStorage
+    setInitialValues({
+      shopName: savedShopName || "My Shop",
+      currency: savedCurrency || "XOF",
+      darkMode: savedDarkMode === "true",
+      notifications: savedNotifications === "true" || true,
+      logoUrl: savedLogoUrl || "",
+      primaryColor: savedPrimaryColor || "#1E3A8A",
+      accentColor: savedAccentColor || "#F59E0B",
+      secondaryColor: savedSecondaryColor || "#3B82F6",
+      borderRadius: savedBorderRadius || "0.5",
+      fontFamily: savedFontFamily || "Inter",
+    });
+  }, []);
+  
   // Track initial values to detect changes
-  const [initialValues, setInitialValues] = useState({
+  const [initialValues, setInitialValues] = useState<ThemeSettings>({
     shopName,
     currency,
     darkMode,
@@ -120,7 +159,10 @@ export const useThemeSettings = () => {
     } else if (fontFamily === "Open Sans") {
       root.style.fontFamily = "'Open Sans', sans-serif";
     }
-  }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily]);
+
+    // Apply dark mode immediately
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode]);
 
   // Detect changes
   useEffect(() => {
@@ -153,9 +195,17 @@ export const useThemeSettings = () => {
   ]);
 
   const handleSaveSettings = () => {
-    // Apply dark mode immediately
-    document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
+    // Save all settings to localStorage
+    localStorage.setItem("shopName", shopName);
+    localStorage.setItem("currency", currency);
+    localStorage.setItem("darkMode", darkMode.toString());
+    localStorage.setItem("notifications", notifications.toString());
+    localStorage.setItem("logoUrl", logoUrl);
+    localStorage.setItem("primaryColor", primaryColor);
+    localStorage.setItem("accentColor", accentColor);
+    localStorage.setItem("secondaryColor", secondaryColor);
+    localStorage.setItem("borderRadius", borderRadius);
+    localStorage.setItem("fontFamily", fontFamily);
     
     // Update initial values to match current values
     setInitialValues({
