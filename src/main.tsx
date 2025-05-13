@@ -15,7 +15,9 @@ const applyInitialTheme = () => {
   const savedFontFamily = localStorage.getItem("fontFamily");
   
   const hexToHSL = (hex: string) => {
-    hex = hex.replace(/^#/, '');
+    hex = hex?.replace(/^#/, '') || '';
+    if (!hex) return { h: 0, s: 0, l: 0 };
+    
     let r = parseInt(hex.substr(0, 2), 16) / 255;
     let g = parseInt(hex.substr(2, 2), 16) / 255;
     let b = parseInt(hex.substr(4, 2), 16) / 255;
@@ -47,6 +49,9 @@ const applyInitialTheme = () => {
     const primaryHSL = hexToHSL(savedPrimaryColor);
     root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    if (!savedDarkMode) {
+      root.style.setProperty('--sidebar-background', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    }
   }
   
   if (savedAccentColor) {

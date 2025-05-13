@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +46,14 @@ const AppearanceSettings = ({
   setFontFamily,
   darkMode,
 }: AppearanceSettingsProps) => {
+  // Pour forcer le rendu après changement de couleurs
+  const [previewKey, setPreviewKey] = useState(0);
+  
+  // Mettre à jour la prévisualisation lorsque les couleurs changent
+  useEffect(() => {
+    setPreviewKey(prev => prev + 1);
+  }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode]);
+
   return (
     <Card>
       <CardHeader>
@@ -144,7 +152,7 @@ const AppearanceSettings = ({
           </Select>
         </div>
         
-        <div className="pt-4">
+        <div className="pt-4" key={previewKey}>
           <p className="text-sm font-medium mb-2">Aperçu du thème</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border rounded-lg p-4 bg-background">

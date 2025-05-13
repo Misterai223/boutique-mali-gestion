@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,10 +19,81 @@ const Settings = () => {
     handleResetSettings 
   } = useThemeSettings();
   
+  // Force refresh of the main layout when theme changes
+  const [forceRefresh, setForceRefresh] = useState(0);
+  
+  useEffect(() => {
+    // Trigger a reflow to ensure CSS variables are applied
+    if (forceRefresh > 0) {
+      const main = document.querySelector('main');
+      if (main) {
+        main.style.transition = "background-color 0.3s ease";
+        setTimeout(() => {
+          main.style.transition = "";
+        }, 300);
+      }
+    }
+  }, [forceRefresh]);
+  
   const onSaveSettings = () => {
     const success = handleSaveSettings();
     if (success) {
       toast.success("Paramètres sauvegardés avec succès");
+      // Force reflow to apply theme changes
+      setForceRefresh(prev => prev + 1);
+      
+      // Add a small delay then refresh the document to ensure theme is fully applied
+      setTimeout(() => {
+        const savedPrimaryColor = localStorage.getItem("primaryColor");
+        const savedAccentColor = localStorage.getItem("accentColor");
+        const savedSecondaryColor = localStorage.getItem("secondaryColor");
+        
+        const root = document.documentElement;
+        
+        // Convert hex to hsl and apply again to ensure the theme is properly applied
+        const hexToHSL = (hex: string) => {
+          hex = hex.replace(/^#/, '');
+          let r = parseInt(hex.substr(0, 2), 16) / 255;
+          let g = parseInt(hex.substr(2, 2), 16) / 255;
+          let b = parseInt(hex.substr(4, 2), 16) / 255;
+          let cmin = Math.min(r, g, b);
+          let cmax = Math.max(r, g, b);
+          let delta = cmax - cmin;
+          let h = 0, s = 0, l = 0;
+          
+          if (delta === 0) h = 0;
+          else if (cmax === r) h = ((g - b) / delta) % 6;
+          else if (cmax === g) h = (b - r) / delta + 2;
+          else h = (r - g) / delta + 4;
+          
+          h = Math.round(h * 60);
+          if (h < 0) h += 360;
+          
+          l = (cmax + cmin) / 2;
+          s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+          
+          s = +(s * 100).toFixed(1);
+          l = +(l * 100).toFixed(1);
+          
+          return { h, s, l };
+        };
+        
+        if (savedPrimaryColor) {
+          const primaryHSL = hexToHSL(savedPrimaryColor);
+          root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+          root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+        }
+        
+        if (savedAccentColor) {
+          const accentHSL = hexToHSL(savedAccentColor);
+          root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
+        }
+        
+        if (savedSecondaryColor) {
+          const secondaryHSL = hexToHSL(savedSecondaryColor);
+          root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
+        }
+      }, 100);
     }
   };
 

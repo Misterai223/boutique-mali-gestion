@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 export interface ThemeSettings {
@@ -147,13 +146,14 @@ export const useThemeSettings = () => {
     const accentHSL = hexToHSL(accentColor);
     const secondaryHSL = hexToHSL(secondaryColor);
     
-    // Set CSS variables globally
+    // Set CSS variables globally for all contexts (y compris background, sidebar, etc.)
     root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
     root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
     
-    // Mettre à jour également les variables pour la sidebar
+    // Mettre à jour également les variables pour la sidebar et le fond
     root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+    root.style.setProperty('--sidebar-background', darkMode ? '222.2 47.4% 11.2%' : `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     
     // Apply border radius
     root.style.setProperty('--radius', `${borderRadius}rem`);
@@ -171,6 +171,14 @@ export const useThemeSettings = () => {
 
     // Apply dark mode immediately
     document.documentElement.classList.toggle("dark", darkMode);
+    
+    // Force re-application of theme on main background
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.classList.remove('bg-background/50');
+      void mainElement.offsetWidth; // Trigger reflow
+      mainElement.classList.add('bg-background/50');
+    }
   };
 
   // Apply color theme changes immediately when values change
