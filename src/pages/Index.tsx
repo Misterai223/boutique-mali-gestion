@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = ({ 
   isAuthenticated, 
@@ -16,7 +17,32 @@ const Index = ({
   
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Check Supabase session on load
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        onAuthChange(true);
+      }
+    };
+    
+    checkSession();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          onAuthChange(true);
+        } else if (event === 'SIGNED_OUT') {
+          onAuthChange(false);
+        }
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [onAuthChange]);
   
   // Handle theme on initial load
   useEffect(() => {
@@ -37,7 +63,8 @@ const Index = ({
     onAuthChange(true);
   };
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     onAuthChange(false);
   };
   
