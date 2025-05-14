@@ -1,9 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserActivityLog } from "@/types/user-activity";
+import { Profile } from "@/types/profile";
 
 // Fonction pour récupérer tous les utilisateurs (pour admin)
-export const getAllUsers = async () => {
+const getAllUsers = async () => {
   try {
     // Récupérer les utilisateurs depuis auth.users via leur profil
     const { data, error } = await supabase
@@ -20,7 +21,7 @@ export const getAllUsers = async () => {
 };
 
 // Fonction pour créer un nouvel utilisateur (admin seulement)
-export const createUser = async (email: string, password: string, userData: any) => {
+const createUser = async (email: string, password: string, userData: any) => {
   try {
     // Créer un nouvel utilisateur dans auth.users
     const { data, error } = await supabase.auth.admin.createUser({
@@ -66,7 +67,7 @@ export const createUser = async (email: string, password: string, userData: any)
 };
 
 // Fonction pour mettre à jour un utilisateur (admin seulement)
-export const updateUser = async (userId: string, userData: any) => {
+const updateUser = async (userId: string, userData: any) => {
   try {
     // Mettre à jour le profil utilisateur
     const { data, error } = await supabase
@@ -112,7 +113,7 @@ export const updateUser = async (userId: string, userData: any) => {
 };
 
 // Fonction pour supprimer un utilisateur (admin seulement)
-export const deleteUser = async (userId: string) => {
+const deleteUser = async (userId: string) => {
   try {
     // Supprimer l'utilisateur (auth.users et profiles seront supprimés en cascade)
     const { error } = await supabase.auth.admin.deleteUser(userId);
@@ -135,7 +136,7 @@ export const deleteUser = async (userId: string) => {
 };
 
 // Fonction pour récupérer le profil utilisateur actuel
-export const getCurrentUser = async () => {
+const getCurrentUser = async () => {
   try {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     
@@ -157,8 +158,66 @@ export const getCurrentUser = async () => {
   }
 };
 
+// Fonction pour récupérer tous les profils utilisateurs
+const getProfiles = async (): Promise<Profile[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    return data || [];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des profils:", error);
+    return [];
+  }
+};
+
+// Fonction pour mettre à jour un profil utilisateur
+const updateProfile = async (profileData: Partial<Profile>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        ...profileData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', profileData.id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du profil:", error);
+    return false;
+  }
+};
+
+// Fonction pour obtenir le profil utilisateur courant
+const getCurrentUserProfile = async (): Promise<Profile | null> => {
+  try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !sessionData.session) return null;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', sessionData.session.user.id)
+      .single();
+      
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du profil utilisateur:", error);
+    return null;
+  }
+};
+
 // Fonction pour vérifier si l'utilisateur actuel est administrateur
-export const isUserAdmin = async () => {
+const isUserAdmin = async () => {
   try {
     const { data, error } = await getCurrentUser();
     
@@ -170,7 +229,7 @@ export const isUserAdmin = async () => {
 };
 
 // Fonction pour enregistrer l'activité utilisateur
-export const logUserActivity = async (activityType: string, details: Record<string, any> = {}) => {
+const logUserActivity = async (activityType: string, details: Record<string, any> = {}) => {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) return;
@@ -192,7 +251,7 @@ export const logUserActivity = async (activityType: string, details: Record<stri
 };
 
 // Fonction pour récupérer les journaux d'activité (admin seulement)
-export const getUserActivityLogs = async () => {
+const getUserActivityLogs = async () => {
   try {
     const { data, error } = await supabase
       .from('user_activity_logs')
@@ -206,4 +265,19 @@ export const getUserActivityLogs = async () => {
     console.error("Erreur lors de la récupération des journaux d'activité:", error);
     return { data: null, error };
   }
+};
+
+// Exporter toutes les fonctions dans un objet userService
+export const userService = {
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  getCurrentUser,
+  getProfiles,
+  updateProfile,
+  getCurrentUserProfile,
+  isUserAdmin,
+  logUserActivity,
+  getUserActivityLogs
 };

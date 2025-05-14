@@ -41,9 +41,8 @@ const Settings = () => {
             setDarkMode={setters.setDarkMode}
             notifications={settings.notifications}
             setNotifications={setters.setNotifications}
-            hasChanges={hasChanges}
-            handleSave={handleSaveSettings}
-            handleReset={handleResetSettings}
+            logoUrl={settings.logoUrl}
+            setLogoUrl={setters.setLogoUrl}
           />
         </TabsContent>
         
@@ -59,9 +58,6 @@ const Settings = () => {
             setBorderRadius={setters.setBorderRadius}
             fontFamily={settings.fontFamily}
             setFontFamily={setters.setFontFamily}
-            hasChanges={hasChanges}
-            handleSave={handleSaveSettings}
-            handleReset={handleResetSettings}
           />
         </TabsContent>
         
@@ -69,9 +65,6 @@ const Settings = () => {
           <LogoSettings 
             logoUrl={settings.logoUrl}
             setLogoUrl={setters.setLogoUrl}
-            hasChanges={hasChanges}
-            handleSave={handleSaveSettings}
-            handleReset={handleResetSettings}
           />
         </TabsContent>
         
