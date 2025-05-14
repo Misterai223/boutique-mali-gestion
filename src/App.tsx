@@ -1,7 +1,6 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { initializeSupabase } from "./utils/supabaseSetup";
-import { useState } from 'react'
 import {
   BrowserRouter,
   Routes,
@@ -16,6 +15,7 @@ import Categories from "./pages/Categories";
 import Orders from "./pages/Orders";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import Index from "./pages/Index";
 import { authService } from "./services/authService";
 
 function App() {
@@ -44,9 +44,18 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!isAuthenticated ? <LoginForm onLogin={() => setIsAuthenticated(true)} /> : <Navigate to="/" />} />
+        <Route path="/login" element={<LoginForm onLogin={() => setIsAuthenticated(true)} />} />
         <Route
           path="/"
+          element={
+            <Index 
+              isAuthenticated={isAuthenticated} 
+              onAuthChange={setIsAuthenticated} 
+            />
+          }
+        />
+        <Route
+          path="/dashboard"
           element={
             isAuthenticated ? (
               <DashboardLayout onLogout={() => setIsAuthenticated(false)}>

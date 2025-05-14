@@ -1,6 +1,6 @@
 
-// Import des composants existants
-import { useState } from 'react';
+import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralSettings from "@/components/settings/GeneralSettings";
 import SecuritySettings from "@/components/settings/SecuritySettings";
@@ -10,71 +10,71 @@ import LogoSettings from "@/components/settings/LogoSettings";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
 
 const Settings = () => {
-  const {
-    settings,
-    setters,
-    hasChanges,
-    handleSaveSettings,
-    handleResetSettings
-  } = useThemeSettings();
-  
+  const [activeTab, setActiveTab] = useState("general");
+  const { settings, setters } = useThemeSettings();
+
   return (
-    <div className="container py-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold">Paramètres</h1>
-      
-      <Tabs defaultValue="general">
-        <TabsList className="grid grid-cols-5 mb-6">
-          <TabsTrigger value="general">Général</TabsTrigger>
-          <TabsTrigger value="appearance">Apparence</TabsTrigger>
-          <TabsTrigger value="logo">Logo</TabsTrigger>
-          <TabsTrigger value="security">Sécurité</TabsTrigger>
-          <TabsTrigger value="account">Compte</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="general">
-          <GeneralSettings 
-            shopName={settings.shopName}
-            setShopName={setters.setShopName}
-            currency={settings.currency}
-            setCurrency={setters.setCurrency}
-            darkMode={settings.darkMode}
-            setDarkMode={setters.setDarkMode}
-            notifications={settings.notifications}
-            setNotifications={setters.setNotifications}
-            logoUrl={settings.logoUrl}
-            setLogoUrl={setters.setLogoUrl}
-          />
-        </TabsContent>
-        
-        <TabsContent value="appearance">
-          <AppearanceSettings 
-            primaryColor={settings.primaryColor}
-            setPrimaryColor={setters.setPrimaryColor}
-            accentColor={settings.accentColor}
-            setAccentColor={setters.setAccentColor}
-            secondaryColor={settings.secondaryColor}
-            setSecondaryColor={setters.setSecondaryColor}
-            borderRadius={settings.borderRadius}
-            setBorderRadius={setters.setBorderRadius}
-            fontFamily={settings.fontFamily}
-            setFontFamily={setters.setFontFamily}
-            darkMode={settings.darkMode}
-            toggleDarkMode={setters.setDarkMode}
-          />
-        </TabsContent>
-        
-        <TabsContent value="logo">
-          <LogoSettings />
-        </TabsContent>
-        
-        <TabsContent value="security">
-          <SecuritySettings />
-        </TabsContent>
-        
-        <TabsContent value="account">
-          <AccountSettings />
-        </TabsContent>
-      </Tabs>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
+        <p className="text-muted-foreground">
+          Personnalisez votre expérience et configurez les paramètres de votre compte
+        </p>
+      </div>
+
+      <Card className="overflow-hidden">
+        <Tabs
+          defaultValue="general"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <div className="border-b">
+            <div className="px-4 md:px-6">
+              <TabsList className="flex overflow-x-auto py-2 bg-transparent space-x-4">
+                <TabsTrigger value="general">Général</TabsTrigger>
+                <TabsTrigger value="appearance">Apparence</TabsTrigger>
+                <TabsTrigger value="account">Compte</TabsTrigger>
+                <TabsTrigger value="security">Sécurité</TabsTrigger>
+                <TabsTrigger value="logo">Logo</TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+          
+          <TabsContent value="general" className="p-4 md:p-6">
+            <GeneralSettings />
+          </TabsContent>
+          
+          <TabsContent value="appearance" className="p-4 md:p-6">
+            <AppearanceSettings
+              primaryColor={settings.primaryColor}
+              setPrimaryColor={setters.setPrimaryColor}
+              accentColor={settings.accentColor}
+              setAccentColor={setters.setAccentColor}
+              secondaryColor={settings.secondaryColor}
+              setSecondaryColor={setters.setSecondaryColor}
+              borderRadius={settings.borderRadius}
+              setBorderRadius={setters.setBorderRadius}
+              fontFamily={settings.fontFamily}
+              setFontFamily={setters.setFontFamily}
+              darkMode={settings.darkMode}
+              toggleDarkMode={setters.setDarkMode}
+            />
+          </TabsContent>
+          
+          <TabsContent value="account" className="p-4 md:p-6">
+            <AccountSettings />
+          </TabsContent>
+          
+          <TabsContent value="security" className="p-4 md:p-6">
+            <SecuritySettings />
+          </TabsContent>
+          
+          <TabsContent value="logo" className="p-4 md:p-6">
+            <LogoSettings />
+          </TabsContent>
+        </Tabs>
+      </Card>
     </div>
   );
 };
