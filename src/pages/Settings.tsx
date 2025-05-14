@@ -42,7 +42,18 @@ const Settings = () => {
           </div>
           
           <TabsContent value="general" className="p-4 md:p-6">
-            <GeneralSettings />
+            <GeneralSettings
+              shopName={settings.shopName}
+              setShopName={setters.setShopName}
+              currency={settings.currency}
+              setCurrency={setters.setCurrency}
+              darkMode={settings.darkMode}
+              setDarkMode={setters.setDarkMode}
+              notifications={settings.notifications}
+              setNotifications={setters.setNotifications}
+              logoUrl={settings.logoUrl}
+              setLogoUrl={setters.setLogoUrl}
+            />
           </TabsContent>
           
           <TabsContent value="appearance" className="p-4 md:p-6">
