@@ -31,6 +31,7 @@ interface AppearanceSettingsProps {
   fontFamily: string;
   setFontFamily: (value: string) => void;
   darkMode: boolean;
+  toggleDarkMode?: (value: boolean) => void;
 }
 
 const AppearanceSettings = ({
@@ -45,6 +46,7 @@ const AppearanceSettings = ({
   fontFamily,
   setFontFamily,
   darkMode,
+  toggleDarkMode,
 }: AppearanceSettingsProps) => {
   // Pour forcer le rendu après changement de couleurs
   const [previewKey, setPreviewKey] = useState(0);
