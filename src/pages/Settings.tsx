@@ -59,7 +59,8 @@ const Settings = () => {
             fontFamily={settings.fontFamily}
             setFontFamily={setters.setFontFamily}
             darkMode={settings.darkMode}
-            setDarkMode={setters.setDarkMode}
+            // This is the line causing the type error; we need to fix it by using the correct prop name
+            toggleDarkMode={setters.setDarkMode}
           />
         </TabsContent>
         

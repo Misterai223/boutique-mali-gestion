@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { initializeSupabase } from "./utils/supabaseSetup";
 import { useState } from 'react'
@@ -7,14 +8,14 @@ import {
   Route,
   Navigate
 } from "react-router-dom";
-import { Layout } from "@/components/Layout"
-import { Login } from "@/pages/Login"
-import { Employees } from "@/pages/Employees";
-import { Products } from "@/pages/Products";
-import { Categories } from "@/pages/Categories";
-import { Orders } from "@/pages/Orders";
-import { Users } from "@/pages/Users";
-import { Settings } from "@/pages/Settings";
+import DashboardLayout from "./components/layout/DashboardLayout";
+import LoginForm from "./components/auth/LoginForm";
+import Employees from "./pages/Employees";
+import Products from "./pages/Products";
+import Categories from "./pages/Categories";
+import Orders from "./pages/Orders";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 import { authService } from "./services/authService";
 
 function App() {
@@ -43,14 +44,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+        <Route path="/login" element={!isAuthenticated ? <LoginForm onLogin={() => setIsAuthenticated(true)} /> : <Navigate to="/" />} />
         <Route
           path="/"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <div>Dashboard</div>
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -60,9 +61,9 @@ function App() {
           path="/employees"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Employees />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -72,9 +73,9 @@ function App() {
           path="/products"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Products />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -84,9 +85,9 @@ function App() {
           path="/categories"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Categories />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -96,9 +97,9 @@ function App() {
           path="/orders"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Orders />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -108,9 +109,9 @@ function App() {
           path="/users"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Users />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
@@ -120,9 +121,9 @@ function App() {
           path="/settings"
           element={
             isAuthenticated ? (
-              <Layout>
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Settings />
-              </Layout>
+              </DashboardLayout>
             ) : (
               <Navigate to="/login" />
             )
