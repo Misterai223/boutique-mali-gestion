@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { settingsService } from "@/services/settingsService";
 import { Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +27,30 @@ const LogoSettings = () => {
   const [currentLogo, setCurrentLogo] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchLogos();
+    // Créer le bucket logos s'il n'existe pas déjà
+    const createLogosBucketIfNeeded = async () => {
+      try {
+        // Vérifier si le bucket existe
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const logosBucketExists = buckets?.some(bucket => bucket.name === 'logos');
+        
+        if (!logosBucketExists) {
+          // Créer le bucket logos
+          await supabase.storage.createBucket('logos', {
+            public: true,
+            fileSizeLimit: 5242880, // 5MB
+          });
+          console.log("Bucket 'logos' créé");
+        }
+      } catch (error) {
+        console.error("Erreur lors de la création du bucket:", error);
+      }
+    };
+
+    createLogosBucketIfNeeded().then(() => {
+      fetchLogos();
+    });
+    
     // Récupérer le logo actuel du localStorage
     const storedLogo = localStorage.getItem("shopLogo");
     if (storedLogo) {
@@ -70,7 +94,8 @@ const LogoSettings = () => {
       const url = await settingsService.uploadLogo(file);
       if (url) {
         toast.success("Logo téléchargé avec succès");
-        setLogoUrls([url, ...logoUrls]);
+        // Actualiser la liste complète pour assurer la cohérence
+        await fetchLogos();
         // Définir comme logo actuel
         handleSelectLogo(url);
       }

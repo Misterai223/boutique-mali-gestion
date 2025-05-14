@@ -58,14 +58,13 @@ const Settings = () => {
             setBorderRadius={setters.setBorderRadius}
             fontFamily={settings.fontFamily}
             setFontFamily={setters.setFontFamily}
+            darkMode={settings.darkMode}
+            setDarkMode={setters.setDarkMode}
           />
         </TabsContent>
         
         <TabsContent value="logo">
-          <LogoSettings 
-            logoUrl={settings.logoUrl}
-            setLogoUrl={setters.setLogoUrl}
-          />
+          <LogoSettings />
         </TabsContent>
         
         <TabsContent value="security">

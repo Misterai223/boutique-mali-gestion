@@ -5,6 +5,17 @@ import { toast } from "sonner";
 export const settingsService = {
   async uploadLogo(file: File): Promise<string | null> {
     try {
+      // Vérifier si le bucket 'logos' existe, sinon le créer
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'logos');
+      
+      if (!bucketExists) {
+        await supabase.storage.createBucket('logos', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+        });
+      }
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `shop_logo_${Date.now()}.${fileExt}`;
       
@@ -35,15 +46,31 @@ export const settingsService = {
   
   async getLogos(): Promise<string[]> {
     try {
+      // Vérifier si le bucket 'logos' existe, sinon le créer
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'logos');
+      
+      if (!bucketExists) {
+        await supabase.storage.createBucket('logos', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+        });
+        return [];
+      }
+      
       const { data, error } = await supabase.storage
         .from('logos')
         .list();
       
       if (error) throw error;
       
+      if (!data || data.length === 0) {
+        return [];
+      }
+      
       // Convertir les objets de fichier en URLs publiques
       const logoUrls = data
-        .filter(file => !file.id.endsWith('/')) // Filtrer les dossiers
+        .filter(file => !file.name.endsWith('/')) // Filtrer les dossiers
         .map(file => {
           const { data: { publicUrl } } = supabase.storage
             .from('logos')

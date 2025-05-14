@@ -10,6 +10,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 
 // Schéma de validation pour le changement de mot de passe
 const passwordSchema = z
@@ -40,18 +41,32 @@ const SecuritySettings = () => {
   const onSubmit = async (values: PasswordFormValues) => {
     setIsUpdating(true);
     try {
-      // Vérifier le mot de passe actuel (à implémenter si l'API Supabase le permet)
-      // Actuellement, Supabase ne fournit pas d'API pour valider le mot de passe actuel
-      // avant la mise à jour, donc nous ne pouvons pas vérifier cela côté client
+      // Vérifier le mot de passe actuel en essayant de se connecter
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: (await supabase.auth.getUser()).data.user?.email || '',
+        password: values.currentPassword
+      });
+      
+      if (signInError) {
+        toast.error("Mot de passe actuel incorrect");
+        setIsUpdating(false);
+        return;
+      }
       
       // Mettre à jour le mot de passe
-      const success = await authService.updatePassword(values.newPassword);
+      const { error } = await supabase.auth.updateUser({
+        password: values.newPassword
+      });
       
-      if (success) {
+      if (error) {
+        toast.error(`Erreur: ${error.message}`);
+      } else {
+        toast.success("Mot de passe mis à jour avec succès");
         form.reset();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la mise à jour du mot de passe:", error);
+      toast.error(`Erreur: ${error.message}`);
     } finally {
       setIsUpdating(false);
     }
