@@ -193,7 +193,7 @@ const EmployeeForm = ({
               <Input
                 id="photoUrl"
                 name="photoUrl"
-                value={formData.photoUrl}
+                value={formData.photoUrl || ""}
                 onChange={handleChange}
                 className="col-span-3"
               />

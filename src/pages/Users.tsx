@@ -128,7 +128,7 @@ const Users = () => {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous les rôles</SelectItem>
+              <SelectItem value="all">Tous les rôles</SelectItem>
               <SelectItem value="admin">Administrateur</SelectItem>
               <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="cashier">Caissier</SelectItem>
