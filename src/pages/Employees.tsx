@@ -1,61 +1,58 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import EmployeeCard from "@/components/employees/EmployeeCard";
 import EmployeeForm from "@/components/employees/EmployeeForm";
 import { Employee } from "@/types/employee";
 import { Plus, Search } from "lucide-react";
-
-// Sample data
-const initialEmployees: Employee[] = [
-  {
-    id: "1",
-    name: "Amadou Diallo",
-    email: "amadou.diallo@example.com",
-    phone: "+223 70 12 34 56",
-    role: "admin",
-    photoUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-  },
-  {
-    id: "2",
-    name: "Fatoumata Touré",
-    email: "fatoumata.toure@example.com",
-    phone: "+223 76 23 45 67",
-    role: "manager",
-    photoUrl: "https://randomuser.me/api/portraits/women/2.jpg",
-  },
-  {
-    id: "3",
-    name: "Ibrahim Coulibaly",
-    email: "ibrahim.coulibaly@example.com",
-    phone: "+223 79 34 56 78",
-    role: "cashier",
-    photoUrl: "https://randomuser.me/api/portraits/men/3.jpg",
-  },
-  {
-    id: "4",
-    name: "Aminata Traoré",
-    email: "aminata.traore@example.com",
-    phone: "+223 65 45 67 89",
-    role: "salesperson",
-    photoUrl: "https://randomuser.me/api/portraits/women/4.jpg",
-  },
-  {
-    id: "5",
-    name: "Moussa Keita",
-    email: "moussa.keita@example.com",
-    phone: "+223 67 56 78 90",
-    role: "salesperson",
-    photoUrl: "https://randomuser.me/api/portraits/men/5.jpg",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Employees = () => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState<Employee | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    setIsLoading(true);
+    try {
+      // Chargement des employés depuis le profil ou utilisation de données par défaut
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('role', ['admin', 'manager', 'cashier', 'salesperson']);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Convertir les profils en employés
+      if (profiles && profiles.length > 0) {
+        const mappedEmployees: Employee[] = profiles.map(profile => ({
+          id: profile.id,
+          name: profile.full_name || 'Sans nom',
+          email: '', // Supabase ne fournit pas directement l'email via profiles
+          phone: '', // À définir via le formulaire de modification
+          role: profile.role,
+          photoUrl: profile.avatar_url || undefined,
+        }));
+        
+        setEmployees(mappedEmployees);
+      }
+    } catch (error: any) {
+      toast.error(`Erreur lors du chargement des employés: ${error.message}`);
+      console.error("Erreur lors du chargement des employés:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -64,21 +61,43 @@ const Employees = () => {
   const filteredEmployees = employees.filter(
     (employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       employee.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddEditEmployee = (employee: Employee) => {
-    if (currentEmployee) {
-      // Edit existing employee
-      setEmployees(
-        employees.map((e) => (e.id === employee.id ? employee : e))
-      );
-    } else {
-      // Add new employee
-      setEmployees([...employees, employee]);
+  const handleAddEditEmployee = async (employee: Employee) => {
+    try {
+      if (currentEmployee) {
+        // Mettre à jour l'employé existant via le profil
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: employee.name,
+            avatar_url: employee.photoUrl,
+            role: employee.role,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', employee.id);
+          
+        if (error) throw error;
+        
+        toast.success("Employé mis à jour avec succès");
+      } else {
+        // Création d'un nouvel employé via le service utilisateur
+        // Nous utilisons l'API d'authentification pour l'ajout d'un utilisateur
+        toast.warning("Veuillez utiliser la page Utilisateurs pour créer de nouveaux employés");
+        setDialogOpen(false);
+        return;
+      }
+      
+      // Recharger les employés
+      await fetchEmployees();
+      setCurrentEmployee(undefined);
+      setDialogOpen(false);
+    } catch (error: any) {
+      toast.error(`Erreur: ${error.message}`);
+      console.error("Erreur lors de la mise à jour de l'employé:", error);
     }
-    setCurrentEmployee(undefined);
   };
 
   const handleEditClick = (employee: Employee) => {
@@ -90,7 +109,10 @@ const Employees = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <h1 className="text-3xl font-bold tracking-tight">Employés</h1>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button onClick={() => {
+          toast.info("Redirection vers la page Utilisateurs pour ajouter un nouvel employé");
+          window.location.href = "/users";
+        }}>
           <Plus className="h-4 w-4 mr-2" />
           Ajouter un employé
         </Button>
@@ -106,7 +128,11 @@ const Employees = () => {
         />
       </div>
 
-      {filteredEmployees.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : filteredEmployees.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredEmployees.map((employee) => (
             <EmployeeCard

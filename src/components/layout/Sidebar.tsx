@@ -1,22 +1,47 @@
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus, Boxes } from "lucide-react";
+import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus, Boxes, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
-const menuItems = [
+interface MenuItem {
+  icon: any;
+  label: string;
+  path: string;
+  requiredRole?: string[];
+}
+
+const menuItems: MenuItem[] = [
   { icon: Home, label: "Tableau de bord", path: "/dashboard" },
   { icon: Package, label: "Produits", path: "/products" },
   { icon: FolderPlus, label: "Catégories", path: "/categories" },
   { icon: Boxes, label: "Gestion de stock", path: "/inventory" },
   { icon: DollarSign, label: "Finances", path: "/finances" },
   { icon: Users, label: "Employés", path: "/employees" },
+  { icon: User, label: "Utilisateurs", path: "/users", requiredRole: ["admin"] },
   { icon: BarChart4, label: "Rapports", path: "/reports" },
   { icon: Settings, label: "Paramètres", path: "/settings" },
 ];
 
 const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
   const location = useLocation();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Récupérer le rôle utilisateur du localStorage
+    const role = localStorage.getItem("userRole");
+    setUserRole(role);
+  }, []);
+  
+  // Filtrer les éléments du menu en fonction du rôle
+  const filteredMenuItems = menuItems.filter(item => {
+    // Si aucun rôle requis n'est spécifié, l'élément est accessible à tous
+    if (!item.requiredRole) return true;
+    
+    // Sinon, vérifier si l'utilisateur a le rôle requis
+    return item.requiredRole.includes(userRole || "");
+  });
   
   return (
     <aside
@@ -39,7 +64,7 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
       {/* Menu Items */}
       <nav className="flex-1 overflow-y-auto py-6">
         <ul className="space-y-1 px-2">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <li key={item.path}>
@@ -66,13 +91,23 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
       <div className="p-4 border-t border-sidebar-border">
         <div className={cn("flex items-center", collapsed ? "justify-center" : "space-x-2")}>
           <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-sm font-medium text-sidebar-accent-foreground">A</span>
+            <span className="text-sm font-medium text-sidebar-accent-foreground">
+              {userRole === "admin" ? "A" : 
+               userRole === "manager" ? "M" : 
+               userRole === "cashier" ? "C" : 
+               userRole === "salesperson" ? "V" : "U"}
+            </span>
           </div>
           {!collapsed && (
             <div className="space-y-1 overflow-hidden">
-              <p className="text-sm font-medium leading-none">Admin</p>
+              <p className="text-sm font-medium leading-none">
+                {userRole === "admin" ? "Administrateur" : 
+                 userRole === "manager" ? "Manager" : 
+                 userRole === "cashier" ? "Caissier" : 
+                 userRole === "salesperson" ? "Vendeur" : "Utilisateur"}
+              </p>
               <p className="text-xs text-sidebar-foreground/70 truncate">
-                admin@example.com
+                Connecté
               </p>
             </div>
           )}

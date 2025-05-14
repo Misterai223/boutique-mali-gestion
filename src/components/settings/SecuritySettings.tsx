@@ -3,103 +3,122 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ShieldCheck } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { authService } from "@/services/authService";
 import { toast } from "sonner";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+// Schéma de validation pour le changement de mot de passe
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(6, "Le mot de passe actuel est requis"),
+    newPassword: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+    confirmPassword: z.string().min(6, "La confirmation du mot de passe est requise"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
+
+type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const SecuritySettings = () => {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handlePasswordChange = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!currentPassword) {
-      toast.error("Veuillez entrer votre mot de passe actuel");
-      return;
+  const form = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values: PasswordFormValues) => {
+    setIsUpdating(true);
+    try {
+      // Vérifier le mot de passe actuel (à implémenter si l'API Supabase le permet)
+      // Actuellement, Supabase ne fournit pas d'API pour valider le mot de passe actuel
+      // avant la mise à jour, donc nous ne pouvons pas vérifier cela côté client
+      
+      // Mettre à jour le mot de passe
+      const success = await authService.updatePassword(values.newPassword);
+      
+      if (success) {
+        form.reset();
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du mot de passe:", error);
+    } finally {
+      setIsUpdating(false);
     }
-    
-    if (newPassword.length < 8) {
-      toast.error("Le nouveau mot de passe doit contenir au moins 8 caractères");
-      return;
-    }
-    
-    if (newPassword !== confirmPassword) {
-      toast.error("Les mots de passe ne correspondent pas");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    // Simulating API call
-    setTimeout(() => {
-      toast.success("Mot de passe changé avec succès");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setIsSubmitting(false);
-    }, 1000);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5" /> 
-          Sécurité
-        </CardTitle>
-        <CardDescription>
-          Gérez vos paramètres de sécurité
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handlePasswordChange}>
-          <div className="space-y-2">
-            <Label htmlFor="current-password">Mot de passe actuel</Label>
-            <Input
-              id="current-password"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Entrez votre mot de passe actuel"
-            />
-          </div>
-          <div className="space-y-2 mt-4">
-            <Label htmlFor="new-password">Nouveau mot de passe</Label>
-            <Input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Entrez un nouveau mot de passe"
-            />
-          </div>
-          <div className="space-y-2 mt-4">
-            <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirmez votre nouveau mot de passe"
-            />
-          </div>
-          <div className="pt-6">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Traitement..." : "Changer le mot de passe"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Sécurité</CardTitle>
+          <CardDescription>
+            Gérez vos informations de sécurité ici
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mot de passe actuel</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nouveau mot de passe</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmer le mot de passe</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? "Mise à jour..." : "Mettre à jour le mot de passe"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

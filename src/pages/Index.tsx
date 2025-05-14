@@ -18,7 +18,7 @@ const Index = ({
   useEffect(() => {
     setMounted(true);
     
-    // Check Supabase session on load
+    // Vérifier la session Supabase au chargement
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -28,13 +28,14 @@ const Index = ({
     
     checkSession();
     
-    // Subscribe to auth changes
+    // S'abonner aux changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
           onAuthChange(true);
         } else if (event === 'SIGNED_OUT') {
           onAuthChange(false);
+          localStorage.removeItem("userRole");
         }
       }
     );
@@ -44,10 +45,10 @@ const Index = ({
     };
   }, [onAuthChange]);
   
-  // Handle theme on initial load
+  // Gérer le thème au chargement initial
   useEffect(() => {
     if (mounted) {
-      // Check for system preference
+      // Vérifier la préférence système
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
       

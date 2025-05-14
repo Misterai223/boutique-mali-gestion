@@ -16,6 +16,7 @@ import Categories from "./pages/Categories";
 import Inventory from "./pages/Inventory";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import Users from "./pages/Users";
 
 const queryClient = new QueryClient();
 
@@ -23,17 +24,17 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
   useEffect(() => {
-    // Check if user is authenticated
+    // Vérifier si l'utilisateur est authentifié
     const auth = localStorage.getItem("isAuthenticated") === "true";
     setIsAuthenticated(auth);
     
-    // Apply saved theme on initial load
+    // Appliquer le thème enregistré au chargement initial
     const applyTheme = () => {
-      // Retrieve and apply dark mode setting
+      // Récupérer et appliquer le réglage du mode sombre
       const savedDarkMode = localStorage.getItem("darkMode") === "true";
       document.documentElement.classList.toggle("dark", savedDarkMode);
       
-      // Apply any saved CSS variables for theme colors
+      // Appliquer les variables CSS enregistrées pour les couleurs du thème
       const savedPrimaryColor = localStorage.getItem("primaryColor");
       const savedAccentColor = localStorage.getItem("accentColor");
       const savedSecondaryColor = localStorage.getItem("secondaryColor");
@@ -44,15 +45,15 @@ const App = () => {
         const root = document.documentElement;
         
         const hexToHSL = (hex: string) => {
-          // Remove the # if present
+          // Supprimer le # s'il est présent
           hex = hex.replace(/^#/, '');
           
-          // Parse the hex values
+          // Analyser les valeurs hexadécimales
           let r = parseInt(hex.substr(0, 2), 16) / 255;
           let g = parseInt(hex.substr(2, 2), 16) / 255;
           let b = parseInt(hex.substr(4, 2), 16) / 255;
           
-          // Find greatest and smallest channel values
+          // Trouver les valeurs de canal maximum et minimum
           let cmin = Math.min(r, g, b);
           let cmax = Math.max(r, g, b);
           let delta = cmax - cmin;
@@ -60,7 +61,7 @@ const App = () => {
           let s = 0;
           let l = 0;
           
-          // Calculate hue
+          // Calculer la teinte
           if (delta === 0) {
             h = 0;
           } else if (cmax === r) {
@@ -74,13 +75,13 @@ const App = () => {
           h = Math.round(h * 60);
           if (h < 0) h += 360;
           
-          // Calculate lightness
+          // Calculer la luminosité
           l = (cmax + cmin) / 2;
           
-          // Calculate saturation
+          // Calculer la saturation
           s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
           
-          // Convert to percentages
+          // Convertir en pourcentages
           s = +(s * 100).toFixed(1);
           l = +(l * 100).toFixed(1);
           
@@ -129,7 +130,7 @@ const App = () => {
   }, []);
   
   if (isAuthenticated === null) {
-    // Still loading authentication state
+    // Chargement de l'état d'authentification
     return <div className="h-screen flex items-center justify-center">Chargement...</div>;
   }
 
@@ -144,7 +145,7 @@ const App = () => {
               <Index isAuthenticated={isAuthenticated} onAuthChange={setIsAuthenticated} />
             } />
             
-            {/* Protected routes with DashboardLayout */}
+            {/* Routes protégées avec DashboardLayout */}
             {isAuthenticated ? (
               <>
                 <Route path="/dashboard" element={
@@ -208,9 +209,17 @@ const App = () => {
                     </DashboardLayout>
                   } 
                 />
+                <Route 
+                  path="/users" 
+                  element={
+                    <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                      <Users />
+                    </DashboardLayout>
+                  } 
+                />
               </>
             ) : (
-              // Redirect to login if not authenticated
+              // Rediriger vers la connexion si non authentifié
               <>
                 <Route path="/dashboard" element={<Navigate to="/" />} />
                 <Route path="/products" element={<Navigate to="/" />} />
@@ -220,6 +229,7 @@ const App = () => {
                 <Route path="/employees" element={<Navigate to="/" />} />
                 <Route path="/reports" element={<Navigate to="/" />} />
                 <Route path="/settings" element={<Navigate to="/" />} />
+                <Route path="/users" element={<Navigate to="/" />} />
               </>
             )}
             

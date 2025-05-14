@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,31 +7,68 @@ import { toast } from "sonner";
 import { User, KeyRound, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/authService";
+import { userService } from "@/services/userService";
 
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  // Vérifier s'il existe un logo enregistré
+  useEffect(() => {
+    const storedLogo = localStorage.getItem("shopLogo");
+    if (storedLogo) {
+      setLogoUrl(storedLogo);
+    } else {
+      // Essayer de récupérer un logo depuis Supabase
+      const fetchLogo = async () => {
+        try {
+          const logos = await supabase.storage.from('logos').list();
+          if (logos.data && logos.data.length > 0) {
+            const latestLogo = logos.data
+              .filter(file => !file.id.endsWith('/')) // Filtrer les dossiers
+              .sort((a, b) => {
+                // Trier par date de création (du plus récent au plus ancien)
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              })[0];
+            
+            if (latestLogo) {
+              const { data } = supabase.storage.from('logos').getPublicUrl(latestLogo.name);
+              setLogoUrl(data.publicUrl);
+              localStorage.setItem("shopLogo", data.publicUrl);
+            }
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération du logo:", error);
+        }
+      };
+      
+      fetchLogo();
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const success = await authService.login(email, password);
       
-      if (error) {
-        toast.error(error.message);
-      } else {
+      if (success) {
         toast.success("Connexion réussie");
+        
+        // Vérifier le rôle de l'utilisateur
+        const profile = await userService.getCurrentUserProfile();
+        if (profile) {
+          localStorage.setItem("userRole", profile.role);
+        }
+        
         localStorage.setItem("isAuthenticated", "true");
         onLogin();
       }
     } catch (error) {
-      toast.error("Une erreur est survenue lors de la connexion");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -53,9 +90,19 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
           >
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-8 w-8 text-primary" />
-            </div>
+            {logoUrl ? (
+              <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center p-2 overflow-hidden">
+                <img 
+                  src={logoUrl} 
+                  alt="Logo" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-8 w-8 text-primary" />
+              </div>
+            )}
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
@@ -150,9 +197,9 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
           <CardFooter className="flex flex-col space-y-2 border-t pt-4">
             <div className="text-sm text-center text-muted-foreground">
               <span>Pas encore de compte ? </span>
-              <a href="#" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                Créer un compte
-              </a>
+              <span className="font-medium text-muted-foreground">
+                Contactez votre administrateur
+              </span>
             </div>
           </CardFooter>
         </motion.div>
