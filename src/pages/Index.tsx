@@ -75,10 +75,8 @@ const Index = ({
   
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
-        <div className="w-full h-full min-h-screen flex items-center justify-center">
-          <LoginForm onLogin={handleLogin} />
-        </div>
+      <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-primary/5 to-secondary/10">
+        <LoginForm onLogin={handleLogin} />
       </div>
     );
   }
