@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
-import { toast } from "sonner";
+import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
 export const authService = {
   async login(email: string, password: string): Promise<boolean> {
@@ -15,7 +15,11 @@ export const authService = {
       
       return !!data.session;
     } catch (error: any) {
-      toast.error(`Erreur de connexion: ${error.message}`);
+      toast({
+        title: "Erreur de connexion",
+        description: error.message,
+        variant: "destructive"
+      });
       return false;
     }
   },
@@ -28,7 +32,11 @@ export const authService = {
       
       localStorage.removeItem("isAuthenticated");
     } catch (error: any) {
-      toast.error(`Erreur de déconnexion: ${error.message}`);
+      toast({
+        title: "Erreur de déconnexion",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   },
   
@@ -58,6 +66,11 @@ export const authService = {
     }
   },
   
+  // Nouvelle méthode pour s'abonner aux changements d'authentification
+  subscribeToAuthChanges(callback: (event: AuthChangeEvent, session: Session | null) => void) {
+    return supabase.auth.onAuthStateChange(callback);
+  },
+  
   async updatePassword(newPassword: string): Promise<boolean> {
     try {
       const { error } = await supabase.auth.updateUser({
@@ -66,10 +79,17 @@ export const authService = {
       
       if (error) throw error;
       
-      toast.success("Mot de passe mis à jour avec succès");
+      toast({
+        title: "Succès",
+        description: "Mot de passe mis à jour avec succès"
+      });
       return true;
     } catch (error: any) {
-      toast.error(`Erreur de mise à jour du mot de passe: ${error.message}`);
+      toast({
+        title: "Erreur",
+        description: `Erreur de mise à jour du mot de passe: ${error.message}`,
+        variant: "destructive"
+      });
       return false;
     }
   }

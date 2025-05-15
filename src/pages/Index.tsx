@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/authService";
 
 const Index = ({ 
   isAuthenticated, 
@@ -20,8 +20,8 @@ const Index = ({
     
     // Vérifier la session Supabase au chargement
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      const session = await authService.getSession();
+      if (session) {
         onAuthChange(true);
       }
     };
@@ -29,16 +29,14 @@ const Index = ({
     checkSession();
     
     // S'abonner aux changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
-          onAuthChange(true);
-        } else if (event === 'SIGNED_OUT') {
-          onAuthChange(false);
-          localStorage.removeItem("userRole");
-        }
+    const { data: { subscription } } = authService.subscribeToAuthChanges((event, session) => {
+      if (session) {
+        onAuthChange(true);
+      } else if (event === 'SIGNED_OUT') {
+        onAuthChange(false);
+        localStorage.removeItem("userRole");
       }
-    );
+    });
     
     return () => {
       subscription.unsubscribe();
@@ -65,7 +63,7 @@ const Index = ({
   };
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await authService.logout();
     onAuthChange(false);
   };
   
@@ -74,11 +72,7 @@ const Index = ({
   }
   
   if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-primary/5 to-secondary/10">
-        <LoginForm onLogin={handleLogin} />
-      </div>
-    );
+    return <LoginForm onLogin={handleLogin} />;
   }
   
   return (

@@ -4,49 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { User, KeyRound, LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { authService } from "@/services/authService";
-import { userService } from "@/services/userService";
 
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  // Vérifier s'il existe un logo enregistré
+  // Récupérer le logo s'il existe dans le localStorage
   useEffect(() => {
     const storedLogo = localStorage.getItem("shopLogo");
     if (storedLogo) {
       setLogoUrl(storedLogo);
-    } else {
-      // Essayer de récupérer un logo depuis Supabase
-      const fetchLogo = async () => {
-        try {
-          const logos = await supabase.storage.from('logos').list();
-          if (logos.data && logos.data.length > 0) {
-            const latestLogo = logos.data
-              .filter(file => !file.id.endsWith('/'))
-              .sort((a, b) => {
-                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-              })[0];
-            
-            if (latestLogo) {
-              const { data } = supabase.storage.from('logos').getPublicUrl(latestLogo.name);
-              setLogoUrl(data.publicUrl);
-              localStorage.setItem("shopLogo", data.publicUrl);
-            }
-          }
-        } catch (error) {
-          console.error("Erreur lors de la récupération du logo:", error);
-        }
-      };
-      
-      fetchLogo();
     }
   }, []);
 
@@ -62,16 +36,17 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       const success = await authService.login(email, password);
       
       if (success) {
-        toast.success("Connexion réussie");
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue sur votre boutique",
+        });
         
-        // Vérifier le rôle de l'utilisateur
-        const profile = await userService.getCurrentUserProfile();
-        if (profile) {
-          localStorage.setItem("userRole", profile.role);
+        // Vérifier le rôle de l'utilisateur si nécessaire
+        const user = await authService.getCurrentUser();
+        if (user) {
+          localStorage.setItem("isAuthenticated", "true");
+          onLogin();
         }
-        
-        localStorage.setItem("isAuthenticated", "true");
-        onLogin();
       }
     } catch (error) {
       console.error(error);
@@ -81,25 +56,25 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="w-full overflow-hidden shadow-2xl border-primary/5">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-50" />
+        <Card className="overflow-hidden border-primary/10 shadow-xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-50" />
           
-          <CardHeader className="relative space-y-1 text-center pb-6 pt-8">
+          <CardHeader className="relative space-y-1 text-center pb-4">
             <motion.div 
-              className="flex justify-center mb-6"
+              className="flex justify-center mb-4"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
             >
               {logoUrl ? (
-                <div className="h-24 w-24 rounded-full bg-white p-1 shadow-lg flex items-center justify-center overflow-hidden">
+                <div className="h-20 w-20 rounded-full bg-white p-1 shadow-lg flex items-center justify-center overflow-hidden">
                   <img 
                     src={logoUrl} 
                     alt="Logo" 
@@ -107,22 +82,22 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                   />
                 </div>
               ) : (
-                <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 shadow-lg flex items-center justify-center">
-                  <User className="h-12 w-12 text-primary" />
+                <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 shadow-lg flex items-center justify-center">
+                  <User className="h-10 w-10 text-primary" />
                 </div>
               )}
             </motion.div>
             
-            <CardTitle className="text-3xl font-bold tracking-tight">Shop Manager</CardTitle>
-            <CardDescription className="text-base">
+            <CardTitle className="text-2xl font-bold">Shop Manager</CardTitle>
+            <CardDescription>
               Entrez vos identifiants pour accéder à votre boutique
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="relative space-y-6 pb-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <CardContent className="relative space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <motion.div 
-                className="space-y-4"
+                className="space-y-3"
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
@@ -141,7 +116,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       autoComplete="email"
-                      className="pl-10 py-6"
+                      className="pl-10"
                     />
                   </div>
                 </div>
@@ -165,7 +140,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       autoComplete="current-password"
-                      className="pl-10 pr-10 py-6"
+                      className="pl-10 pr-10"
                     />
                     <button
                       type="button"
@@ -190,7 +165,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               >
                 <Button 
                   type="submit" 
-                  className="w-full py-6 text-base font-semibold shadow-lg group transition-all duration-300 hover:shadow-primary/20" 
+                  className="w-full group transition-all duration-300" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -203,7 +178,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <LogIn className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      <LogIn className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       Se connecter
                     </span>
                   )}
@@ -212,7 +187,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
             </form>
           </CardContent>
           
-          <CardFooter className="relative flex flex-col space-y-4 border-t pt-6 pb-8 text-center">
+          <CardFooter className="flex flex-col space-y-2 border-t pt-4 text-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -220,7 +195,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               className="text-sm text-center text-muted-foreground"
             >
               <span>Pas encore de compte? </span>
-              <span className="font-medium text-muted-foreground">
+              <span className="font-medium text-primary">
                 Contactez votre administrateur
               </span>
             </motion.div>
