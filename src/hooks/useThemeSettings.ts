@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { ThemeSettings } from '@/types/theme';
+import type { ThemeSettings } from '@/types/theme';
 import { applyTheme } from '@/utils/themeApplier';
 import { loadThemeSettings, saveThemeSettings } from '@/utils/themeStorage';
 
-export { ThemeSettings } from '@/types/theme';
+export type { ThemeSettings };
 
 export const useThemeSettings = () => {
   // Load initial settings from storage
