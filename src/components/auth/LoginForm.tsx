@@ -80,7 +80,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md mx-auto"
+      className="w-full px-4 sm:px-6 md:px-8 max-w-3xl mx-auto"
     >
       <Card className="w-full shadow-xl border-2 border-primary/10 bg-gradient-to-br from-card to-secondary/30">
         <CardHeader className="space-y-2 pb-6">
@@ -209,3 +209,4 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
 };
 
 export default LoginForm;
+

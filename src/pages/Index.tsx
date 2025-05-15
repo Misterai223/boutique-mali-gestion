@@ -75,8 +75,8 @@ const Index = ({
   
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background to-secondary/20">
-        <div className="w-full max-w-screen-xl px-4 py-8 md:px-6 lg:px-8 flex justify-center">
+      <div className="min-h-screen w-full bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+        <div className="w-full h-full min-h-screen flex items-center justify-center">
           <LoginForm onLogin={handleLogin} />
         </div>
       </div>
