@@ -84,14 +84,17 @@ const Employees = () => {
         toast.success("Employé mis à jour avec succès");
       } else {
         // Création d'un nouvel employé via le profil
+        // Pour les nouveaux employés, nous devons générer un UUID côté serveur
+        // en utilisant l'option upsert avec id comme clé primaire
         const { data, error } = await supabase
           .from('profiles')
-          .insert([{
+          .insert({
+            // Nous ne spécifions pas l'ID pour laisser Supabase le générer
             full_name: employee.name,
             avatar_url: employee.photoUrl,
-            role: employee.role
-          }])
-          .select();
+            role: employee.role,
+            access_level: 1 // Valeur par défaut pour les nouveaux employés
+          });
           
         if (error) throw error;
         
