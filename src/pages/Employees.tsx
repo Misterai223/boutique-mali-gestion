@@ -83,11 +83,19 @@ const Employees = () => {
         
         toast.success("Employé mis à jour avec succès");
       } else {
-        // Création d'un nouvel employé via le service utilisateur
-        // Nous utilisons l'API d'authentification pour l'ajout d'un utilisateur
-        toast.warning("Veuillez utiliser la page Utilisateurs pour créer de nouveaux employés");
-        setDialogOpen(false);
-        return;
+        // Création d'un nouvel employé via le profil
+        const { data, error } = await supabase
+          .from('profiles')
+          .insert([{
+            full_name: employee.name,
+            avatar_url: employee.photoUrl,
+            role: employee.role
+          }])
+          .select();
+          
+        if (error) throw error;
+        
+        toast.success("Employé ajouté avec succès");
       }
       
       // Recharger les employés
@@ -105,14 +113,16 @@ const Employees = () => {
     setDialogOpen(true);
   };
 
+  const handleAddClick = () => {
+    setCurrentEmployee(undefined);
+    setDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <h1 className="text-3xl font-bold tracking-tight">Employés</h1>
-        <Button onClick={() => {
-          toast.info("Redirection vers la page Utilisateurs pour ajouter un nouvel employé");
-          window.location.href = "/users";
-        }}>
+        <Button onClick={handleAddClick}>
           <Plus className="h-4 w-4 mr-2" />
           Ajouter un employé
         </Button>
