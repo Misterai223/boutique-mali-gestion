@@ -5,6 +5,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
 import { authService } from "@/services/authService";
+import { toast } from "sonner";
 
 const Index = ({ 
   isAuthenticated, 
@@ -14,15 +15,28 @@ const Index = ({
   onAuthChange: (value: boolean) => void;
 }) => {
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     setMounted(true);
     
     // Vérifier la session Supabase au chargement
     const checkSession = async () => {
-      const session = await authService.getSession();
-      if (session) {
-        onAuthChange(true);
+      setLoading(true);
+      try {
+        const session = await authService.getSession();
+        if (session) {
+          // Récupérer les données utilisateur
+          const user = await authService.getCurrentUser();
+          if (user) {
+            onAuthChange(true);
+            toast.success(`Bienvenue sur Shop Manager`);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de session:", error);
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -35,6 +49,7 @@ const Index = ({
       } else if (event === 'SIGNED_OUT') {
         onAuthChange(false);
         localStorage.removeItem("userRole");
+        localStorage.removeItem("accessLevel");
       }
     });
     
@@ -60,6 +75,7 @@ const Index = ({
   
   const handleLogin = () => {
     onAuthChange(true);
+    toast.success("Connexion réussie");
   };
   
   const handleLogout = async () => {
@@ -67,8 +83,15 @@ const Index = ({
     onAuthChange(false);
   };
   
-  if (!mounted) {
-    return null;
+  if (!mounted || loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-lg font-medium text-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
   
   if (!isAuthenticated) {

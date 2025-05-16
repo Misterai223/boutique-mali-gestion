@@ -17,6 +17,10 @@ import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import Index from "./pages/Index";
 import { authService } from "./services/authService";
+import Finances from "./pages/Finances";
+import Inventory from "./pages/Inventory";
+import Reports from "./pages/Reports";
+import { toast } from "sonner";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,21 +28,40 @@ function App() {
 
   useEffect(() => {
     // Initialiser les buckets Supabase
-    initializeSupabase();
+    try {
+      initializeSupabase();
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation de Supabase:", error);
+    }
   }, []);
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      const session = await authService.getSession();
-      setIsAuthenticated(!!session);
-      setLoading(false);
+      try {
+        const session = await authService.getSession();
+        if (session) {
+          await authService.getCurrentUser(); // Récupère et stocke les infos utilisateur
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Erreur d'authentification:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkAuthentication();
   }, []);
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-lg font-medium text-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -114,7 +137,43 @@ function App() {
             )
           }
         />
-         <Route
+        <Route
+          path="/inventory"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Inventory />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/finances"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Finances />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Reports />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
           path="/users"
           element={
             isAuthenticated ? (

@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { User, KeyRound, LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { authService } from "@/services/authService";
@@ -14,15 +14,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-
-  // Récupérer le logo s'il existe dans le localStorage
-  useEffect(() => {
-    const storedLogo = localStorage.getItem("shopLogo");
-    if (storedLogo) {
-      setLogoUrl(storedLogo);
-    }
-  }, []);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -31,25 +23,20 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMsg("");
     
     try {
       const success = await authService.login(email, password);
       
       if (success) {
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue sur votre boutique",
-        });
-        
-        // Vérifier le rôle de l'utilisateur si nécessaire
-        const user = await authService.getCurrentUser();
-        if (user) {
-          localStorage.setItem("isAuthenticated", "true");
-          onLogin();
-        }
+        localStorage.setItem("isAuthenticated", "true");
+        onLogin();
+      } else {
+        setErrorMsg("Identifiants incorrects. Veuillez réessayer.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setErrorMsg(error.message || "Erreur lors de la connexion");
     } finally {
       setIsLoading(false);
     }
@@ -73,19 +60,9 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
             >
-              {logoUrl ? (
-                <div className="h-20 w-20 rounded-full bg-white p-1 shadow-lg flex items-center justify-center overflow-hidden">
-                  <img 
-                    src={logoUrl} 
-                    alt="Logo" 
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 shadow-lg flex items-center justify-center">
-                  <User className="h-10 w-10 text-primary" />
-                </div>
-              )}
+              <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-primary/20 to-primary/10 shadow-lg flex items-center justify-center">
+                <User className="h-10 w-10 text-primary" />
+              </div>
             </motion.div>
             
             <CardTitle className="text-2xl font-bold">Shop Manager</CardTitle>
@@ -95,6 +72,16 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
           </CardHeader>
           
           <CardContent className="relative space-y-4">
+            {errorMsg && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-md bg-destructive/10 text-destructive text-sm border border-destructive/20"
+              >
+                {errorMsg}
+              </motion.div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <motion.div 
                 className="space-y-3"

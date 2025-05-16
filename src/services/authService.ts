@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export const authService = {
   async login(email: string, password: string): Promise<boolean> {
@@ -13,13 +13,23 @@ export const authService = {
       
       if (error) throw error;
       
+      // Récupérer le profil utilisateur après connexion
+      if (data.session) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, access_level')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (!profileError && profileData) {
+          localStorage.setItem("userRole", profileData.role);
+          localStorage.setItem("accessLevel", profileData.access_level.toString());
+        }
+      }
+      
       return !!data.session;
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(`Erreur de connexion: ${error.message}`);
       return false;
     }
   },
@@ -31,12 +41,11 @@ export const authService = {
       if (error) throw error;
       
       localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("accessLevel");
+      toast.success("Déconnexion réussie");
     } catch (error: any) {
-      toast({
-        title: "Erreur de déconnexion",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast.error(`Erreur de déconnexion: ${error.message}`);
     }
   },
   
@@ -59,6 +68,20 @@ export const authService = {
       
       if (error) throw error;
       
+      // Récupérer le rôle utilisateur s'il n'est pas déjà dans localStorage
+      if (data.user && !localStorage.getItem("userRole")) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, access_level')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (!profileError && profileData) {
+          localStorage.setItem("userRole", profileData.role);
+          localStorage.setItem("accessLevel", profileData.access_level.toString());
+        }
+      }
+      
       return data.user;
     } catch (error) {
       console.error("Erreur de récupération d'utilisateur:", error);
@@ -66,7 +89,6 @@ export const authService = {
     }
   },
   
-  // Nouvelle méthode pour s'abonner aux changements d'authentification
   subscribeToAuthChanges(callback: (event: AuthChangeEvent, session: Session | null) => void) {
     return supabase.auth.onAuthStateChange(callback);
   },
@@ -79,17 +101,10 @@ export const authService = {
       
       if (error) throw error;
       
-      toast({
-        title: "Succès",
-        description: "Mot de passe mis à jour avec succès"
-      });
+      toast.success("Mot de passe mis à jour avec succès");
       return true;
     } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: `Erreur de mise à jour du mot de passe: ${error.message}`,
-        variant: "destructive"
-      });
+      toast.error(`Erreur de mise à jour du mot de passe: ${error.message}`);
       return false;
     }
   }
