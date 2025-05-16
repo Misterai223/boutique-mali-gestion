@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,14 +84,19 @@ const Employees = () => {
         toast.success("Employé mis à jour avec succès");
       } else {
         // Création d'un nouvel employé via le profil
-        // Pour les nouveaux employés, nous laissons Supabase générer l'ID
+        // Nous devons créer un UUID côté client pour éviter l'erreur
+        const newId = crypto.randomUUID();
+        
         const { error } = await supabase
           .from('profiles')
           .insert({
+            id: newId, // Utilisation d'un ID généré côté client
             full_name: employee.name,
             avatar_url: employee.photoUrl,
             role: employee.role,
-            access_level: 1 // Valeur par défaut pour les nouveaux employés
+            access_level: 1, // Valeur par défaut pour les nouveaux employés
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
           
         if (error) throw error;
