@@ -19,7 +19,7 @@ const menuItems: MenuItem[] = [
   { icon: Boxes, label: "Gestion de stock", path: "/inventory" },
   { icon: DollarSign, label: "Finances", path: "/finances" },
   { icon: Users, label: "Employés", path: "/employees" },
-  { icon: User, label: "Utilisateurs", path: "/users", requiredRole: ["admin"] },
+  { icon: User, label: "Utilisateurs", path: "/users" }, // Retrait de la contrainte de rôle
   { icon: BarChart4, label: "Rapports", path: "/reports" },
   { icon: Settings, label: "Paramètres", path: "/settings" },
 ];
@@ -34,14 +34,8 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
     setUserRole(role);
   }, []);
   
-  // Filtrer les éléments du menu en fonction du rôle
-  const filteredMenuItems = menuItems.filter(item => {
-    // Si aucun rôle requis n'est spécifié, l'élément est accessible à tous
-    if (!item.requiredRole) return true;
-    
-    // Sinon, vérifier si l'utilisateur a le rôle requis
-    return item.requiredRole.includes(userRole || "");
-  });
+  // Nous rendons tous les éléments du menu, sans filtrage par rôle
+  // Cela permettra d'afficher l'élément "Utilisateurs" pour tous les rôles
   
   return (
     <aside
@@ -64,7 +58,7 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
       {/* Menu Items */}
       <nav className="flex-1 overflow-y-auto py-6">
         <ul className="space-y-1 px-2">
-          {filteredMenuItems.map((item) => {
+          {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <li key={item.path}>
