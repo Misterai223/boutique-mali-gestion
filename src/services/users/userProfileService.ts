@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 
@@ -6,7 +5,6 @@ import { Profile } from "@/types/profile";
 export const getProfiles = async (): Promise<Profile[]> => {
   try {
     console.log("Chargement des profils...");
-    // Ajout de limit pour éviter les problèmes de profondeur de pile
     const { data, error } = await supabase
       .from('profiles')
       .select('*')

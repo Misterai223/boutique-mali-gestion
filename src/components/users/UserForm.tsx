@@ -23,7 +23,6 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
 
   const handleUserCreated = () => {
     console.log("UserForm: utilisateur créé, appel du callback onUserCreated");
-    onOpenChange(false); // Fermer le formulaire après création réussie
     
     if (onUserCreated) {
       onUserCreated();
@@ -34,7 +33,6 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
 
   const handleUserUpdated = () => {
     console.log("UserForm: utilisateur mis à jour, appel du callback onUserUpdated");
-    onOpenChange(false); // Fermer le formulaire après mise à jour réussie
     
     if (onUserUpdated) {
       onUserUpdated();

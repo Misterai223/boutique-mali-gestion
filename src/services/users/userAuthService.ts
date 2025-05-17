@@ -27,11 +27,26 @@ export const createUser = async (email: string, password: string, userData: any)
 
     console.log("Utilisateur créé avec succès:", data);
 
-    // L'utilisateur a été créé, le profil sera automatiquement créé par le trigger handle_new_user
-    // Nous enregistrons simplement l'activité
-
+    // Pour accélérer le processus sans attendre la création automatique par le trigger
+    // Créer manuellement le profil utilisateur dans la table profiles
     if (data?.user) {
-      console.log("Utilisateur créé avec ID:", data.user.id);
+      console.log("Création manuelle du profil pour l'utilisateur ID:", data.user.id);
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          full_name: userData.full_name,
+          role: userData.role || 'user',
+          access_level: userData.access_level || 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        
+      if (profileError) {
+        console.error("Erreur lors de la création du profil:", profileError);
+        // Ne pas bloquer le processus, le trigger handle_new_user devrait le créer automatiquement
+      }
       
       // Enregistrer l'activité
       try {
@@ -50,7 +65,6 @@ export const createUser = async (email: string, password: string, userData: any)
         );
       } catch (activityError) {
         console.error("Erreur lors de l'enregistrement de l'activité:", activityError);
-        // Ne pas bloquer la création d'utilisateur si l'enregistrement d'activité échoue
       }
 
       return { data, error: null };
