@@ -17,6 +17,7 @@ export interface TopNavProps {
 
 const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
   useEffect(() => {
     const handleOnlineStatus = () => {
@@ -26,9 +27,15 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
     
+    // Afficher le prompt d'installation après un délai
+    const timer = setTimeout(() => {
+      setShowInstallPrompt(true);
+    }, 2000);
+    
     return () => {
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOnlineStatus);
+      clearTimeout(timer);
     };
   }, []);
   
@@ -55,7 +62,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               Hors ligne
             </div>
           )}
-          <PWAInstallPrompt />
+          {showInstallPrompt && <PWAInstallPrompt />}
           <NotificationButton />
           <ThemeToggle />
           <UserProfile onLogout={onLogout} />

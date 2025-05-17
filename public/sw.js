@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'shop-manager-v1';
+const CACHE_NAME = 'shop-manager-v2';
 
 // Ressources à mettre en cache lors de l'installation
 const INITIAL_ASSETS = [
@@ -13,20 +13,23 @@ const INITIAL_ASSETS = [
 
 // Installation du Service Worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('Service Worker: Installation en cours...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Cache ouvert');
         return cache.addAll(INITIAL_ASSETS);
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('Service Worker: Installation terminée, activation du skipWaiting');
+        return self.skipWaiting();
+      })
   );
 });
 
 // Activation du Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('Service Worker: Activation en cours...');
   // Nettoyer les anciens caches
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -38,7 +41,10 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('Service Worker: Prise de contrôle des clients');
+      return self.clients.claim();
+    })
   );
 });
 
@@ -80,6 +86,13 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Envoi de message au Service Worker
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Gérer les notifications push
 self.addEventListener('push', (event) => {
   console.log('Push notification reçue', event);
@@ -111,4 +124,3 @@ self.addEventListener('notificationclick', (event) => {
     clients.openWindow('/')
   );
 });
-
