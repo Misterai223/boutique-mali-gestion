@@ -32,9 +32,7 @@ interface EmployeeFormProps {
 
 const roles = [
   { value: "admin", label: "Administrateur" },
-  { value: "manager", label: "Gérant" },
-  { value: "cashier", label: "Caissier" },
-  { value: "salesperson", label: "Vendeur" },
+  { value: "employee", label: "Employé" },
 ];
 
 const EmployeeForm = ({

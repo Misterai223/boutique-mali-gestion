@@ -59,10 +59,7 @@ const UserSearchAndFilter = ({
             <SelectContent>
               <SelectItem value="all">Tous les rôles</SelectItem>
               <SelectItem value="admin">Administrateur</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="cashier">Caissier</SelectItem>
-              <SelectItem value="salesperson">Vendeur</SelectItem>
-              <SelectItem value="user">Utilisateur</SelectItem>
+              <SelectItem value="employee">Employé</SelectItem>
             </SelectContent>
           </Select>
         </div>

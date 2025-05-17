@@ -1,6 +1,8 @@
 
 import { Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useLocation } from "react-router-dom";
 
 interface ProtectedRouteProps {
   isAuthenticated: boolean;
@@ -13,8 +15,27 @@ const ProtectedRoute = ({
   onLogout, 
   children 
 }: ProtectedRouteProps) => {
+  const location = useLocation();
+  const { hasAccess, loading } = useRolePermissions();
+  
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+  
+  // Si les permissions sont en cours de chargement, afficher un indicateur de chargement
+  if (loading) {
+    return (
+      <DashboardLayout onLogout={onLogout}>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
+  // Vérifier si l'utilisateur a accès à cette route
+  if (!hasAccess(location.pathname)) {
+    return <Navigate to="/" />;
   }
 
   return (

@@ -11,13 +11,10 @@ interface RoleSelectorProps {
   name: "role";
 }
 
-// Définition des rôles disponibles
+// Définition des rôles disponibles - Simplifiés à deux rôles
 const roles = [
   { value: "admin", label: "Administrateur" },
-  { value: "manager", label: "Manager" },
-  { value: "cashier", label: "Caissier" },
-  { value: "salesperson", label: "Vendeur" },
-  { value: "user", label: "Utilisateur" }
+  { value: "employee", label: "Employé" }
 ];
 
 const RoleSelector = ({ form, name }: RoleSelectorProps) => {
@@ -29,7 +26,7 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
         <FormItem>
           <FormLabel>Rôle</FormLabel>
           <Select 
-            value={field.value || "user"} 
+            value={field.value || "employee"} 
             onValueChange={field.onChange}
           >
             <FormControl>
