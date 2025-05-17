@@ -2,9 +2,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { CircleDashed, ArrowUpDown, CheckCircle, Clock } from "lucide-react";
+import { CircleDashed, ArrowUpDown, CheckCircle, Clock, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 const sales = [
   {
@@ -86,9 +87,15 @@ const RecentSales = () => {
                 Vous avez fait 12 ventes aujourd'hui
               </CardDescription>
             </div>
-            <button className="rounded-full p-2 hover:bg-muted/50 transition-colors">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-            </button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <span>Voir toutes</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

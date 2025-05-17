@@ -5,7 +5,7 @@ import SalesChart from "@/components/dashboard/SalesChart";
 import RecentSales from "@/components/dashboard/RecentSales";
 import TopProducts from "@/components/dashboard/TopProducts";
 import InventoryAlerts from "@/components/dashboard/InventoryAlerts";
-import { Package, DollarSign, Users, BarChart4, TrendingUp, Activity, Calendar, Clock } from "lucide-react";
+import { Package, DollarSign, Users, BarChart4, TrendingUp, Activity, Calendar, Clock, ChevronRight, ChevronDown, CircleDollarSign } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useInView } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 // Animation variants
 const containerVariants = {
@@ -50,17 +51,22 @@ const Dashboard = () => {
   const [salesData, setSalesData] = useState({
     todaySales: "0",
     weekSales: "0",
-    monthSales: "0"
+    monthSales: "0",
+    totalCustomers: "0",
+    avgOrderValue: "0",
+    pendingOrders: "0"
   });
   const [currentTime, setCurrentTime] = useState(new Date());
   
   // Refs pour animations basées sur le scroll
   const statsRef = useRef(null);
+  const overviewRef = useRef(null);
   const objectifRef = useRef(null);
   const chartsRef = useRef(null);
   const tablesRef = useRef(null);
   
   const statsInView = useInView(statsRef, { once: true, amount: 0.3 });
+  const overviewInView = useInView(overviewRef, { once: true, amount: 0.3 });
   const objectifInView = useInView(objectifRef, { once: true, amount: 0.3 });
   const chartsInView = useInView(chartsRef, { once: true, amount: 0.3 });
   const tablesInView = useInView(tablesRef, { once: true, amount: 0.3 });
@@ -80,7 +86,10 @@ const Dashboard = () => {
       setSalesData({
         todaySales: "120,000",
         weekSales: "785,350",
-        monthSales: "8,500,000"
+        monthSales: "8,500,000",
+        totalCustomers: "1,257",
+        avgOrderValue: "32,500",
+        pendingOrders: "23"
       });
       setLoading(false);
     }, 800);
@@ -171,64 +180,94 @@ const Dashboard = () => {
         </motion.div>
       </motion.div>
       
-      {/* Résumé rapide avec l'heure */}
+      {/* Aperçu rapide avec l'heure - REDESIGNÉ */}
       <motion.div
+        ref={overviewRef}
         variants={containerVariants}
         initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        animate={overviewInView ? "visible" : "hidden"}
+        className="grid grid-cols-1 gap-4"
       >
         <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-primary/80 to-primary text-primary-foreground">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center gap-2">
+          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
                 <Clock className="h-5 w-5" /> Aperçu rapide
               </CardTitle>
-              <CardDescription className="text-primary-foreground/90">
-                Résumé de l'activité commerciale
+              <CardDescription className="text-primary-foreground/90 text-base">
+                Résumé des performances commerciales
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-primary-foreground/80">Ventes aujourd'hui</p>
-                  <p className="text-2xl font-bold">{loading ? "..." : `${salesData.todaySales} XOF`}</p>
+            <CardContent className="p-6">
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-pulse">
+                  <div className="h-16 bg-white/10 rounded-md"></div>
+                  <div className="h-16 bg-white/10 rounded-md"></div>
+                  <div className="h-16 bg-white/10 rounded-md"></div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-primary-foreground/80">Cette semaine</p>
-                  <p className="text-2xl font-bold">{loading ? "..." : `${salesData.weekSales} XOF`}</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-primary-foreground/80">Aujourd'hui</h3>
+                      <Badge variant="outline" className="bg-white/20 text-white">
+                        <TrendingUp className="h-3 w-3 mr-1" /> +12%
+                      </Badge>
+                    </div>
+                    <p className="text-3xl font-bold mt-2">{salesData.todaySales} XOF</p>
+                    <div className="flex items-center mt-2 text-xs">
+                      <CircleDollarSign className="h-3 w-3 mr-1" />
+                      <span className="text-primary-foreground/70">
+                        {salesData.pendingOrders} commandes en attente
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-primary-foreground/80">Cette semaine</h3>
+                      <Badge variant="outline" className="bg-white/20 text-white">
+                        <TrendingUp className="h-3 w-3 mr-1" /> +8%
+                      </Badge>
+                    </div>
+                    <p className="text-3xl font-bold mt-2">{salesData.weekSales} XOF</p>
+                    <div className="flex items-center mt-2 text-xs">
+                      <Users className="h-3 w-3 mr-1" />
+                      <span className="text-primary-foreground/70">
+                        {salesData.totalCustomers} clients au total
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-primary-foreground/80">Ce mois</h3>
+                      <Badge variant="outline" className="bg-white/20 text-white">
+                        <TrendingUp className="h-3 w-3 mr-1" /> +15%
+                      </Badge>
+                    </div>
+                    <p className="text-3xl font-bold mt-2">{salesData.monthSales} XOF</p>
+                    <div className="flex items-center mt-2 text-xs">
+                      <ChevronRight className="h-3 w-3 mr-1" />
+                      <span className="text-primary-foreground/70">
+                        Moy. commande: {salesData.avgOrderValue} XOF
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-primary-foreground/80">Ce mois</p>
-                  <p className="text-2xl font-bold">{loading ? "..." : `${salesData.monthSales} XOF`}</p>
+              )}
+              
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-white/80">Progression vers l'objectif mensuel</span>
+                  <span className="text-sm font-medium text-white">{salesProgress}%</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-secondary/50 to-secondary/80">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" /> Tendances
-              </CardTitle>
-              <CardDescription>
-                Évolution des performances
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Taux de conversion</span>
-                  <span className="text-sm font-medium">{conversionRate}%</span>
+                <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-white"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${salesProgress}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  ></motion.div>
                 </div>
-                <Progress value={conversionRate} max={100} className="h-2" />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Visites</span>
-                  <span className="text-sm font-medium">+12% vs sem. dernière</span>
-                </div>
-                <Progress value={64} max={100} className="h-2" />
               </div>
             </CardContent>
           </Card>

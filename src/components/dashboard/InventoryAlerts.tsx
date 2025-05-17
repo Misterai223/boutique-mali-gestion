@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, AlertTriangle, CircleDashed, PlusCircle } from "lucide-react";
+import { Package, AlertTriangle, CircleDashed, PlusCircle, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -86,10 +86,15 @@ const InventoryAlerts = () => {
                 </CardDescription>
               </div>
             </div>
-            <Button size="sm" variant="outline" className="gap-1">
-              <PlusCircle className="h-4 w-4" />
-              Commander
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" className="gap-1">
+                <PlusCircle className="h-4 w-4" />
+                Commander
+              </Button>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
