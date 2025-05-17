@@ -26,7 +26,11 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
     <Routes>
       <Route 
         path="/login" 
-        element={isAuthenticated ? <Navigate to="/" replace /> : <LoginForm onLogin={onLogin} />} 
+        element={
+          isAuthenticated ? 
+            <Navigate to="/" replace /> : 
+            <LoginForm onLogin={onLogin} />
+        } 
       />
       <Route
         path="/"

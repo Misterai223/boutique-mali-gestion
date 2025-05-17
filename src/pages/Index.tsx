@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
@@ -29,9 +29,9 @@ const Index = ({
         const session = await authService.getSession();
         if (session) {
           // Récupérer les données utilisateur
-          const user = await authService.getCurrentUser();
-          if (user) {
-            console.log("Session valide trouvée, utilisateur authentifié:", user.email);
+          const userData = await authService.getCurrentUser();
+          if (userData) {
+            console.log("Session valide trouvée, utilisateur authentifié:", userData?.data?.email);
             onAuthChange(true);
             localStorage.setItem("isAuthenticated", "true");
             toast.success(`Bienvenue sur Shop Manager`);
@@ -98,9 +98,16 @@ const Index = ({
   
   const handleLogout = async () => {
     console.log("Déconnexion initiée");
-    await authService.logout();
-    localStorage.removeItem("isAuthenticated");
-    onAuthChange(false);
+    try {
+      await authService.logout();
+      localStorage.removeItem("isAuthenticated");
+      onAuthChange(false);
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      localStorage.removeItem("isAuthenticated");
+      onAuthChange(false);
+    }
   };
   
   if (!mounted || loading) {
@@ -116,7 +123,7 @@ const Index = ({
     );
   }
   
-  // Sinon, afficher le formulaire de login
+  // Sinon, rediriger vers le formulaire de login
   return <LoginForm onLogin={handleLogin} />;
 };
 
