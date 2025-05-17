@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import LoginForm from "./components/auth/LoginForm";
-import Employees from "./pages/Employees";
+import { Employees } from "./pages/Employees";
 import Products from "./pages/Products";
 import Categories from "./pages/Categories";
 import Orders from "./pages/Orders";
