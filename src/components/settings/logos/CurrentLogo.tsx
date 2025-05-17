@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Building } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface CurrentLogoProps {
   logoUrl: string | null;
@@ -17,8 +18,8 @@ const CurrentLogo = ({ logoUrl }: CurrentLogoProps) => {
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-medium mb-2">Logo actuel</h3>
-      <div className="border rounded-md p-4 bg-muted/30 flex items-center justify-center h-40">
+      <h3 className="text-sm font-medium text-muted-foreground mb-2">Logo actuel</h3>
+      <Card className="p-4 bg-muted/30 flex items-center justify-center h-40 overflow-hidden">
         {!imageError ? (
           <img
             src={logoUrl}
@@ -32,7 +33,7 @@ const CurrentLogo = ({ logoUrl }: CurrentLogoProps) => {
             <span className="text-sm">Image non disponible</span>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

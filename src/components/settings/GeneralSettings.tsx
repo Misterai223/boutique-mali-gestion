@@ -20,7 +20,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Store, Image, Bell } from "lucide-react";
+import { Store, Building, Bell, Globe } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import LogoUploader from "@/components/settings/logos/LogoUploader";
@@ -148,126 +148,145 @@ const GeneralSettings = ({
       </CardHeader>
       
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Logo Section */}
-          <div className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <Avatar className="h-32 w-32 rounded-xl border shadow-sm">
-                <AvatarImage 
-                  src={localLogoUrl || undefined} 
-                  alt="Logo de l'entreprise" 
-                  className="object-contain"
-                />
-                <AvatarFallback className="bg-muted text-muted-foreground text-3xl">
-                  <Store className="h-12 w-12" />
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="w-full space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium">Logo de l'entreprise</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Le logo sera affiché dans la barre latérale et en haut de l'application
-                  </p>
+          <div className="space-y-6 md:col-span-5">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-muted/30 py-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Building className="h-4 w-4 text-primary" />
+                  Logo de l'entreprise
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex flex-col items-center space-y-6">
+                  <Avatar className="h-32 w-32 rounded-xl border shadow-sm">
+                    <AvatarImage 
+                      src={localLogoUrl || undefined} 
+                      alt="Logo de l'entreprise" 
+                      className="object-contain"
+                    />
+                    <AvatarFallback className="bg-muted text-muted-foreground text-3xl">
+                      <Store className="h-12 w-12" />
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="w-full space-y-4">
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground text-center">
+                        Le logo sera affiché dans la barre latérale et en haut de l'application
+                      </p>
+                    </div>
+                    
+                    <LogoUploader
+                      isUploading={isUploading}
+                      useCloudinary={false}
+                      onFileChange={handleFileChange}
+                      onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
+                      onMediaLibrarySelect={handleMediaLibrarySelect}
+                    />
+                    
+                    <p className="text-xs text-muted-foreground text-center">
+                      Formats acceptés: JPG, PNG, GIF, SVG. Taille max: 5MB
+                    </p>
+                    
+                    <CurrentLogo logoUrl={localLogoUrl} />
+                  </div>
                 </div>
-                
-                <LogoUploader
-                  isUploading={isUploading}
-                  useCloudinary={false}
-                  onFileChange={handleFileChange}
-                  onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
-                  onMediaLibrarySelect={handleMediaLibrarySelect}
-                />
-                
-                <p className="text-xs text-muted-foreground">
-                  Formats acceptés: JPG, PNG, GIF, SVG. Taille max: 5MB
-                </p>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
           
           {/* Main Settings Section */}
-          <div className="md:col-span-2 space-y-6">
+          <div className="md:col-span-7 space-y-6">
             {/* Basic Information Section */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-sm text-muted-foreground">INFORMATION DE BASE</h3>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shop-name">Nom de l'entreprise</Label>
-                  <Input
-                    id="shop-name"
-                    value={localShopName}
-                    onChange={(e) => setLocalShopName(e.target.value)}
-                    className="text-base"
-                    placeholder="Nom de votre entreprise"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Ce nom apparaîtra dans la barre de navigation et sur tous les documents
-                  </p>
+            <Card>
+              <CardHeader className="bg-muted/30 py-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                  Information de base
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-5">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="shop-name" className="text-sm font-medium">Nom de l'entreprise</Label>
+                    <Input
+                      id="shop-name"
+                      value={localShopName}
+                      onChange={(e) => setLocalShopName(e.target.value)}
+                      className="text-base"
+                      placeholder="Nom de votre entreprise"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Ce nom apparaîtra dans la barre de navigation et sur tous les documents
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="currency" className="text-sm font-medium">Devise</Label>
+                    <Select value={currency} onValueChange={setCurrency}>
+                      <SelectTrigger id="currency" className="w-full">
+                        <SelectValue placeholder="Sélectionner une devise" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="XOF">F CFA (Franc CFA)</SelectItem>
+                        <SelectItem value="USD">USD (Dollar américain)</SelectItem>
+                        <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Devise utilisée pour tous les montants dans l'application
+                    </p>
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="currency">Devise</Label>
-                  <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger id="currency" className="w-full">
-                      <SelectValue placeholder="Sélectionner une devise" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="XOF">F CFA (Franc CFA)</SelectItem>
-                      <SelectItem value="USD">USD (Dollar américain)</SelectItem>
-                      <SelectItem value="EUR">EUR (Euro)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Devise utilisée pour tous les montants dans l'application
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-6" />
+              </CardContent>
+            </Card>
             
             {/* Preferences Section */}
-            <div className="space-y-4">
-              <h3 className="font-medium text-sm text-muted-foreground">PRÉFÉRENCES</h3>
-              
-              <div className="space-y-4 rounded-lg border p-4 bg-background/50">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="dark-mode" className="flex items-center gap-2">
-                      <span>Mode sombre</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Changer l'apparence de l'interface
-                    </p>
+            <Card>
+              <CardHeader className="bg-muted/30 py-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-primary" />
+                  Préférences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-lg border p-4 bg-background/50">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="dark-mode" className="flex items-center gap-2 text-sm font-medium">
+                        <span>Mode sombre</span>
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Changer l'apparence de l'interface
+                      </p>
+                    </div>
+                    <Switch
+                      id="dark-mode"
+                      checked={darkMode}
+                      onCheckedChange={setDarkMode}
+                    />
                   </div>
-                  <Switch
-                    id="dark-mode"
-                    checked={darkMode}
-                    onCheckedChange={setDarkMode}
-                  />
-                </div>
-                
-                <Separator className="my-2" />
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="notifications" className="flex items-center gap-2">
-                      <span>Notifications</span>
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Activer ou désactiver les notifications
-                    </p>
+                  
+                  <div className="flex items-center justify-between rounded-lg border p-4 bg-background/50">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="notifications" className="flex items-center gap-2 text-sm font-medium">
+                        <span>Notifications</span>
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Activer ou désactiver les notifications
+                      </p>
+                    </div>
+                    <Switch
+                      id="notifications"
+                      checked={notifications}
+                      onCheckedChange={setNotifications}
+                    />
                   </div>
-                  <Switch
-                    id="notifications"
-                    checked={notifications}
-                    onCheckedChange={setNotifications}
-                  />
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </CardContent>
