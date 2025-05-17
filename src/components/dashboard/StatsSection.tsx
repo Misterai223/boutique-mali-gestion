@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import StatCard from "@/components/dashboard/StatCard";
 import { DollarSign, Package, Users, BarChart4 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Animation variants
 const containerVariants = {
@@ -33,12 +34,14 @@ interface StatsSectionProps {
 }
 
 const StatsSection = ({ conversionRate, inView }: StatsSectionProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <motion.div 
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
     >
       <motion.div variants={itemVariants}>
         <StatCard

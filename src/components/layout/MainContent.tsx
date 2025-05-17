@@ -1,14 +1,17 @@
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MainContentProps {
   children: React.ReactNode;
 }
 
 export const MainContent = ({ children }: MainContentProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <main 
-      className="flex-1 overflow-y-auto p-4 md:p-6 bg-background"
+      className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-background"
     >
       <AnimatePresence mode="wait">
         <motion.div 

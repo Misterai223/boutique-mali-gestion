@@ -1,10 +1,13 @@
 
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function SearchBar() {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="relative w-64">
+    <div className={`relative ${isMobile ? "w-full" : "w-64"}`}>
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"

@@ -6,6 +6,7 @@ import LoginHeader from "./LoginHeader";
 import LoginError from "./LoginError";
 import LoginFormFields from "./LoginFormFields";
 import ForgotPassword from "./ForgotPassword";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LoginFormContainerProps {
   onLogin: () => void;
@@ -16,6 +17,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const isMobile = useIsMobile();
   
   const clearErrors = () => {
     if (errorMsg) {
@@ -36,7 +38,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
           
           <LoginHeader />
           
-          <CardContent className="relative space-y-4">
+          <CardContent className="relative space-y-4 px-4 sm:px-6">
             <LoginError errorMsg={errorMsg} />
             
             <ForgotPassword email={email} setEmail={setEmail} />
@@ -59,7 +61,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
             />
           </CardContent>
           
-          <CardFooter className="flex flex-col space-y-2 border-t pt-4 text-center">
+          <CardFooter className="flex flex-col space-y-2 border-t pt-4 text-center px-4 sm:px-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

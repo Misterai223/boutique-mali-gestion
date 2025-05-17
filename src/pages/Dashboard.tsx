@@ -1,6 +1,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useInView } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import OverviewSection from "@/components/dashboard/OverviewSection";
 import StatsSection from "@/components/dashboard/StatsSection";
@@ -22,6 +23,7 @@ const Dashboard = () => {
     pendingOrders: "0"
   });
   const [currentTime, setCurrentTime] = useState(new Date());
+  const isMobile = useIsMobile();
   
   // Refs pour animations basées sur le scroll
   const statsRef = useRef(null);
@@ -88,7 +90,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* En-tête avec animations */}
       <DashboardHeader currentTime={currentTime} />
       
@@ -103,7 +105,7 @@ const Dashboard = () => {
       </div>
       
       {/* Stats Cards avec animation avancée */}
-      <div ref={statsRef}>
+      <div ref={statsRef} className="pt-2">
         <StatsSection conversionRate={conversionRate} inView={statsInView} />
       </div>
       

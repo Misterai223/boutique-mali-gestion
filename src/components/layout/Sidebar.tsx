@@ -4,6 +4,7 @@ import { ShopLogo } from "./sidebar/ShopLogo";
 import { NavMenu } from "./sidebar/NavMenu";
 import { useSidebarData } from "@/hooks/useSidebarData";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   className?: string;
@@ -11,8 +12,9 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const { shopName, shopLogo } = useSidebarData();
-  const isCollapsed = className?.includes("w-20") || false;
+  const isCollapsed = className?.includes("w-20") || className?.includes("w-0") || false;
   const [sidebarColor, setSidebarColor] = useState("");
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Récupérer la couleur de la barre latérale du localStorage
@@ -39,10 +41,15 @@ export function Sidebar({ className }: SidebarProps) {
     };
   }, []);
 
+  // Hide sidebar completely on mobile when collapsed
+  if (isMobile && isCollapsed && className?.includes("w-0")) {
+    return null;
+  }
+
   return (
     <aside
       className={cn(
-        "flex h-full w-full border-r transition-all duration-300 sidebar-custom",
+        "flex h-full border-r transition-all duration-300 sidebar-custom",
         className
       )}
       style={{ backgroundColor: sidebarColor }}
