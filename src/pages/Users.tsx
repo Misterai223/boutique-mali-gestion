@@ -32,9 +32,17 @@ const Users = () => {
 
   const loadProfiles = async () => {
     setIsLoading(true);
-    const data = await userService.getProfiles();
-    setProfiles(data);
-    setIsLoading(false);
+    try {
+      console.log("Chargement des profils...");
+      const data = await userService.getProfiles();
+      console.log("Profils chargés:", data);
+      setProfiles(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des profils:", error);
+      toast.error("Erreur lors du chargement des profils");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const applyFilters = () => {
@@ -49,7 +57,7 @@ const Users = () => {
     }
     
     // Appliquer le filtre de rôle
-    if (roleFilter) {
+    if (roleFilter && roleFilter !== "all") {
       result = result.filter(profile => profile.role === roleFilter);
     }
     

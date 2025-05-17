@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserActivityLog } from "@/types/user-activity";
 import { Profile } from "@/types/profile";
@@ -23,29 +22,44 @@ const getAllUsers = async () => {
 // Fonction pour créer un nouvel utilisateur (admin seulement)
 const createUser = async (email: string, password: string, userData: any) => {
   try {
-    // Créer un nouvel utilisateur dans auth.users
-    const { data, error } = await supabase.auth.admin.createUser({
+    console.log("Tentative de création d'un utilisateur:", email, userData);
+    
+    // Création d'un utilisateur via l'API publique (pas admin)
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: userData.fullName
+      options: {
+        data: {
+          full_name: userData.full_name
+        }
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur lors de la création de l'utilisateur:", error);
+      throw error;
+    }
 
-    // Mettre à jour les informations supplémentaires dans le profil
+    console.log("Utilisateur créé:", data.user);
+
+    // Mettre à jour le profil avec les informations supplémentaires
     if (data?.user) {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
+          full_name: userData.full_name,
           role: userData.role || 'user',
-          access_level: userData.accessLevel || 1
+          access_level: userData.access_level || 1,
+          updated_at: new Date().toISOString()
         })
         .eq('id', data.user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erreur lors de la mise à jour du profil:", profileError);
+        throw profileError;
+      }
+      
+      console.log("Profil mis à jour avec succès");
     }
 
     // Enregistrer l'activité
@@ -55,7 +69,7 @@ const createUser = async (email: string, password: string, userData: any) => {
         created_user_id: data?.user?.id,
         created_user_email: email,
         role: userData.role,
-        access_level: userData.accessLevel
+        access_level: userData.access_level
       }
     );
 

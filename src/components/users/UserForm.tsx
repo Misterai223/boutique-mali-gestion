@@ -88,17 +88,26 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
   const handleCreateSubmit = async (data: CreateUserForm) => {
     setIsSubmitting(true);
     try {
-      const result = await userService.createUser(data.email, data.password, {
+      console.log("Données du formulaire de création:", data);
+      
+      const { error } = await userService.createUser(data.email, data.password, {
         full_name: data.full_name,
         role: data.role,
         access_level: data.access_level
       });
       
-      if (result) {
-        onUserCreated?.();
+      if (error) {
+        console.error("Erreur lors de la création:", error);
+        toast.error(`Erreur lors de la création: ${error.message}`);
+        setIsSubmitting(false);
+        return;
       }
-    } catch (error) {
-      console.error("Erreur lors de la création de l'utilisateur:", error);
+      
+      toast.success("Utilisateur créé avec succès");
+      onUserCreated?.();
+    } catch (error: any) {
+      console.error("Exception lors de la création de l'utilisateur:", error);
+      toast.error(`Erreur: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
