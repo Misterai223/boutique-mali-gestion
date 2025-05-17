@@ -20,6 +20,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import CloudinaryProductImageUpload from "./CloudinaryProductImageUpload";
+import { cloudinaryService } from "@/services/cloudinaryService";
 
 interface ProductFormProps {
   open: boolean;
@@ -85,6 +87,13 @@ const ProductForm = ({
     });
   };
 
+  const handleImageChange = (url: string) => {
+    setFormData({
+      ...formData,
+      imageUrl: url,
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -92,6 +101,11 @@ const ProductForm = ({
     if (!formData.name || !formData.category || formData.price <= 0) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
+    }
+    
+    // Si Cloudinary est configuré, sauvegarder l'URL de l'image si elle existe
+    if (cloudinaryService.isConfigured() && formData.imageUrl) {
+      cloudinaryService.saveUploadedFileUrl('products', formData.imageUrl);
     }
     
     onSave(formData);
@@ -133,6 +147,19 @@ const ProductForm = ({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {/* Image du produit avec upload Cloudinary */}
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="imageUrl" className="text-right pt-2">
+                Image
+              </Label>
+              <div className="col-span-3">
+                <CloudinaryProductImageUpload
+                  initialImageUrl={formData.imageUrl}
+                  onImageChange={handleImageChange}
+                />
+              </div>
+            </div>
+            
             {/* Product Name */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
@@ -219,20 +246,6 @@ const ProductForm = ({
               />
             </div>
             
-            {/* Image URL */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
-                URL de l'image
-              </Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            
             {/* Description */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
@@ -241,7 +254,7 @@ const ProductForm = ({
               <Input
                 id="description"
                 name="description"
-                value={formData.description}
+                value={formData.description || ''}
                 onChange={handleChange}
                 className="col-span-3"
               />

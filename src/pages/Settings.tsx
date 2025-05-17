@@ -7,6 +7,7 @@ import SecuritySettings from "@/components/settings/SecuritySettings";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
 import AccountSettings from "@/components/settings/AccountSettings";
 import LogoSettings from "@/components/settings/LogoSettings";
+import CloudinarySettings from "@/components/settings/CloudinarySettings";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
 
 const Settings = () => {
@@ -37,6 +38,7 @@ const Settings = () => {
                 <TabsTrigger value="account">Compte</TabsTrigger>
                 <TabsTrigger value="security">Sécurité</TabsTrigger>
                 <TabsTrigger value="logo">Logo</TabsTrigger>
+                <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -83,6 +85,10 @@ const Settings = () => {
           
           <TabsContent value="logo" className="p-4 md:p-6">
             <LogoSettings />
+          </TabsContent>
+          
+          <TabsContent value="cloudinary" className="p-4 md:p-6">
+            <CloudinarySettings />
           </TabsContent>
         </Tabs>
       </Card>
