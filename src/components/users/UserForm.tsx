@@ -20,6 +20,20 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
     onOpenChange(false);
   };
 
+  const handleUserCreated = () => {
+    console.log("UserForm: utilisateur créé, appel du callback onUserCreated");
+    if (onUserCreated) {
+      onUserCreated();
+    }
+  };
+
+  const handleUserUpdated = () => {
+    console.log("UserForm: utilisateur mis à jour, appel du callback onUserUpdated");
+    if (onUserUpdated) {
+      onUserUpdated();
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -32,18 +46,12 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
         {isEditMode ? (
           <UpdateUserForm 
             initialData={initialData} 
-            onUserUpdated={() => {
-              onUserUpdated?.();
-              onOpenChange(false);
-            }}
+            onUserUpdated={handleUserUpdated}
             onCancel={handleCancel}
           />
         ) : (
           <CreateUserForm
-            onUserCreated={() => {
-              onUserCreated?.();
-              onOpenChange(false);
-            }}
+            onUserCreated={handleUserCreated}
             onCancel={handleCancel}
           />
         )}

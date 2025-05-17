@@ -22,10 +22,12 @@ export const createUser = async (email: string, password: string, userData: any)
       return { data: null, error };
     }
 
-    console.log("Utilisateur créé:", data.user);
+    console.log("Utilisateur créé avec succès:", data);
 
     // Mettre à jour le profil avec les informations supplémentaires
     if (data?.user) {
+      console.log("Mise à jour du profil pour l'utilisateur:", data.user.id);
+      
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -42,22 +44,25 @@ export const createUser = async (email: string, password: string, userData: any)
       }
       
       console.log("Profil mis à jour avec succès");
+      
+      // Enregistrer l'activité
+      await logUserActivity(
+        'create_user',
+        {
+          created_user_id: data?.user?.id,
+          created_user_email: email,
+          role: userData.role,
+          access_level: userData.access_level
+        }
+      );
+
+      return { data, error: null };
+    } else {
+      console.error("L'utilisateur a été créé mais data.user est null");
+      return { data: null, error: new Error("L'utilisateur a été créé mais data.user est null") };
     }
-
-    // Enregistrer l'activité
-    await logUserActivity(
-      'create_user',
-      {
-        created_user_id: data?.user?.id,
-        created_user_email: email,
-        role: userData.role,
-        access_level: userData.access_level
-      }
-    );
-
-    return { data, error: null };
   } catch (error) {
-    console.error("Erreur lors de la création de l'utilisateur:", error);
+    console.error("Exception lors de la création de l'utilisateur:", error);
     return { data: null, error };
   }
 };

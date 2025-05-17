@@ -29,7 +29,7 @@ export const useUserManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchTerm, roleFilter]);
   
   useEffect(() => {
     loadProfiles();
@@ -76,18 +76,21 @@ export const useUserManagement = () => {
   }, []);
 
   const handleUserCreated = useCallback(async () => {
+    console.log("Nouvel utilisateur créé, rechargement des profils...");
     setFormOpen(false);
     await loadProfiles();
     toast.success("Utilisateur ajouté avec succès");
   }, [loadProfiles]);
 
   const handleUserUpdated = useCallback(async () => {
+    console.log("Utilisateur mis à jour, rechargement des profils...");
     setFormOpen(false);
     await loadProfiles();
     toast.success("Utilisateur mis à jour avec succès");
   }, [loadProfiles]);
 
   const handleUserDeleted = useCallback(async () => {
+    console.log("Utilisateur supprimé, rechargement des profils...");
     setDetailOpen(false);
     await loadProfiles();
     toast.success("Utilisateur supprimé avec succès");

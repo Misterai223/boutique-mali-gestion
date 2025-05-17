@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -32,10 +32,12 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
   });
 
   const handleSubmit = async (data: CreateUserFormType) => {
+    if (isSubmitting) return; // Éviter les soumissions multiples
+    
     setIsSubmitting(true);
+    console.log("Soumission du formulaire avec les données:", data);
+    
     try {
-      console.log("Données du formulaire de création:", data);
-      
       const { error } = await userService.createUser(data.email, data.password, {
         full_name: data.full_name,
         role: data.role,
@@ -44,14 +46,17 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       
       if (error) {
         console.error("Erreur lors de la création:", error);
-        toast.error(`Erreur: ${error.message}`);
+        toast.error(`Erreur: ${error.message || "Une erreur est survenue lors de la création"}`);
         setIsSubmitting(false);
         return;
       }
       
+      console.log("Utilisateur créé avec succès, formulaire réinitialisé");
       toast.success("Utilisateur créé avec succès");
       form.reset(); // Réinitialiser le formulaire après succès
+      
       if (onUserCreated) {
+        console.log("Appel du callback onUserCreated");
         onUserCreated();
       }
     } catch (error: any) {
@@ -111,16 +116,21 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
         
         <AccessLevelInput form={form} name="access_level" />
         
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button 
             type="button" 
             variant="outline" 
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Annuler
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Création..." : "Créer"}
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="ml-2"
+          >
+            {isSubmitting ? "Création en cours..." : "Créer"}
           </Button>
         </DialogFooter>
       </form>
