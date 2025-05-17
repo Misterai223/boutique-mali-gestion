@@ -41,6 +41,8 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
+      // Pour l'instant, nous utilisons les profils comme source d'employés
+      // Mais nous marquons clairement qu'ils sont aussi des utilisateurs
       const { data, error } = await supabase
         .from('profiles')
         .select('*');
@@ -51,10 +53,12 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
       const employeeData: Employee[] = data.map((profile: Profile) => ({
         id: profile.id,
         name: profile.full_name || '',
-        email: '', // Ces champs ne sont pas dans les profils, utiliser des valeurs par défaut
-        phone: '', // Ces champs ne sont pas dans les profils, utiliser des valeurs par défaut
+        email: '', // Ces champs ne sont pas dans les profils
+        phone: '', // Ces champs ne sont pas dans les profils
         role: profile.role,
-        photoUrl: profile.avatar_url || ''
+        photoUrl: profile.avatar_url || '',
+        isUser: true,  // Ces employés sont aussi des utilisateurs
+        userId: profile.id // Référence à l'ID utilisateur
       }));
       
       setEmployees(employeeData);
@@ -77,12 +81,18 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
     if (!employeeToDelete) return;
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', employeeToDelete.id);
-        
-      if (error) throw error;
+      if (employeeToDelete.isUser && employeeToDelete.userId) {
+        // Si l'employé est aussi un utilisateur, supprimer le profil
+        const { error } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', employeeToDelete.userId);
+          
+        if (error) throw error;
+      } else {
+        // Dans le futur, nous pourrions avoir une table dédiée pour les employés non-utilisateurs
+        console.log("Suppression d'un employé qui n'est pas un utilisateur", employeeToDelete);
+      }
       
       // Mettre à jour l'état local
       setEmployees(employees.filter(emp => emp.id !== employeeToDelete.id));
@@ -149,6 +159,7 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action supprimera définitivement l'employé {employeeToDelete?.name}.
+              {employeeToDelete?.isUser && " Cela supprimera également son profil utilisateur."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/types/employee";
-import { Edit, User, Trash } from "lucide-react";
+import { Edit, User, Trash, UserCheck } from "lucide-react";
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -64,6 +64,17 @@ const EmployeeCard = ({ employee, onEdit, onDelete }: EmployeeCardProps) => {
         >
           {translateRole(employee.role)}
         </Badge>
+        
+        {/* Badge pour indiquer si c'est un utilisateur */}
+        {employee.isUser && (
+          <Badge
+            variant="outline"
+            className="absolute bottom-2 right-2 bg-background/80"
+          >
+            <UserCheck className="h-3 w-3 mr-1" />
+            Utilisateur
+          </Badge>
+        )}
       </div>
       <CardContent className="p-4">
         <div>

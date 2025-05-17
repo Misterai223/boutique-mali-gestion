@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import ImageSelector from "../shared/ImageSelector";
 import { User, Upload } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -51,6 +52,7 @@ const EmployeeForm = ({
       phone: "",
       role: "salesperson",
       photoUrl: "",
+      isUser: false
     }
   );
   
@@ -69,6 +71,7 @@ const EmployeeForm = ({
         phone: "",
         role: "salesperson",
         photoUrl: "",
+        isUser: false
       });
     }
   }, [initialData, open]);
@@ -97,13 +100,26 @@ const EmployeeForm = ({
       photoUrl: url,
     });
   };
+  
+  const handleIsUserChange = (checked: boolean) => {
+    setFormData({
+      ...formData,
+      isUser: checked,
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.email) {
+    if (!formData.name) {
       toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+    
+    // Si l'employé est aussi un utilisateur, l'email est obligatoire
+    if (formData.isUser && !formData.email) {
+      toast.error("L'email est obligatoire pour les employés qui sont aussi des utilisateurs");
       return;
     }
     
@@ -123,6 +139,7 @@ const EmployeeForm = ({
         phone: "",
         role: "salesperson",
         photoUrl: "",
+        isUser: false
       });
     }
     
@@ -199,7 +216,7 @@ const EmployeeForm = ({
               {/* Email */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">
-                  Email*
+                  Email{formData.isUser ? '*' : ''}
                 </Label>
                 <Input
                   id="email"
@@ -208,7 +225,7 @@ const EmployeeForm = ({
                   value={formData.email}
                   onChange={handleChange}
                   className="col-span-3"
-                  required
+                  required={formData.isUser}
                 />
               </div>
               
@@ -247,6 +264,39 @@ const EmployeeForm = ({
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* isUser Switch */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="isUser" className="text-right">
+                  Est un utilisateur
+                </Label>
+                <div className="flex items-center space-x-2 col-span-3">
+                  <Switch
+                    id="isUser"
+                    checked={formData.isUser}
+                    onCheckedChange={handleIsUserChange}
+                  />
+                  <Label htmlFor="isUser" className="text-sm text-muted-foreground">
+                    {formData.isUser 
+                      ? "Cet employé aura un compte utilisateur dans le système" 
+                      : "Cet employé n'aura pas de compte utilisateur dans le système"}
+                  </Label>
+                </div>
+              </div>
+              
+              {/* Informations supplémentaires pour l'utilisateur */}
+              {formData.isUser && !isEditing && (
+                <div className="col-span-4 p-4 border rounded-lg bg-muted/50">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Information sur le compte utilisateur:
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Un compte utilisateur sera créé automatiquement pour cet employé. 
+                    Vous pourrez configurer ses informations d'authentification plus tard 
+                    dans la section "Utilisateurs".
+                  </p>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="submit">
