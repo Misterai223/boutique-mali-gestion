@@ -6,7 +6,6 @@ import Dashboard from "@/pages/Dashboard";
 import { Employees } from "@/pages/Employees";
 import Products from "@/pages/Products";
 import Categories from "@/pages/Categories";
-import Orders from "@/pages/Orders";
 import Inventory from "@/pages/Inventory";
 import Finances from "@/pages/Finances";
 import Reports from "@/pages/Reports";
@@ -73,14 +72,6 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
             <Categories />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/orders"
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Orders />
           </ProtectedRoute>
         }
       />

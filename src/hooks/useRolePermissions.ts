@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NavItem } from "@/components/layout/sidebar/navigation-items";
 import { getCurrentUserProfile } from "@/services/users/userProfileService";
@@ -8,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 const ALLOWED_EMPLOYEE_MENUS = [
   "/products", 
   "/categories", 
-  "/orders", 
   "/employees", 
   "/finances", 
   "/media",
