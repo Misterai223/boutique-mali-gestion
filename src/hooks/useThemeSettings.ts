@@ -1,137 +1,102 @@
 
-import { useState, useEffect } from 'react';
-import type { ThemeSettings } from '@/types/theme';
-import { applyTheme } from '@/utils/themeApplier';
-import { loadThemeSettings, saveThemeSettings } from '@/utils/themeStorage';
-
-export type { ThemeSettings };
+import { useState, useEffect } from "react";
+import { loadThemeSettings, saveThemeSettings } from "@/utils/themeStorage";
+import { applyTheme } from "@/utils/themeApplier";
+import type { ThemeSettings } from "../types/theme";
+import { toast } from "sonner";
 
 export const useThemeSettings = () => {
-  // Load initial settings from storage
-  const initialSettings = loadThemeSettings();
-  
-  // General settings
-  const [shopName, setShopName] = useState(initialSettings.shopName);
-  const [currency, setCurrency] = useState(initialSettings.currency);
-  const [darkMode, setDarkMode] = useState(initialSettings.darkMode);
-  const [notifications, setNotifications] = useState(initialSettings.notifications);
-  const [logoUrl, setLogoUrl] = useState(initialSettings.logoUrl);
-  
-  // Theme settings
-  const [primaryColor, setPrimaryColor] = useState(initialSettings.primaryColor);
-  const [accentColor, setAccentColor] = useState(initialSettings.accentColor);
-  const [secondaryColor, setSecondaryColor] = useState(initialSettings.secondaryColor);
-  const [borderRadius, setBorderRadius] = useState(initialSettings.borderRadius);
-  const [fontFamily, setFontFamily] = useState(initialSettings.fontFamily);
-  
-  // Track if there are unsaved changes
+  const [settings, setSettings] = useState<ThemeSettings>(() => loadThemeSettings());
+  const [initialSettings, setInitialSettings] = useState<ThemeSettings>(settings);
   const [hasChanges, setHasChanges] = useState(false);
-  const [initialValues, setInitialValues] = useState<ThemeSettings>(initialSettings);
 
-  // Apply theme when settings change
+  // Apply theme settings when component mounts or settings change
   useEffect(() => {
     applyTheme({
-      primaryColor,
-      accentColor,
-      secondaryColor,
-      borderRadius,
-      fontFamily,
-      darkMode
+      primaryColor: settings.primaryColor,
+      accentColor: settings.accentColor,
+      secondaryColor: settings.secondaryColor,
+      borderRadius: settings.borderRadius,
+      fontFamily: settings.fontFamily,
+      darkMode: settings.darkMode
     });
-  }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode]);
-
-  // Detect changes
-  useEffect(() => {
-    const currentValues = {
-      shopName,
-      currency,
-      darkMode,
-      notifications,
-      logoUrl,
-      primaryColor,
-      accentColor,
-      secondaryColor,
-      borderRadius,
-      fontFamily,
-    };
     
-    setHasChanges(JSON.stringify(initialValues) !== JSON.stringify(currentValues));
-  }, [
-    shopName,
-    currency,
-    darkMode,
-    notifications,
-    logoUrl,
-    primaryColor,
-    accentColor,
-    secondaryColor,
-    borderRadius,
-    fontFamily,
-    initialValues
-  ]);
+    // Check if settings have changed
+    const hasChanged = JSON.stringify(settings) !== JSON.stringify(initialSettings);
+    setHasChanges(hasChanged);
+  }, [settings, initialSettings]);
+
+  const setShopName = (shopName: string) => {
+    setSettings(prev => ({ ...prev, shopName }));
+  };
+
+  const setCurrency = (currency: string) => {
+    setSettings(prev => ({ ...prev, currency }));
+  };
+
+  const setDarkMode = (darkMode: boolean) => {
+    setSettings(prev => ({ ...prev, darkMode }));
+    // Apply immediately for better UX
+    document.documentElement.classList.toggle("dark", darkMode);
+  };
+
+  const setNotifications = (notifications: boolean) => {
+    setSettings(prev => ({ ...prev, notifications }));
+  };
+
+  const setLogoUrl = (logoUrl: string) => {
+    setSettings(prev => ({ ...prev, logoUrl }));
+  };
+
+  const setPrimaryColor = (primaryColor: string) => {
+    setSettings(prev => ({ ...prev, primaryColor }));
+  };
+
+  const setAccentColor = (accentColor: string) => {
+    setSettings(prev => ({ ...prev, accentColor }));
+  };
+
+  const setSecondaryColor = (secondaryColor: string) => {
+    setSettings(prev => ({ ...prev, secondaryColor }));
+  };
+
+  const setBorderRadius = (borderRadius: string) => {
+    setSettings(prev => ({ ...prev, borderRadius }));
+  };
+
+  const setFontFamily = (fontFamily: string) => {
+    setSettings(prev => ({ ...prev, fontFamily }));
+  };
 
   const handleSaveSettings = () => {
-    // Current settings
-    const currentSettings: ThemeSettings = {
-      shopName,
-      currency,
-      darkMode,
-      notifications,
-      logoUrl,
-      primaryColor,
-      accentColor,
-      secondaryColor,
-      borderRadius,
-      fontFamily,
-    };
-    
-    // Save settings
-    saveThemeSettings(currentSettings);
-    
-    // Update initial values
-    setInitialValues(currentSettings);
-    
-    // Apply theme
-    applyTheme({
-      primaryColor,
-      accentColor,
-      secondaryColor,
-      borderRadius,
-      fontFamily,
-      darkMode
-    });
-    
+    saveThemeSettings(settings);
+    setInitialSettings(settings);
     setHasChanges(false);
-    return true;
+    
+    // Dispatch a custom event to notify other components of the changes
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
+    
+    toast.success("Paramètres sauvegardés avec succès");
+    
+    // Apply theme immediately
+    applyTheme({
+      primaryColor: settings.primaryColor,
+      accentColor: settings.accentColor,
+      secondaryColor: settings.secondaryColor,
+      borderRadius: settings.borderRadius,
+      fontFamily: settings.fontFamily,
+      darkMode: settings.darkMode
+    });
   };
 
   const handleResetSettings = () => {
-    // Reset to initial values
-    setShopName(initialValues.shopName);
-    setCurrency(initialValues.currency);
-    setDarkMode(initialValues.darkMode);
-    setNotifications(initialValues.notifications);
-    setLogoUrl(initialValues.logoUrl);
-    setPrimaryColor(initialValues.primaryColor);
-    setAccentColor(initialValues.accentColor);
-    setSecondaryColor(initialValues.secondaryColor);
-    setBorderRadius(initialValues.borderRadius);
-    setFontFamily(initialValues.fontFamily);
+    setSettings(initialSettings);
+    setHasChanges(false);
   };
 
   return {
-    settings: {
-      shopName,
-      currency,
-      darkMode,
-      notifications,
-      logoUrl,
-      primaryColor,
-      accentColor,
-      secondaryColor,
-      borderRadius,
-      fontFamily,
-    },
+    settings,
     setters: {
       setShopName,
       setCurrency,
@@ -142,10 +107,10 @@ export const useThemeSettings = () => {
       setAccentColor,
       setSecondaryColor,
       setBorderRadius,
-      setFontFamily,
+      setFontFamily
     },
     hasChanges,
     handleSaveSettings,
-    handleResetSettings,
+    handleResetSettings
   };
 };

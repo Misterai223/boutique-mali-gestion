@@ -1,199 +1,207 @@
+
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Users,
-  Settings,
+  Store,
+  Package,
   ShoppingBasket,
-  Tag,
-  FileBarChart,
-  DollarSign,
-  ShoppingCart,
-  Package2,
-  UserPlus,
-  Image
+  Users,
+  UserCog,
+  Settings,
+  CreditCard,
+  BarChart3,
+  Tags,
+  Building,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-export function Sidebar({ className }: { className?: string }) {
+const navItems = [
+  {
+    title: "Tableau de bord",
+    icon: LayoutDashboard,
+    href: "/",
+    color: "text-sky-500",
+  },
+  {
+    title: "Produits",
+    icon: Package,
+    href: "/products",
+    color: "text-violet-500",
+  },
+  {
+    title: "Catégories",
+    icon: Tags,
+    href: "/categories",
+    color: "text-pink-500",
+  },
+  {
+    title: "Commandes",
+    icon: ShoppingBasket,
+    href: "/orders",
+    color: "text-orange-500",
+    badge: 5,
+  },
+  {
+    title: "Clients",
+    icon: Users,
+    href: "/users",
+    color: "text-emerald-500",
+  },
+  {
+    title: "Employés",
+    icon: UserCog,
+    href: "/employees",
+    color: "text-blue-500",
+  },
+  {
+    title: "Finances",
+    icon: CreditCard,
+    href: "/finances",
+    color: "text-violet-500",
+  },
+  {
+    title: "Rapport",
+    icon: BarChart3,
+    href: "/reports",
+    color: "text-yellow-500",
+  },
+  {
+    title: "Médias",
+    icon: Package,
+    href: "/media",
+    color: "text-rose-500",
+  },
+  {
+    title: "Paramètres",
+    icon: Settings,
+    href: "/settings",
+    color: "text-gray-500",
+  },
+];
+
+interface SidebarProps {
+  className?: string;
+}
+
+export function Sidebar({ className }: SidebarProps) {
+  const location = useLocation();
+  const [shopName, setShopName] = useState<string>("");
+  const [shopLogo, setShopLogo] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Load saved shop name and logo
+    const savedShopName = localStorage.getItem("shopName");
+    const savedShopLogo = localStorage.getItem("shopLogo");
+    
+    setShopName(savedShopName || "Shop Manager");
+    setShopLogo(savedShopLogo || null);
+    
+    // Setup a listener for localStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "shopName") {
+        setShopName(e.newValue || "Shop Manager");
+      } else if (e.key === "shopLogo") {
+        setShopLogo(e.newValue);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event listener for local changes (since storage event only fires in different tabs)
+    const updateLocalStorage = () => {
+      setShopName(localStorage.getItem("shopName") || "Shop Manager");
+      setShopLogo(localStorage.getItem("shopLogo") || null);
+    };
+    
+    document.addEventListener('localStorage.updated', updateLocalStorage);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('localStorage.updated', updateLocalStorage);
+    };
+  }, []);
+
   return (
-    <aside className={cn("pb-12 md:pb-0 bg-sidebar text-sidebar-foreground", className)}>
-      <div className="space-y-4 py-4">
+    <aside
+      className={cn(
+        "flex h-full flex-col w-full border-r bg-background transition-all duration-300",
+        className
+      )}
+    >
+      <div className="py-4 px-3 flex flex-col h-full">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            Navigation
-          </h2>
-          <div className="space-y-1">
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Tableau de bord
-            </NavLink>
-
-            <NavLink
-              to="/employees"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Employés
-            </NavLink>
-
-            <NavLink
-              to="/products"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <ShoppingBasket className="mr-2 h-4 w-4" />
-              Produits
-            </NavLink>
-
-            <NavLink
-              to="/categories"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <Tag className="mr-2 h-4 w-4" />
-              Catégories
-            </NavLink>
-
-            <NavLink
-              to="/inventory"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <Package2 className="mr-2 h-4 w-4" />
-              Inventaire
-            </NavLink>
-
-            <NavLink
-              to="/orders"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Commandes
-            </NavLink>
-
-            <NavLink
-              to="/finances"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <DollarSign className="mr-2 h-4 w-4" />
-              Finances
-            </NavLink>
-
-            <NavLink
-              to="/reports"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <FileBarChart className="mr-2 h-4 w-4" />
-              Rapports
-            </NavLink>
-            
-            <NavLink
-              to="/media-library"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <Image className="mr-2 h-4 w-4" />
-              Médiathèque
-            </NavLink>
-
-            <h2 className="mt-6 px-4 text-lg font-semibold tracking-tight">
-              Administration
-            </h2>
-
-            <NavLink
-              to="/users"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Utilisateurs
-            </NavLink>
-
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-                )
-              }
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Paramètres
-            </NavLink>
-          </div>
+          <Link
+            to="/"
+            className="flex items-center gap-2 px-1"
+          >
+            <div className="relative h-9 w-9 overflow-hidden rounded-lg border">
+              {shopLogo ? (
+                <img
+                  src={shopLogo}
+                  alt="Logo"
+                  className="h-full w-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                  <Building className="h-5 w-5" />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-semibold tracking-tight overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
+                {shopName}
+              </span>
+              <span className="text-xs text-muted-foreground">Gestion commerciale</span>
+            </div>
+          </Link>
         </div>
+        <ScrollArea className="flex-1 py-3">
+          <nav className="grid gap-1 px-2">
+            <TooltipProvider delayDuration={0}>
+              {navItems.map((item, index) => (
+                <Tooltip key={index}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
+                        location.pathname === item.href
+                          ? "bg-accent text-accent-foreground font-medium"
+                          : "transparent"
+                      )}
+                    >
+                      <item.icon className={cn("h-[18px] w-[18px]", item.color)} />
+                      <span className="truncate">{item.title}</span>
+                      {item.badge && (
+                        <Badge 
+                          className="ml-auto h-5 min-w-5 px-1 flex items-center justify-center bg-primary text-primary-foreground" 
+                          variant="secondary"
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-accent text-accent-foreground font-medium">
+                    {item.title}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          </nav>
+        </ScrollArea>
       </div>
     </aside>
   );
-}
+};
