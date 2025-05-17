@@ -101,16 +101,70 @@ export default {
 				'slide-in': {
 					from: { transform: 'translateX(-100%)' },
 					to: { transform: 'translateX(0)' }
+				},
+				'slide-up': {
+					from: { transform: 'translateY(20px)', opacity: '0' },
+					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'scale-in': {
+					from: { transform: 'scale(0.95)', opacity: '0' },
+					to: { transform: 'scale(1)', opacity: '1' }
+				},
+				'pulse-subtle': {
+					'0%, 100%': { transform: 'scale(0.95)', opacity: '0.8' },
+					'50%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'shimmer': {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' }
+				},
+				'bounce-subtle': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out',
-				'slide-in': 'slide-in 0.3s ease-out'
+				'slide-in': 'slide-in 0.4s ease-out',
+				'slide-up': 'slide-up 0.4s ease-out',
+				'scale-in': 'scale-in 0.4s ease-out',
+				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+				'shimmer': 'shimmer 2s linear infinite',
+				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite'
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
+				nunito: ['Nunito', 'sans-serif'],
+				poppins: ['Poppins', 'sans-serif'],
+				roboto: ['Roboto', 'sans-serif'],
+				'open-sans': ['Open Sans', 'sans-serif']
+			},
+			boxShadow: {
+				'soft': '0 4px 15px rgba(0, 0, 0, 0.05)',
+				'card': '0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+				'card-hover': '0 20px 35px -10px rgba(0, 0, 0, 0.08), 0 10px 20px -8px rgba(0, 0, 0, 0.05)',
+				'input-focus': '0 0 0 2px hsla(var(--primary), 0.25)'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-subtle': 'linear-gradient(to right, transparent, var(--tw-gradient-stops), transparent)',
+				'shimmer': 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)'
+			},
+			transitionProperty: {
+				'height': 'height',
+				'spacing': 'margin, padding',
+				'width': 'width'
+			},
+			transitionTimingFunction: {
+				'spring': 'cubic-bezier(0.4, 0, 0.2, 1)',
+				'bounce': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+			},
+			transitionDuration: {
+				'250': '250ms',
+				'350': '350ms'
 			}
 		}
 	},

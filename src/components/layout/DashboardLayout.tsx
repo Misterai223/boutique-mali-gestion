@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopNav from "./TopNav";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const DashboardLayout = ({ 
   children, 
@@ -57,23 +58,39 @@ const DashboardLayout = ({
     return () => observer.disconnect();
   }, []);
   
+  const mainVariants = {
+    expanded: { marginLeft: 0, width: collapsed ? "calc(100% - 80px)" : "calc(100% - 256px)" },
+    collapsed: { marginLeft: 0, width: "calc(100% - 80px)" }
+  };
+  
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar collapsed={collapsed} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <motion.div 
+        className="flex-1 flex flex-col overflow-hidden"
+        initial={false}
+        animate={collapsed ? "collapsed" : "expanded"}
+        variants={mainVariants}
+        transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+      >
         <TopNav 
           toggleSidebar={toggleSidebar} 
           collapsed={collapsed}
           onLogout={handleLogout}
         />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background">
+        <motion.main 
+          className="flex-1 overflow-y-auto p-4 md:p-6 bg-background"
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
-        </main>
-      </div>
+        </motion.main>
+      </motion.div>
     </div>
   );
 };

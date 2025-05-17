@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Home, Package, Users, BarChart4, Settings, DollarSign, FolderPlus, Boxes, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface MenuItem {
   icon: any;
@@ -19,7 +20,7 @@ const menuItems: MenuItem[] = [
   { icon: Boxes, label: "Gestion de stock", path: "/inventory" },
   { icon: DollarSign, label: "Finances", path: "/finances" },
   { icon: Users, label: "Employés", path: "/employees" },
-  { icon: User, label: "Utilisateurs", path: "/users" }, // Retrait de la contrainte de rôle
+  { icon: User, label: "Utilisateurs", path: "/users" },
   { icon: BarChart4, label: "Rapports", path: "/reports" },
   { icon: Settings, label: "Paramètres", path: "/settings" },
 ];
@@ -34,23 +35,38 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
     setUserRole(role);
   }, []);
   
-  // Nous rendons tous les éléments du menu, sans filtrage par rôle
-  // Cela permettra d'afficher l'élément "Utilisateurs" pour tous les rôles
+  const sidebarVariants = {
+    expanded: { width: "256px" },
+    collapsed: { width: "80px" }
+  };
   
   return (
-    <aside
+    <motion.aside
+      initial={false}
+      animate={collapsed ? "collapsed" : "expanded"}
+      variants={sidebarVariants}
+      transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
       className={cn(
-        "bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col border-r border-sidebar-border shadow-md",
-        collapsed ? "w-20" : "w-64"
+        "bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shadow-md",
       )}
     >
       {/* Logo */}
       <div className="p-4 flex items-center justify-center border-b border-sidebar-border h-16">
         <Link to="/" className="flex items-center justify-center w-full">
           {collapsed ? (
-            <span className="text-2xl font-bold bg-sidebar-accent rounded-full h-10 w-10 flex items-center justify-center text-sidebar-accent-foreground animate-pulse">SM</span>
+            <motion.span 
+              className="text-2xl font-bold bg-sidebar-accent rounded-full h-10 w-10 flex items-center justify-center text-sidebar-accent-foreground"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >SM</motion.span>
           ) : (
-            <span className="text-xl font-bold hover:text-sidebar-accent-foreground transition-colors">Shop Manager</span>
+            <motion.span 
+              className="text-xl font-bold hover:text-sidebar-accent-foreground transition-colors"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >Shop Manager</motion.span>
           )}
         </Link>
       </div>
@@ -58,24 +74,48 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
       {/* Menu Items */}
       <nav className="flex-1 overflow-y-auto py-6">
         <ul className="space-y-1 px-2">
-          {menuItems.map((item) => {
+          {menuItems.map((item, index) => {
             const isActive = location.pathname === item.path;
             return (
-              <li key={item.path}>
+              <motion.li 
+                key={item.path}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
                 <Link to={item.path}>
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200",
+                      "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/20 hover:text-sidebar-accent-foreground transition-all duration-200",
                       isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm" : "",
                       collapsed ? "px-2 justify-center" : "px-4"
                     )}
                   >
-                    <item.icon className={cn("h-5 w-5", collapsed ? "mr-0" : "mr-2")} />
-                    {!collapsed && <span>{item.label}</span>}
+                    <motion.div
+                      initial={false}
+                      animate={{ 
+                        marginRight: collapsed ? 0 : "0.5rem",
+                        scale: isActive ? 1.1 : 1
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <item.icon className="h-5 w-5" />
+                    </motion.div>
+                    
+                    {!collapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
                   </Button>
                 </Link>
-              </li>
+              </motion.li>
             );
           })}
         </ul>
@@ -92,8 +132,14 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
                userRole === "salesperson" ? "V" : "U"}
             </span>
           </div>
+          
           {!collapsed && (
-            <div className="space-y-1 overflow-hidden">
+            <motion.div 
+              className="space-y-1 overflow-hidden"
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              transition={{ duration: 0.3 }}
+            >
               <p className="text-sm font-medium leading-none">
                 {userRole === "admin" ? "Administrateur" : 
                  userRole === "manager" ? "Manager" : 
@@ -103,11 +149,11 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
               <p className="text-xs text-sidebar-foreground/70 truncate">
                 Connecté
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 };
 

@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,36 +12,55 @@
 
 @layer base {
   :root {
+    /* Base Colors */
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
+    --card-h: 0;
+    --card-s: 0%;
+    --card-l: 100%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
+    /* Primary Color - Vivid Blue */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
+    --primary-h: 221.2;
+    --primary-s: 83.2%;
+    --primary-l: 53.3%;
+    --primary-rgb: 59, 130, 246;
 
-    --secondary: 210 40% 96.1%;
+    /* Secondary Color - Soft Cool Gray */
+    --secondary: 214 32% 91%;
     --secondary-foreground: 222 47% 11%;
 
+    /* Muted Color */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 36 100% 50%; /* Gold accent */
+    /* Accent Color - Deep Gold */
+    --accent: 36 100% 50%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-h: 36;
+    --accent-s: 100%;
+    --accent-l: 50%;
+    --accent-rgb: 255, 179, 0;
 
+    /* Destructive Color */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    /* Border and Input */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
+    /* Sidebar Colors */
     --sidebar-background: 221.2 83.2% 53.3%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 210 40% 98%;
@@ -51,34 +72,53 @@
   }
 
   .dark {
+    /* Base Colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
+    --card-h: 222.2;
+    --card-s: 84%;
+    --card-l: 4.9%;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
+    /* Primary Color - Bright Blue */
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-h: 217.2;
+    --primary-s: 91.2%;
+    --primary-l: 59.8%;
+    --primary-rgb: 96, 165, 250;
 
+    /* Secondary Color */
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
+    /* Muted Color */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 35 92% 33%; /* Darker gold in dark mode */
+    /* Accent Color - Rich Gold */
+    --accent: 35 92% 33%;
     --accent-foreground: 210 40% 98%;
+    --accent-h: 35;
+    --accent-s: 92%;
+    --accent-l: 33%;
+    --accent-rgb: 217, 119, 6;
 
+    /* Destructive Color */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    /* Border and Input */
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
     
+    /* Sidebar Colors */
     --sidebar-background: 222.2 47.4% 11.2%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217.2 91.2% 59.8%;
@@ -95,17 +135,21 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans transition-colors duration-200;
   }
 }
 
 @layer components {
   .card-hover {
-    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-1;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
   
   .stat-card {
-    @apply p-6 rounded-lg bg-card shadow-sm border flex flex-col justify-between space-y-2;
+    @apply p-6 rounded-lg bg-card shadow-md border flex flex-col justify-between space-y-2 relative overflow-hidden;
+  }
+  
+  .stat-card::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent via-transparent to-primary/5 z-0;
   }
   
   .dashboard-section {
@@ -113,42 +157,130 @@
   }
   
   .btn-animated {
-    @apply transition-all duration-300 transform hover:scale-105 active:scale-95;
+    @apply transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-md;
   }
   
   .hover-elevated {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+  
+  .menu-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20;
   }
   
   .menu-item-active {
-    @apply bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm;
+    @apply bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-md;
   }
+  
+  .input-enhanced {
+    @apply rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors
+    focus:outline-none focus:ring-1 focus:ring-primary file:border-0 file:bg-transparent 
+    file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/10 dark:border-white/5 shadow-lg;
+  }
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  @apply tracking-tight;
+}
+
+h1 {
+  @apply text-3xl md:text-4xl font-extrabold;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  @apply text-2xl md:text-3xl font-bold;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  @apply text-xl md:text-2xl font-bold;
 }
 
 /* Animation keyframes */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(-10px); opacity: 0; }
+  from { transform: translateX(-20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
 .animate-slide-in {
-  animation: slideIn 0.3s ease-out forwards;
+  animation: slideIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* Staggered animations */
+@for $i from 1 through 10 {
+  .stagger-[$i] {
+    animation-delay: calc($i * 75ms);
+  }
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
