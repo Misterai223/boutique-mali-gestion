@@ -15,7 +15,8 @@ export const createUser = async (email: string, password: string, userData: any)
         data: {
           full_name: userData.full_name,
           role: userData.role || 'user',
-          access_level: userData.access_level || 1
+          access_level: userData.access_level || 1,
+          created_by_admin: true // Marquer que cet utilisateur a été créé par un admin
         }
       }
     });
@@ -40,7 +41,8 @@ export const createUser = async (email: string, password: string, userData: any)
           role: userData.role || 'user',
           access_level: userData.access_level || 1,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          created_by_admin: true // Marquer aussi dans la table profiles
         });
         
       if (profileError) {

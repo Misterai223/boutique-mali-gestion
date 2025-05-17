@@ -16,7 +16,7 @@ const ProtectedRoute = ({
   children 
 }: ProtectedRouteProps) => {
   const location = useLocation();
-  const { hasAccess, loading } = useRolePermissions();
+  const { hasAccess, loading, isAdmin } = useRolePermissions();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
@@ -34,7 +34,8 @@ const ProtectedRoute = ({
   }
   
   // Vérifier si l'utilisateur a accès à cette route
-  if (!hasAccess(location.pathname)) {
+  // Les utilisateurs ajoutés via Supabase auth sont automatiquement considérés comme administrateurs
+  if (!isAdmin && !hasAccess(location.pathname)) {
     return <Navigate to="/" />;
   }
 
