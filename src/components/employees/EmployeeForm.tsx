@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -249,7 +248,7 @@ const EmployeeForm = ({
                   Rôle
                 </Label>
                 <Select
-                  value={formData.role}
+                  value={formData.role || "salesperson"}
                   onValueChange={handleRoleChange}
                 >
                   <SelectTrigger id="role" className="col-span-3">
