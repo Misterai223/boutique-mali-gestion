@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { checkMfaFactors } from "./sessionManager";
 
 /**
  * Simplified authentication functions focused on basic login functionality
@@ -36,19 +35,9 @@ export async function simpleLogin(email: string, password: string) {
       console.log("Authentification réussie");
       localStorage.setItem("isAuthenticated", "true");
       
-      // Skip MFA check - we're now ignoring MFA
-      /* 
-      const { isMfaEnabled } = await checkMfaFactors();
-      if (isMfaEnabled) {
-        console.log("MFA est activé pour cet utilisateur");
-        // For now, we'll continue without MFA challenge
-        // In a production app, you would redirect to MFA verification page
-      }
-      */
-      
       // Retrieve user profile data
       try {
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role, access_level')
           .eq('id', data.user.id)
@@ -59,6 +48,7 @@ export async function simpleLogin(email: string, password: string) {
           localStorage.setItem("accessLevel", profileData.access_level.toString());
           console.log("Profil utilisateur chargé:", profileData);
         } else {
+          console.warn("Aucun profil trouvé ou erreur:", profileError);
           // Default values if no profile exists
           localStorage.setItem("userRole", "user");
           localStorage.setItem("accessLevel", "1");

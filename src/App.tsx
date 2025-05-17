@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { initializeSupabase } from "./utils/supabaseSetup";
 import {
@@ -24,7 +25,9 @@ import { toast } from "sonner";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem("isAuthenticated") === "true"
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,19 +42,52 @@ function App() {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
+        console.log("Vérification de l'authentification au démarrage");
         const session = await authService.getSession();
         if (session) {
+          console.log("Session trouvée au démarrage, authentification");
           await authService.getCurrentUser(); // Récupère et stocke les infos utilisateur
           setIsAuthenticated(true);
+          localStorage.setItem("isAuthenticated", "true");
+        } else {
+          console.log("Aucune session trouvée au démarrage");
+          setIsAuthenticated(false);
+          localStorage.removeItem("isAuthenticated");
         }
       } catch (error) {
         console.error("Erreur d'authentification:", error);
+        setIsAuthenticated(false);
+        localStorage.removeItem("isAuthenticated");
       } finally {
         setLoading(false);
       }
     };
 
     checkAuthentication();
+    
+    // S'abonner aux changements d'authentification globaux
+    const { data: { subscription } } = authService.subscribeToAuthChanges(
+      (event, session) => {
+        console.log("App - Événement d'authentification:", event);
+        
+        // Utiliser setTimeout pour éviter les problèmes de deadlock
+        setTimeout(() => {
+          if (event === 'SIGNED_IN' && session) {
+            console.log("App - Connexion détectée");
+            setIsAuthenticated(true);
+            localStorage.setItem("isAuthenticated", "true");
+          } else if (event === 'SIGNED_OUT') {
+            console.log("App - Déconnexion détectée");
+            setIsAuthenticated(false);
+            localStorage.removeItem("isAuthenticated");
+          }
+        }, 0);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -68,7 +104,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginForm onLogin={() => setIsAuthenticated(true)} />} />
+        <Route path="/login" element={
+          isAuthenticated ? <Navigate to="/" /> : <LoginForm onLogin={() => setIsAuthenticated(true)} />
+        } />
         <Route
           path="/"
           element={

@@ -29,9 +29,15 @@ const Index = ({
           // Récupérer les données utilisateur
           const user = await authService.getCurrentUser();
           if (user) {
+            console.log("Session valide trouvée, utilisateur authentifié:", user.email);
             onAuthChange(true);
+            localStorage.setItem("isAuthenticated", "true");
             toast.success(`Bienvenue sur Shop Manager`);
           }
+        } else {
+          console.log("Aucune session active trouvée");
+          localStorage.removeItem("isAuthenticated");
+          onAuthChange(false);
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de session:", error);
@@ -44,13 +50,21 @@ const Index = ({
     
     // S'abonner aux changements d'authentification
     const { data: { subscription } } = authService.subscribeToAuthChanges((event, session) => {
-      if (session) {
-        onAuthChange(true);
-      } else if (event === 'SIGNED_OUT') {
-        onAuthChange(false);
-        localStorage.removeItem("userRole");
-        localStorage.removeItem("accessLevel");
-      }
+      console.log("Événement d'authentification global:", event);
+      
+      // Utiliser setTimeout pour éviter les problèmes de deadlock
+      setTimeout(() => {
+        if (session) {
+          console.log("Session active détectée, mise à jour de l'état");
+          onAuthChange(true);
+        } else if (event === 'SIGNED_OUT') {
+          console.log("Déconnexion détectée, mise à jour de l'état");
+          onAuthChange(false);
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("accessLevel");
+          localStorage.removeItem("isAuthenticated");
+        }
+      }, 0);
     });
     
     return () => {
@@ -74,12 +88,15 @@ const Index = ({
   }, [mounted]);
   
   const handleLogin = () => {
+    console.log("handleLogin appelé, mise à jour de l'état");
     onAuthChange(true);
     toast.success("Connexion réussie");
   };
   
   const handleLogout = async () => {
+    console.log("Déconnexion initiée");
     await authService.logout();
+    localStorage.removeItem("isAuthenticated");
     onAuthChange(false);
   };
   

@@ -46,9 +46,14 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   useEffect(() => {
     const { data: { subscription } } = authService.subscribeToAuthChanges(
       (event, session) => {
+        console.log("Événement d'authentification:", event);
         if (event === "SIGNED_IN" && session) {
           console.log("Événement de connexion détecté");
-          onLogin();
+          
+          // Utiliser setTimeout pour éviter les problèmes de deadlock
+          setTimeout(() => {
+            onLogin();
+          }, 0);
         }
       }
     );
@@ -91,6 +96,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       
       if (data?.session) {
         console.log("Session établie avec succès:", data.session.user.email);
+        localStorage.setItem("isAuthenticated", "true");
         toast.success("Connexion réussie!");
         onLogin();
       } else {
