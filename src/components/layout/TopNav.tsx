@@ -17,20 +17,25 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
   const isMobile = useIsMobile();
   
   return (
-    <header className="h-16 border-b bg-background/95 backdrop-blur-sm flex items-center px-2 sm:px-4 justify-between shadow-sm sticky top-0 z-10">
+    <header className="h-14 sm:h-16 border-b bg-background/95 backdrop-blur-sm flex items-center px-2 sm:px-4 justify-between shadow-sm sticky top-0 z-10">
       <div className="flex items-center">
         <SidebarToggle toggleSidebar={toggleSidebar} collapsed={collapsed} />
         <ShopBranding />
-        
-        <div className="hidden md:flex items-center ml-4">
-          <SearchBar />
-        </div>
       </div>
       
-      <div className="flex items-center space-x-1 sm:space-x-2">
-        <ThemeToggle />
-        <NotificationButton />
-        <UserProfile onLogout={onLogout} />
+      <div className="flex items-center gap-2 sm:gap-4">
+        {!isMobile && (
+          <div className="flex items-center">
+            <SearchBar />
+          </div>
+        )}
+        
+        <div className="flex items-center">
+          {isMobile && <SearchBar />}
+          <ThemeToggle />
+          <NotificationButton />
+          <UserProfile onLogout={onLogout} />
+        </div>
       </div>
     </header>
   );

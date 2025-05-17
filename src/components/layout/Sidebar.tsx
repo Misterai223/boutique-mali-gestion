@@ -25,7 +25,7 @@ export function Sidebar({ className }: SidebarProps) {
     
     updateSidebarColor();
     
-    // Écouter les changements de couleur de la barre latérale
+    // Écouter les changements de couleur
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "sidebarColor") {
         setSidebarColor(e.newValue || "#1E293B");
@@ -41,7 +41,7 @@ export function Sidebar({ className }: SidebarProps) {
     };
   }, []);
 
-  // Hide sidebar completely on mobile when collapsed
+  // Cacher complètement la sidebar sur mobile quand elle est repliée
   if (isMobile && isCollapsed && className?.includes("w-0")) {
     return null;
   }
@@ -49,18 +49,20 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full border-r transition-all duration-300 sidebar-custom",
+        "flex h-full border-r transition-all duration-300 sidebar-custom overflow-y-auto overflow-x-hidden",
         className
       )}
       style={{ backgroundColor: sidebarColor }}
     >
-      <div className="py-4 px-3 flex flex-col h-full w-full">
+      <div className="py-3 sm:py-4 px-2 sm:px-3 flex flex-col h-full w-full">
         <ShopLogo 
           shopName={shopName}
           shopLogo={shopLogo}
           isCollapsed={isCollapsed}
         />
-        <NavMenu isCollapsed={isCollapsed} />
+        <div className="mt-2 flex-grow overflow-y-auto pb-10">
+          <NavMenu isCollapsed={isCollapsed} />
+        </div>
       </div>
     </aside>
   );

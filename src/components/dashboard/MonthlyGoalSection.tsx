@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 
 interface MonthlyGoalSectionProps {
   salesProgress: number;
@@ -11,7 +11,26 @@ interface MonthlyGoalSectionProps {
 }
 
 const MonthlyGoalSection = ({ salesProgress, inView }: MonthlyGoalSectionProps) => {
-  const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
+  
+  // Ajuster les tailles de texte et espacements en fonction de l'écran
+  const getTitleSize = () => {
+    if (breakpoint === 'xs' || breakpoint === 'sm') return 'text-lg';
+    if (breakpoint === 'md') return 'text-xl';
+    return 'text-2xl';
+  };
+  
+  const getTextSize = () => {
+    if (breakpoint === 'xs') return 'text-xs';
+    if (breakpoint === 'sm') return 'text-sm';
+    return 'text-base';
+  };
+  
+  const getProgressHeight = () => {
+    if (breakpoint === 'xs') return 'h-1.5';
+    if (breakpoint === 'sm' || breakpoint === 'md') return 'h-2';
+    return 'h-3';
+  };
   
   return (
     <motion.div 
@@ -22,23 +41,23 @@ const MonthlyGoalSection = ({ salesProgress, inView }: MonthlyGoalSectionProps) 
     >
       <Card className="border-none shadow-lg bg-gradient-to-r from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold">Objectif mensuel</CardTitle>
-          <CardDescription className="text-sm sm:text-base">
+          <CardTitle className={`${getTitleSize()} font-bold`}>Objectif mensuel</CardTitle>
+          <CardDescription className={getTextSize()}>
             Progression vers l'objectif de ventes du mois
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <span className="text-base sm:text-lg md:text-xl font-medium">
+              <span className={`${getTextSize()} font-medium`}>
                 Ventes actuelles: 8,500,000 F CFA
               </span>
-              <span className="text-base sm:text-lg md:text-xl font-semibold text-primary">
+              <span className={`${getTextSize()} font-semibold text-primary`}>
                 {salesProgress}%
               </span>
             </div>
-            <Progress value={salesProgress} className="h-2 sm:h-2.5 md:h-3" />
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs sm:text-sm md:text-base">
+            <Progress value={salesProgress} className={getProgressHeight()} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs sm:text-sm">
               <span className="text-muted-foreground font-medium">
                 Objectif: 10,000,000 F CFA
               </span>
