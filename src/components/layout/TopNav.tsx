@@ -8,6 +8,7 @@ import { ThemeToggle } from "./topnav/ThemeToggle";
 import { UserProfile } from "./topnav/UserProfile";
 import { NotificationButton } from "./topnav/NotificationButton";
 import PWAInstallPrompt from "../pwa/PWAInstallPrompt";
+import { toast } from "sonner";
 
 export interface TopNavProps {
   toggleSidebar: () => void;
@@ -22,6 +23,14 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
   useEffect(() => {
     const handleOnlineStatus = () => {
       setIsOnline(navigator.onLine);
+      
+      if (navigator.onLine) {
+        toast.success("Connexion rétablie");
+      } else {
+        toast.error("Connexion perdue", {
+          description: "L'application fonctionne en mode hors ligne"
+        });
+      }
     };
     
     window.addEventListener('online', handleOnlineStatus);
@@ -31,7 +40,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     const timer = setTimeout(() => {
       console.log("Affichage du prompt d'installation PWA");
       setShowInstallPrompt(true);
-    }, 1000);
+    }, 2000);
     
     return () => {
       window.removeEventListener('online', handleOnlineStatus);
@@ -65,7 +74,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               Hors ligne
             </div>
           )}
-          {/* Toujours afficher le prompt d'installation pour déboguer */}
+          {/* Toujours afficher le prompt d'installation pour PWA */}
           {showInstallPrompt && <PWAInstallPrompt />}
           <NotificationButton />
           <ThemeToggle />

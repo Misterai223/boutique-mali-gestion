@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -18,7 +19,7 @@ const PWAInstallPrompt = () => {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     // Force show PWA install prompt in development mode for testing
@@ -48,7 +49,6 @@ const PWAInstallPrompt = () => {
       // Stocker l'événement pour l'utiliser plus tard
       const promptEvent = e as BeforeInstallPromptEvent;
       setInstallPrompt(promptEvent);
-      setDeferredPrompt(promptEvent);
       setIsInstallable(true);
       
       // Afficher une notification pour informer l'utilisateur
@@ -60,12 +60,18 @@ const PWAInstallPrompt = () => {
         duration: 15000, // Durée plus longue pour donner le temps à l'utilisateur de voir la notification
         id: "pwa-install", // ID unique pour éviter les doublons
       });
+
+      // Afficher une alerte visible en bas de l'écran après un délai
+      setTimeout(() => {
+        setShowPopup(true);
+      }, 5000);
     };
 
     const handleAppInstalled = () => {
       console.log("Application installée avec succès");
       setIsInstalled(true);
       setIsInstallable(false);
+      setShowPopup(false);
       toast.success("Application installée avec succès !");
     };
 
@@ -76,12 +82,13 @@ const PWAInstallPrompt = () => {
     const timeout = setTimeout(() => {
       if (!isInstalled && !isInstallable) {
         console.log("Vérification manuelle de l'installabilité");
-        // Si après 5 secondes aucun événement n'a été déclenché, vérifier manuellement
+        // Si après 3 secondes aucun événement n'a été déclenché, vérifier manuellement
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isAndroid = /Android/.test(navigator.userAgent);
         
         if (isIOS || isAndroid || isDev) {
           setIsInstallable(true);
+          setShowPopup(true);
           console.log("Activation manuelle du bouton d'installation pour mobile/tablette");
           
           // Notification pour les appareils mobiles
@@ -139,6 +146,9 @@ const PWAInstallPrompt = () => {
         });
       }
     }
+    
+    // Fermer la popup après l'action
+    setShowPopup(false);
   };
 
   // Si l'application est déjà installée, ne pas afficher le bouton
@@ -147,39 +157,67 @@ const PWAInstallPrompt = () => {
   }
 
   // Afficher le bouton si l'application est installable ou en mode développement
-  return isInstallable ? (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button 
-          size="sm" 
-          variant="outline" 
-          className="flex items-center gap-1 animate-pulse hover:animate-none bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700"
-        >
-          <Download className="h-4 w-4" />
-          <span>Installer</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4">
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Installez Shop Manager</h3>
-          <p className="text-sm text-muted-foreground">
-            Installez cette application sur votre appareil pour un accès rapide et une meilleure expérience.
-            Certaines fonctionnalités sont disponibles hors connexion.
-          </p>
-          <div className="flex justify-end gap-2">
+  return (
+    <>
+      {isInstallable && (
+        <Popover open={showPopup} onOpenChange={setShowPopup}>
+          <PopoverTrigger asChild>
             <Button 
-              variant="default"
-              onClick={handleInstallClick}
-              className="flex items-center gap-1"
+              size="sm" 
+              variant="outline" 
+              className="flex items-center gap-1 animate-pulse hover:animate-none bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700"
             >
               <Download className="h-4 w-4" />
-              <span>Installer maintenant</span>
+              <span>Installer</span>
             </Button>
-          </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-4">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">Installez Shop Manager</h3>
+              <p className="text-sm text-muted-foreground">
+                Installez cette application sur votre appareil pour un accès rapide et une meilleure expérience.
+                Certaines fonctionnalités sont disponibles hors connexion.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="default"
+                  onClick={handleInstallClick}
+                  className="flex items-center gap-1"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Installer maintenant</span>
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* Alerte fixe en bas de l'écran pour plus de visibilité */}
+      {showPopup && isInstallable && (
+        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 z-50">
+          <Alert className="bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-lg">
+            <div className="flex flex-col space-y-2 p-2">
+              <AlertTitle className="text-blue-800 dark:text-blue-300">
+                Installez l'application
+              </AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-400">
+                Pour une meilleure expérience, installez Shop Manager sur votre appareil.
+              </AlertDescription>
+              <Button 
+                variant="default"
+                onClick={handleInstallClick}
+                className="mt-2 w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Installer l'application
+              </Button>
+            </div>
+          </Alert>
         </div>
-      </PopoverContent>
-    </Popover>
-  ) : null;
+      )}
+    </>
+  );
 };
 
 export default PWAInstallPrompt;

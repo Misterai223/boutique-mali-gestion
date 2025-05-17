@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'shop-manager-v2';
+const CACHE_NAME = 'shop-manager-v3';
 
 // Ressources à mettre en cache lors de l'installation
 const INITIAL_ASSETS = [
@@ -88,8 +88,23 @@ self.addEventListener('fetch', (event) => {
 
 // Envoi de message au Service Worker
 self.addEventListener('message', (event) => {
+  console.log('Service Worker: Message reçu', event.data);
+  
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  
+  // Gérer les notifications d'installation
+  if (event.data && event.data.type === 'SHOW_INSTALL_PROMPT') {
+    self.registration.showNotification('Shop Manager', {
+      body: 'Installez l\'application pour une meilleure expérience',
+      icon: '/icons/icon-192x192.png',
+      actions: [
+        { action: 'install', title: 'Installer' },
+        { action: 'dismiss', title: 'Plus tard' }
+      ],
+      requireInteraction: true
+    });
   }
 });
 
@@ -106,7 +121,17 @@ self.addEventListener('push', (event) => {
     data: {
       dateOfArrival: Date.now(),
       primaryKey: '1'
-    }
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'Voir',
+      },
+      {
+        action: 'close',
+        title: 'Fermer',
+      },
+    ]
   };
   
   event.waitUntil(
@@ -120,7 +145,40 @@ self.addEventListener('notificationclick', (event) => {
   
   event.notification.close();
   
+  // Gérer l'action d'installation
+  if (event.action === 'install') {
+    console.log('Action d\'installation depuis la notification');
+    // Envoyer un message à tous les clients
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'TRIGGER_INSTALL_PROMPT'
+        });
+      });
+    });
+  }
+  
+  // Ouvrir l'application
   event.waitUntil(
     clients.openWindow('/')
   );
 });
+
+// Tentative d'affichage du prompt d'installation à l'initialisation du SW
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: envoi de notification d\'installation');
+  
+  // Attendre un court délai pour permettre l'initialisation
+  setTimeout(() => {
+    self.registration.showNotification('Shop Manager', {
+      body: 'Installez l\'application pour une meilleure expérience',
+      icon: '/icons/icon-192x192.png',
+      actions: [
+        { action: 'install', title: 'Installer' },
+        { action: 'dismiss', title: 'Plus tard' }
+      ],
+      requireInteraction: true
+    });
+  }, 5000);
+});
+
