@@ -29,24 +29,17 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       }
       
       console.log("Tentative de connexion avec:", { email });
-      const { data, error } = await authService.loginWithErrorHandling(email, password);
       
-      if (error) {
-        console.error("Erreur de connexion:", error);
-        setErrorMsg(error.message || "Identifiants incorrects. Veuillez réessayer.");
-        setIsLoading(false);
-        return;
-      }
+      // Utiliser la méthode de connexion améliorée
+      const result = await authService.login(email, password);
       
-      if (data?.session) {
-        console.log("Connexion réussie, session:", data.session.user.id);
-        localStorage.setItem("isAuthenticated", "true");
-        toast.success(`Bienvenue ${data.user?.email || ''}`);
+      if (result) {
+        console.log("Connexion réussie, redirection...");
+        toast.success(`Bienvenue !`);
         onLogin();
       } else {
-        console.error("Session non disponible après connexion");
-        setErrorMsg("Erreur lors de la connexion. Veuillez réessayer.");
         setIsLoading(false);
+        // Le message d'erreur est déjà géré par authService.login
       }
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);

@@ -20,12 +20,14 @@ export const authService = {
         
         // Message d'erreur plus détaillé et convivial
         if (error.message.includes("Invalid login credentials")) {
+          toast.error("Email ou mot de passe incorrect. Veuillez réessayer.");
           return { 
             data: null, 
             error: new Error("Email ou mot de passe incorrect. Veuillez réessayer.") 
           };
         }
         
+        toast.error(error.message || "Erreur de connexion");
         return { data: null, error };
       }
       
@@ -62,6 +64,7 @@ export const authService = {
       return { data, error: null };
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);
+      toast.error("Une erreur inattendue s'est produite. Veuillez réessayer.");
       return { 
         data: null, 
         error: new Error("Une erreur inattendue s'est produite. Veuillez réessayer.") 
@@ -72,7 +75,23 @@ export const authService = {
   async login(email: string, password: string): Promise<boolean> {
     try {
       const result = await this.loginWithErrorHandling(email, password);
-      return !!result.data?.session;
+      if (result.error) {
+        return false;
+      }
+      
+      if (result.data?.session) {
+        // Vérifier explicitement que la connexion est établie
+        const session = await this.getSession();
+        if (session) {
+          localStorage.setItem("isAuthenticated", "true");
+          return true;
+        } else {
+          toast.error("Impossible d'initialiser la session");
+          return false;
+        }
+      }
+      
+      return false;
     } catch (error: any) {
       toast.error(`Erreur de connexion: ${error.message}`);
       return false;
