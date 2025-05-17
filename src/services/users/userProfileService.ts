@@ -75,8 +75,10 @@ export const getCurrentUserProfile = async (): Promise<Profile | null> => {
       // Si le profil n'existe pas encore, nous allons le créer automatiquement
       if (error.code === 'PGRST116') {
         console.log("Profil non trouvé, création automatique...");
-        const newProfile: Partial<Profile> = {
-          id: sessionData.session.user.id,
+        
+        // Correction: Définir id comme non-optional pour satisfaire les types Supabase
+        const newProfile = {
+          id: sessionData.session.user.id, // Assurons-nous que id est explicitement défini
           role: 'admin', // Par défaut, les utilisateurs authentifiés sont administrateurs
           access_level: 5,
           full_name: sessionData.session.user.email?.split('@')[0] || 'Utilisateur'
