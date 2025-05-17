@@ -10,9 +10,6 @@ import LoginButton from "./LoginButton";
 import LoginError from "./LoginError";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
 
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
@@ -21,8 +18,6 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [isForgotPasswordSubmitted, setIsForgotPasswordSubmitted] = useState(false);
-  const [isMfaRequired, setIsMfaRequired] = useState(false);
-  const [mfaCode, setMfaCode] = useState("");
   const navigate = useNavigate();
 
   // Vérification initiale de session
@@ -96,15 +91,6 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       
       if (data?.session) {
         console.log("Session établie avec succès:", data.session.user.email);
-        
-        // Vérifier si MFA est requis
-        const { isMfaEnabled } = await authService.checkMfaFactors();
-        if (isMfaEnabled) {
-          setIsMfaRequired(true);
-          setIsLoading(false);
-          return;
-        }
-        
         toast.success("Connexion réussie!");
         onLogin();
       } else {
@@ -117,17 +103,6 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       setErrorMsg(error.message || "Une erreur inattendue s'est produite");
       setIsLoading(false);
     }
-  };
-
-  const handleVerifyMfa = async () => {
-    setIsLoading(true);
-    // In a real implementation, you would verify the MFA code
-    // For now, we'll just simulate success
-    setTimeout(() => {
-      setIsMfaRequired(false);
-      toast.success("Vérification MFA réussie!");
-      onLogin();
-    }, 1000);
   };
 
   const handlePasswordRecovery = async (e: React.MouseEvent) => {
@@ -227,37 +202,6 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
           </CardFooter>
         </Card>
       </motion.div>
-      
-      {/* MFA Dialog */}
-      <Dialog open={isMfaRequired} onOpenChange={setIsMfaRequired}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Verification en deux étapes</DialogTitle>
-            <DialogDescription>
-              Veuillez entrer le code de vérification pour continuer
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center space-y-4 py-4">
-            <InputOTP maxLength={6} value={mfaCode} onChange={setMfaCode}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-            <Button 
-              onClick={handleVerifyMfa} 
-              className="w-full" 
-              disabled={mfaCode.length < 6 || isLoading}
-            >
-              {isLoading ? "Vérification..." : "Vérifier"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

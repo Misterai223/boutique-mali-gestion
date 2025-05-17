@@ -36,13 +36,15 @@ export async function simpleLogin(email: string, password: string) {
       console.log("Authentification réussie");
       localStorage.setItem("isAuthenticated", "true");
       
-      // Check if MFA is required
+      // Skip MFA check - we're now ignoring MFA
+      /* 
       const { isMfaEnabled } = await checkMfaFactors();
       if (isMfaEnabled) {
         console.log("MFA est activé pour cet utilisateur");
         // For now, we'll continue without MFA challenge
         // In a production app, you would redirect to MFA verification page
       }
+      */
       
       // Retrieve user profile data
       try {
