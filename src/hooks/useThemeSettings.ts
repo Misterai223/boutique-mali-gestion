@@ -21,6 +21,7 @@ export const useThemeSettings = () => {
       primaryColor: settings.primaryColor,
       accentColor: settings.accentColor,
       secondaryColor: settings.secondaryColor,
+      sidebarColor: settings.sidebarColor,
       borderRadius: settings.borderRadius,
       fontFamily: settings.fontFamily,
       darkMode: settings.darkMode
@@ -74,6 +75,10 @@ export const useThemeSettings = () => {
     setSettings(prev => ({ ...prev, secondaryColor }));
   };
 
+  const setSidebarColor = (sidebarColor: string) => {
+    setSettings(prev => ({ ...prev, sidebarColor }));
+  };
+
   const setBorderRadius = (borderRadius: string) => {
     setSettings(prev => ({ ...prev, borderRadius }));
   };
@@ -103,6 +108,7 @@ export const useThemeSettings = () => {
       primaryColor: settings.primaryColor,
       accentColor: settings.accentColor,
       secondaryColor: settings.secondaryColor,
+      sidebarColor: settings.sidebarColor,
       borderRadius: settings.borderRadius,
       fontFamily: settings.fontFamily,
       darkMode: settings.darkMode
@@ -119,6 +125,7 @@ export const useThemeSettings = () => {
       primaryColor: initialSettings.primaryColor,
       accentColor: initialSettings.accentColor,
       secondaryColor: initialSettings.secondaryColor,
+      sidebarColor: initialSettings.sidebarColor,
       borderRadius: initialSettings.borderRadius,
       fontFamily: initialSettings.fontFamily,
       darkMode: initialSettings.darkMode
@@ -138,6 +145,7 @@ export const useThemeSettings = () => {
       setPrimaryColor,
       setAccentColor,
       setSecondaryColor,
+      setSidebarColor,
       setBorderRadius,
       setFontFamily
     },
