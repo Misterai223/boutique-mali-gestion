@@ -12,7 +12,7 @@ import {
   Area
 } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CircleDashed } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -59,7 +59,7 @@ const SalesChart = () => {
             <div>
               <CardTitle className="text-xl md:text-2xl font-bold">Ventes de la semaine</CardTitle>
               <CardDescription className="text-base mt-1">
-                Total: {isLoading ? "Chargement..." : `${(totalSales / 1000).toFixed(0)}k XOF`}
+                Total: {isLoading ? "Chargement..." : `${(totalSales / 1000).toFixed(0)}k F CFA`}
               </CardDescription>
             </div>
             
@@ -139,7 +139,7 @@ const SalesChart = () => {
                   width={40}
                 />
                 <Tooltip
-                  formatter={(value) => [`${value.toLocaleString()} XOF`, 'Ventes']}
+                  formatter={(value) => [`${value.toLocaleString()} F CFA`, 'Ventes']}
                   labelFormatter={(label) => `Jour: ${label}`}
                   contentStyle={{
                     borderRadius: '8px',

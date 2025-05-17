@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import TopNav from "./TopNav";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const DashboardLayout = ({ 
   children, 
@@ -95,9 +95,18 @@ const DashboardLayout = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key="dashboard-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-7xl mx-auto"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </motion.main>
       </motion.div>
     </div>

@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useInView } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -214,7 +214,7 @@ const Dashboard = () => {
                         <TrendingUp className="h-3 w-3 mr-1" /> +12%
                       </Badge>
                     </div>
-                    <p className="text-3xl font-bold mt-2">{salesData.todaySales} XOF</p>
+                    <p className="text-3xl font-bold mt-2">{salesData.todaySales} F CFA</p>
                     <div className="flex items-center mt-2 text-xs">
                       <CircleDollarSign className="h-3 w-3 mr-1" />
                       <span className="text-primary-foreground/70">
@@ -229,7 +229,7 @@ const Dashboard = () => {
                         <TrendingUp className="h-3 w-3 mr-1" /> +8%
                       </Badge>
                     </div>
-                    <p className="text-3xl font-bold mt-2">{salesData.weekSales} XOF</p>
+                    <p className="text-3xl font-bold mt-2">{salesData.weekSales} F CFA</p>
                     <div className="flex items-center mt-2 text-xs">
                       <Users className="h-3 w-3 mr-1" />
                       <span className="text-primary-foreground/70">
@@ -244,11 +244,11 @@ const Dashboard = () => {
                         <TrendingUp className="h-3 w-3 mr-1" /> +15%
                       </Badge>
                     </div>
-                    <p className="text-3xl font-bold mt-2">{salesData.monthSales} XOF</p>
+                    <p className="text-3xl font-bold mt-2">{salesData.monthSales} F CFA</p>
                     <div className="flex items-center mt-2 text-xs">
                       <ChevronRight className="h-3 w-3 mr-1" />
                       <span className="text-primary-foreground/70">
-                        Moy. commande: {salesData.avgOrderValue} XOF
+                        Moy. commande: {salesData.avgOrderValue} F CFA
                       </span>
                     </div>
                   </div>
@@ -285,7 +285,7 @@ const Dashboard = () => {
         <motion.div variants={itemVariants}>
           <StatCard
             title="Ventes d'aujourd'hui"
-            value="120,000 XOF"
+            value="120,000 F CFA"
             icon={DollarSign}
             trend={{ value: 12, isPositive: true }}
             className="shadow-md hover:shadow-lg transition-all duration-300 border-none bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900"
@@ -341,19 +341,19 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <span className="text-lg md:text-xl font-medium">Ventes actuelles: 8,500,000 XOF</span>
+                <span className="text-lg md:text-xl font-medium">Ventes actuelles: 8,500,000 F CFA</span>
                 <span className="text-lg md:text-xl font-semibold text-primary">{salesProgress}%</span>
               </div>
               <Progress value={salesProgress} className="h-2.5 md:h-3" />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <span className="text-sm md:text-base text-muted-foreground font-medium">Objectif: 10,000,000 XOF</span>
+                <span className="text-sm md:text-base text-muted-foreground font-medium">Objectif: 10,000,000 F CFA</span>
                 <div className="flex items-center gap-1.5">
                   <span className="flex items-center text-sm md:text-base text-green-600 dark:text-green-400 font-medium">
                     <TrendingUp className="h-4 w-4 mr-1" />
                     Sur la bonne voie
                   </span>
                   <span className="text-sm md:text-base text-muted-foreground">
-                    (Restant: {10000000 - 8500000} XOF)
+                    (Restant: 1,500,000 F CFA)
                   </span>
                 </div>
               </div>

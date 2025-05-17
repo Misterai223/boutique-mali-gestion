@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, AlertTriangle, CircleDashed, PlusCircle, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const alerts = [
@@ -13,7 +13,7 @@ const alerts = [
     status: "low",
     quantity: 3,
     threshold: 5,
-    price: "120,000 XOF",
+    price: "120,000 F CFA",
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ const alerts = [
     status: "out",
     quantity: 0,
     threshold: 3,
-    price: "450,000 XOF",
+    price: "450,000 F CFA",
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ const alerts = [
     status: "low",
     quantity: 5,
     threshold: 10,
-    price: "15,000 XOF",
+    price: "15,000 F CFA",
   },
   {
     id: 4,
@@ -37,7 +37,7 @@ const alerts = [
     status: "low",
     quantity: 4,
     threshold: 20,
-    price: "2,500 XOF",
+    price: "2,500 F CFA",
   },
 ];
 

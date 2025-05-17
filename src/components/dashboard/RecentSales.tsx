@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CircleDashed, ArrowUpDown, CheckCircle, Clock, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -11,35 +11,35 @@ const sales = [
   {
     id: 1,
     customer: "Amadou Diallo",
-    amount: "25,000 XOF",
+    amount: "25,000 F CFA",
     date: "Il y a 2 heures",
     status: "Terminé",
   },
   {
     id: 2,
     customer: "Fatoumata Touré",
-    amount: "18,500 XOF",
+    amount: "18,500 F CFA",
     date: "Il y a 3 heures",
     status: "Terminé",
   },
   {
     id: 3,
     customer: "Modibo Keita",
-    amount: "32,000 XOF",
+    amount: "32,000 F CFA",
     date: "Il y a 5 heures",
     status: "Terminé",
   },
   {
     id: 4,
     customer: "Aminata Traoré",
-    amount: "12,000 XOF",
+    amount: "12,000 F CFA",
     date: "Aujourd'hui",
     status: "En cours",
   },
   {
     id: 5,
     customer: "Ibrahim Coulibaly",
-    amount: "45,000 XOF",
+    amount: "45,000 F CFA",
     date: "Hier",
     status: "Terminé",
   },

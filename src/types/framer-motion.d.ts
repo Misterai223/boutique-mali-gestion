@@ -9,4 +9,7 @@ declare module "framer-motion" {
       root?: React.RefObject<Element>;
     }
   ): boolean;
+  
+  export const motion: any;
+  export const AnimatePresence: any;
 }
