@@ -24,9 +24,12 @@ const PWAInstallPrompt = () => {
     // Force show PWA install prompt in development mode for testing
     const isDev = process.env.NODE_ENV === 'development';
     
+    console.log("PWAInstallPrompt - Initialisation");
+    
     // Vérifier si l'application est déjà installée
     if (window.matchMedia('(display-mode: standalone)').matches || 
         (window.navigator as any).standalone === true) {
+      console.log("PWAInstallPrompt - App est déjà installée");
       setIsInstalled(true);
       return;
     }
@@ -40,14 +43,13 @@ const PWAInstallPrompt = () => {
     const handleBeforeInstallPrompt = (e: Event) => {
       // Empêcher Chrome 67+ d'afficher automatiquement la notification
       e.preventDefault();
+      console.log("Événement beforeinstallprompt capturé", e);
       
       // Stocker l'événement pour l'utiliser plus tard
       const promptEvent = e as BeforeInstallPromptEvent;
       setInstallPrompt(promptEvent);
       setDeferredPrompt(promptEvent);
       setIsInstallable(true);
-      
-      console.log("Événement beforeinstallprompt capturé", e);
       
       // Afficher une notification pour informer l'utilisateur
       toast.info("Cette application peut être installée sur votre appareil", {
@@ -61,10 +63,10 @@ const PWAInstallPrompt = () => {
     };
 
     const handleAppInstalled = () => {
+      console.log("Application installée avec succès");
       setIsInstalled(true);
       setIsInstallable(false);
       toast.success("Application installée avec succès !");
-      console.log("Application installée avec succès");
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -72,22 +74,24 @@ const PWAInstallPrompt = () => {
 
     // Retardez l'affichage du bouton pour les navigateurs mobiles
     const timeout = setTimeout(() => {
-      if (!isInstalled && !isInstallable && !isDev) {
+      if (!isInstalled && !isInstallable) {
+        console.log("Vérification manuelle de l'installabilité");
         // Si après 5 secondes aucun événement n'a été déclenché, vérifier manuellement
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isAndroid = /Android/.test(navigator.userAgent);
         
-        if (isIOS || isAndroid) {
+        if (isIOS || isAndroid || isDev) {
           setIsInstallable(true);
-          console.log("Activation manuelle du bouton d'installation pour mobile");
+          console.log("Activation manuelle du bouton d'installation pour mobile/tablette");
           
           // Notification pour les appareils mobiles
           toast.info("Ajoutez cette application à votre écran d'accueil", {
             duration: 10000,
+            id: "pwa-install-mobile",
           });
         }
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -97,6 +101,7 @@ const PWAInstallPrompt = () => {
   }, [isInstalled, isInstallable]);
 
   const handleInstallClick = async () => {
+    console.log("Tentative d'installation de l'application PWA");
     if (installPrompt) {
       try {
         console.log("Tentative d'affichage du prompt d'installation");

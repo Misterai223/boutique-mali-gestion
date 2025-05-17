@@ -16,6 +16,7 @@ const Index = ({
   
   useEffect(() => {
     setMounted(true);
+    console.log("Index composant monté, isAuthenticated:", isAuthenticated);
     
     // Gestion du thème au chargement
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -26,7 +27,7 @@ const Index = ({
     } else if (isDark) {
       document.documentElement.classList.add("dark");
     }
-  }, []);
+  }, [isAuthenticated]);
   
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
@@ -44,6 +45,7 @@ const Index = ({
   
   // Si l'utilisateur est authentifié, afficher le tableau de bord
   if (isAuthenticated) {
+    console.log("Index - User authentifié, affichage du dashboard");
     return (
       <DashboardLayout onLogout={handleLogout}>
         <Dashboard />
@@ -52,6 +54,7 @@ const Index = ({
   }
   
   // Sinon, afficher le formulaire de login
+  console.log("Index - User non authentifié, affichage du login");
   return <LoginForm onLogin={handleLogin} />;
 };
 

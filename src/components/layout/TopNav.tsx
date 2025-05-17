@@ -29,8 +29,9 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     
     // Afficher le prompt d'installation après un délai
     const timer = setTimeout(() => {
+      console.log("Affichage du prompt d'installation PWA");
       setShowInstallPrompt(true);
-    }, 2000);
+    }, 1000);
     
     return () => {
       window.removeEventListener('online', handleOnlineStatus);
@@ -38,6 +39,8 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
       clearTimeout(timer);
     };
   }, []);
+
+  console.log("TopNav - showInstallPrompt:", showInstallPrompt);
   
   return (
     <header className="sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -62,6 +65,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               Hors ligne
             </div>
           )}
+          {/* Toujours afficher le prompt d'installation pour déboguer */}
           {showInstallPrompt && <PWAInstallPrompt />}
           <NotificationButton />
           <ThemeToggle />

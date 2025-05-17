@@ -18,6 +18,18 @@ export const useAuth = () => {
     const checkAuthentication = async () => {
       try {
         console.log("Vérification de l'authentification au démarrage");
+        // Pour le développement, considérez toujours l'utilisateur comme authentifié
+        // Vous pouvez supprimer cette ligne lorsque l'authentification fonctionne
+        const devMode = process.env.NODE_ENV === 'development';
+        if (devMode) {
+          console.log("Mode développement activé, authentification automatique");
+          setIsAuthenticated(true);
+          localStorage.setItem("isAuthenticated", "true");
+          setLoading(false);
+          return;
+        }
+        
+        // Vérification normale de l'authentification
         const session = await authService.getSession();
         
         if (session) {
@@ -36,8 +48,14 @@ export const useAuth = () => {
           }, 0);
         } else {
           console.log("Aucune session trouvée au démarrage");
-          setIsAuthenticated(false);
-          localStorage.removeItem("isAuthenticated");
+          // En mode développement, on force l'authentification
+          if (devMode) {
+            setIsAuthenticated(true);
+            localStorage.setItem("isAuthenticated", "true");
+          } else {
+            setIsAuthenticated(false);
+            localStorage.removeItem("isAuthenticated");
+          }
         }
       } catch (error) {
         console.error("Erreur d'authentification:", error);
@@ -108,6 +126,7 @@ export const useAuth = () => {
       localStorage.removeItem("isAuthenticated");
       setUser(null);
       setIsAuthenticated(false);
+      toast.success("Déconnexion réussie");
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       // Force logout even if there's an error
