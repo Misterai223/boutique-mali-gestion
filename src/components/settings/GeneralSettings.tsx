@@ -19,9 +19,11 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Store, Edit, Image } from "lucide-react";
+import { Store, Image } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import LogoUploader from "@/components/settings/logos/LogoUploader";
+import { settingsService } from "@/services/settingsService";
 
 interface GeneralSettingsProps {
   shopName: string;
@@ -51,6 +53,7 @@ const GeneralSettings = ({
   const [localShopName, setLocalShopName] = useState(shopName);
   const [localLogoUrl, setLocalLogoUrl] = useState(logoUrl);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,6 +89,52 @@ const GeneralSettings = ({
     setHasChanges(false);
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Check file type
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'].includes(file.type)) {
+      toast({
+        title: "Format non supporté",
+        description: "Veuillez utiliser JPG, PNG, GIF ou SVG.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    try {
+      const url = await settingsService.uploadLogo(file);
+      
+      if (url) {
+        setLocalLogoUrl(url);
+        setHasChanges(true);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le logo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCloudinaryUploadComplete = (url: string) => {
+    setLocalLogoUrl(url);
+    setHasChanges(true);
+  };
+
+  const handleMediaLibrarySelect = (url: string) => {
+    setLocalLogoUrl(url);
+    setHasChanges(true);
+  };
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
@@ -115,27 +164,16 @@ const GeneralSettings = ({
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2 w-full">
-              <Label htmlFor="logo-url">URL du logo</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  id="logo-url"
-                  value={localLogoUrl}
-                  onChange={(e) => setLocalLogoUrl(e.target.value)}
-                  placeholder="https://example.com/logo.png"
-                  className="flex-1"
-                />
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => setLocalLogoUrl("")}
-                  disabled={!localLogoUrl}
-                  title="Effacer l'URL"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </div>
+              <Label>Logo de l'entreprise</Label>
+              <LogoUploader
+                isUploading={isUploading}
+                useCloudinary={false}
+                onFileChange={handleFileChange}
+                onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
+                onMediaLibrarySelect={handleMediaLibrarySelect}
+              />
               <p className="text-xs text-muted-foreground mt-1">
-                Entrez l'URL d'une image pour votre logo d'entreprise
+                Formats acceptés: JPG, PNG, GIF, SVG. Taille max: 5MB
               </p>
             </div>
           </div>
