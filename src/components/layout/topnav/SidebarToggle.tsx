@@ -14,7 +14,7 @@ export function SidebarToggle({ toggleSidebar, collapsed }: SidebarToggleProps) 
       size="icon" 
       onClick={toggleSidebar} 
       className="mr-2 hover:bg-muted transition-all duration-200"
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      aria-label={collapsed ? "Ouvrir le menu" : "Fermer le menu"}
     >
       <Menu className="h-5 w-5" />
     </Button>

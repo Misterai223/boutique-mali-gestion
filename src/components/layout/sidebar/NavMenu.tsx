@@ -11,6 +11,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NavItem, navItems } from "./navigation-items";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useEffect, useState } from "react";
 
 interface NavMenuProps {
   isCollapsed: boolean;
@@ -19,9 +20,13 @@ interface NavMenuProps {
 export function NavMenu({ isCollapsed }: NavMenuProps) {
   const location = useLocation();
   const { filterNavItems, loading } = useRolePermissions();
+  const [items, setItems] = useState<NavItem[]>([]);
   
-  // Filtrer les éléments de navigation selon le rôle de l'utilisateur
-  const filteredNavItems = filterNavItems(navItems);
+  useEffect(() => {
+    // Filtrer les éléments de navigation selon le rôle de l'utilisateur
+    const filtered = filterNavItems(navItems);
+    setItems(filtered);
+  }, [filterNavItems]);
 
   if (loading) {
     return (
@@ -37,7 +42,7 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
     <ScrollArea className="flex-1 py-3">
       <nav className="grid gap-1 px-2">
         <TooltipProvider delayDuration={0}>
-          {filteredNavItems.map((item: NavItem, index: number) => (
+          {items.map((item: NavItem, index: number) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
                 <Link

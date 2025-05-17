@@ -10,6 +10,7 @@ import { NotificationButton } from "./topnav/NotificationButton";
 import PWAInstallPrompt from "../pwa/PWAInstallPrompt";
 import { toast } from "sonner";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
+import { SidebarToggle } from "./topnav/SidebarToggle";
 
 export interface TopNavProps {
   toggleSidebar: () => void;
@@ -56,15 +57,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
       <div className="flex items-center justify-between h-14 px-2 sm:px-4">
         {/* Partie gauche */}
         <div className="flex items-center gap-1 sm:gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar} 
-            className="flex items-center justify-center"
-            aria-label={collapsed ? "Ouvrir le menu" : "Fermer le menu"}
-          >
-            <MenuSquare className="h-5 w-5" />
-          </Button>
+          <SidebarToggle toggleSidebar={toggleSidebar} collapsed={collapsed} />
           {!isMobile && <ShopBranding />}
         </div>
 

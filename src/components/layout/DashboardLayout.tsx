@@ -19,7 +19,11 @@ const DashboardLayout = ({
   
   // Gérer les changements de taille d'écran et fermer automatiquement la sidebar sur mobile
   useEffect(() => {
-    setCollapsed(isMobile);
+    // Ne pas automatiquement fermer la sidebar quand l'écran change de taille
+    // seulement initier l'état au chargement
+    if (collapsed !== isMobile) {
+      setCollapsed(isMobile);
+    }
     
     // Sur mobile, si la sidebar est ouverte, la refermer au scroll
     const handleScroll = () => {
