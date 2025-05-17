@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User, AuthChangeEvent, AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -37,17 +38,24 @@ export const authService = {
             .from('profiles')
             .select('role, access_level')
             .eq('id', data.user.id)
-            .single();
+            .maybeSingle(); // Utiliser maybeSingle au lieu de single pour éviter l'erreur s'il n'y a pas de profil
             
           if (!profileError && profileData) {
             localStorage.setItem("userRole", profileData.role);
             localStorage.setItem("accessLevel", profileData.access_level.toString());
             console.log("Profil utilisateur chargé:", profileData);
-          } else if (profileError) {
+          } else if (profileError && !profileError.message.includes("JSON object requested, multiple (or no) rows returned")) {
+            // Signaler uniquement les erreurs qui ne sont pas liées à l'absence de profil
             console.warn("Impossible de récupérer le profil:", profileError);
+          } else {
+            // Si l'utilisateur n'a pas de profil, on définit un rôle par défaut
+            console.log("Aucun profil trouvé pour l'utilisateur. Utilisation des valeurs par défaut");
+            localStorage.setItem("userRole", "user");
+            localStorage.setItem("accessLevel", "1");
           }
         } catch (profileFetchError) {
           console.error("Erreur lors de la récupération du profil:", profileFetchError);
+          // Ne pas bloquer la connexion pour un problème de profil
         }
       }
       

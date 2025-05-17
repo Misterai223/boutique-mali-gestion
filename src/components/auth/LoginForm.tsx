@@ -34,20 +34,23 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       if (error) {
         console.error("Erreur de connexion:", error);
         setErrorMsg(error.message || "Identifiants incorrects. Veuillez réessayer.");
+        setIsLoading(false);
         return;
       }
       
       if (data?.session) {
+        console.log("Connexion réussie, session:", data.session.user.id);
         localStorage.setItem("isAuthenticated", "true");
         toast.success(`Bienvenue ${data.user?.email || ''}`);
         onLogin();
       } else {
+        console.error("Session non disponible après connexion");
         setErrorMsg("Erreur lors de la connexion. Veuillez réessayer.");
+        setIsLoading(false);
       }
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);
       setErrorMsg(error.message || "Erreur lors de la connexion");
-    } finally {
       setIsLoading(false);
     }
   };
