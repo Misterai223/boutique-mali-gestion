@@ -16,6 +16,31 @@ export function ShopBranding() {
     
     setShopName(savedShopName || "Shop Manager");
     setShopLogo(savedShopLogo || null);
+    
+    // Setup event listener for localStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "shopName") {
+        setShopName(e.newValue || "Shop Manager");
+      } else if (e.key === "shopLogo") {
+        setShopLogo(e.newValue);
+      }
+    };
+    
+    // Custom event listener for local changes
+    const updateFromLocalStorage = () => {
+      const currentShopName = localStorage.getItem("shopName");
+      const currentShopLogo = localStorage.getItem("shopLogo");
+      setShopName(currentShopName || "Shop Manager");
+      setShopLogo(currentShopLogo || null);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    document.addEventListener('localStorage.updated', updateFromLocalStorage);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('localStorage.updated', updateFromLocalStorage);
+    };
   }, []);
   
   return (

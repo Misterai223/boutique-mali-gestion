@@ -70,7 +70,13 @@ const GeneralSettings = ({
     
     // Synchroniser avec localStorage pour une mise à jour instantanée dans toute l'application
     localStorage.setItem("shopName", localShopName);
+    
+    // Important: Use shopLogo key instead of logoUrl for consistency across the application
     localStorage.setItem("shopLogo", localLogoUrl);
+    
+    // Dispatch a custom event to notify other components of the changes
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
     
     toast({
       title: "Paramètres sauvegardés",
