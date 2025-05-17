@@ -11,7 +11,7 @@ export const getProfiles = async (): Promise<Profile[]> => {
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100); // Limitation pour éviter l'erreur "stack depth limit exceeded"
+      .limit(100);
 
     if (error) {
       console.error("Erreur dans getProfiles:", error);
@@ -90,7 +90,7 @@ export const getAllUsers = async () => {
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100); // Limitation pour éviter l'erreur "stack depth limit exceeded"
+      .limit(100);
 
     if (error) {
       console.error("Erreur lors de la récupération des utilisateurs:", error);
@@ -125,7 +125,7 @@ export const getCurrentUser = async () => {
       .from('profiles')
       .select('*')
       .eq('id', sessionData.session.user.id)
-      .single();
+      .maybeSingle(); // Utiliser maybeSingle au lieu de single
       
     if (error) {
       console.error("Erreur de récupération du profil:", error);

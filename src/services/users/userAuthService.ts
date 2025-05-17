@@ -13,7 +13,9 @@ export const createUser = async (email: string, password: string, userData: any)
       password,
       options: {
         data: {
-          full_name: userData.full_name
+          full_name: userData.full_name,
+          role: userData.role || 'user',
+          access_level: userData.access_level || 1
         }
       }
     });
@@ -25,38 +27,31 @@ export const createUser = async (email: string, password: string, userData: any)
 
     console.log("Utilisateur créé avec succès:", data);
 
-    // Mettre à jour le profil avec les informations supplémentaires
-    if (data?.user) {
-      console.log("Mise à jour du profil pour l'utilisateur:", data.user.id);
-      
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: userData.full_name,
-          role: userData.role || 'user',
-          access_level: userData.access_level || 1,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', data.user.id);
+    // L'utilisateur a été créé, le profil sera automatiquement créé par le trigger handle_new_user
+    // Nous enregistrons simplement l'activité
 
-      if (profileError) {
-        console.error("Erreur lors de la mise à jour du profil:", profileError);
-        return { data: null, error: profileError };
-      }
-      
-      console.log("Profil mis à jour avec succès");
+    if (data?.user) {
+      console.log("Utilisateur créé avec ID:", data.user.id);
       
       // Enregistrer l'activité
-      await logUserActivity(
-        data.user.id, // Ajouter l'ID de l'utilisateur qui effectue l'action
-        'create_user',
-        {
-          created_user_id: data?.user?.id,
-          created_user_email: email,
-          role: userData.role,
-          access_level: userData.access_level
-        }
-      );
+      try {
+        const session = await supabase.auth.getSession();
+        const currentUserId = session.data.session?.user.id || 'system';
+        
+        await logUserActivity(
+          currentUserId,
+          'create_user',
+          {
+            created_user_id: data.user.id,
+            created_user_email: email,
+            role: userData.role,
+            access_level: userData.access_level
+          }
+        );
+      } catch (activityError) {
+        console.error("Erreur lors de l'enregistrement de l'activité:", activityError);
+        // Ne pas bloquer la création d'utilisateur si l'enregistrement d'activité échoue
+      }
 
       return { data, error: null };
     } else {
@@ -73,8 +68,9 @@ export const createUser = async (email: string, password: string, userData: any)
 export const updateUser = async (userId: string, userData: any) => {
   try {
     console.log("Tentative de mise à jour de l'utilisateur:", userId, userData);
+    
     // Mettre à jour le profil utilisateur
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({
         full_name: userData.full_name,
@@ -86,7 +82,7 @@ export const updateUser = async (userId: string, userData: any) => {
 
     if (error) {
       console.error("Erreur lors de la mise à jour du profil:", error);
-      throw error;
+      return { data: null, error };
     }
 
     console.log("Profil mis à jour avec succès");
@@ -97,47 +93,38 @@ export const updateUser = async (userId: string, userData: any) => {
       if (userData.email) updateData.email = userData.email;
       if (userData.password) updateData.password = userData.password;
 
-      // Note: cette fonction nécessite des droits admin
       try {
-        const authUpdateResult = await supabase.auth.admin.updateUserById(
-          userId,
-          updateData
-        );
+        const { error: authError } = await supabase.auth.updateUser(updateData);
         
-        if (authUpdateResult.error) {
-          console.error("Erreur lors de la mise à jour des infos d'authentification:", authUpdateResult.error);
-          throw authUpdateResult.error;
+        if (authError) {
+          console.error("Erreur lors de la mise à jour des infos d'authentification:", authError);
+          return { data: null, error: authError };
         }
-      } catch (adminError) {
-        console.error("Erreur d'accès admin pour la mise à jour:", adminError);
-        // Fallback à la méthode non-admin si nécessaire
-        if (userData.password) {
-          console.log("Tentative de mise à jour du mot de passe via méthode standard");
-          const { error: pwError } = await supabase.auth.updateUser({
-            password: userData.password
-          });
-          
-          if (pwError) {
-            console.error("Échec de la mise à jour du mot de passe:", pwError);
-          }
-        }
+      } catch (authError) {
+        console.error("Erreur lors de la mise à jour des infos d'authentification:", authError);
+        return { data: null, error: authError };
       }
     }
 
     // Enregistrer l'activité
-    const session = await supabase.auth.getSession();
-    const currentUserId = session.data.session?.user.id;
-    
-    await logUserActivity(
-      currentUserId || userId, // Utilisateur qui effectue l'action
-      'update_user',
-      {
-        updated_user_id: userId,
-        updated_fields: Object.keys(userData)
-      }
-    );
+    try {
+      const session = await supabase.auth.getSession();
+      const currentUserId = session.data.session?.user.id || 'system';
+      
+      await logUserActivity(
+        currentUserId,
+        'update_user',
+        {
+          updated_user_id: userId,
+          updated_fields: Object.keys(userData)
+        }
+      );
+    } catch (activityError) {
+      console.error("Erreur lors de l'enregistrement de l'activité:", activityError);
+      // Ne pas bloquer la mise à jour si l'enregistrement d'activité échoue
+    }
 
-    return { data, error: null };
+    return { data: { success: true }, error: null };
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
     return { data: null, error };
@@ -148,39 +135,30 @@ export const updateUser = async (userId: string, userData: any) => {
 export const deleteUser = async (userId: string) => {
   try {
     console.log("Tentative de suppression de l'utilisateur:", userId);
-    // Cette fonction nécessite des droits admin
-    try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (error) {
-        console.error("Erreur d'admin lors de la suppression de l'utilisateur:", error);
-        throw error;
-      }
-    } catch (adminError) {
-      console.error("Erreur d'accès admin pour la suppression:", adminError);
-      // Fallback: supprimer directement le profil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-      
-      if (profileError) {
-        console.error("Échec de la suppression du profil:", profileError);
-        throw profileError;
-      }
+    
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (error) {
+      console.error("Erreur lors de la suppression de l'utilisateur:", error);
+      return { error };
     }
 
     // Enregistrer l'activité
-    const session = await supabase.auth.getSession();
-    const currentUserId = session.data.session?.user.id;
-    
-    await logUserActivity(
-      currentUserId || 'system',
-      'delete_user',
-      {
-        deleted_user_id: userId
-      }
-    );
+    try {
+      const session = await supabase.auth.getSession();
+      const currentUserId = session.data.session?.user.id || 'system';
+      
+      await logUserActivity(
+        currentUserId,
+        'delete_user',
+        {
+          deleted_user_id: userId
+        }
+      );
+    } catch (activityError) {
+      console.error("Erreur lors de l'enregistrement de l'activité:", activityError);
+      // Ne pas bloquer la suppression si l'enregistrement d'activité échoue
+    }
 
     return { error: null };
   } catch (error: any) {

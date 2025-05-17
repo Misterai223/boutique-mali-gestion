@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -32,7 +32,10 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
   });
 
   const handleSubmit = async (data: CreateUserFormType) => {
-    if (isSubmitting) return; // Éviter les soumissions multiples
+    if (isSubmitting) {
+      console.log("Soumission déjà en cours, ignorée");
+      return;
+    }
     
     setIsSubmitting(true);
     console.log("Soumission du formulaire avec les données:", data);
@@ -47,11 +50,10 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       if (error) {
         console.error("Erreur lors de la création:", error);
         toast.error(`Erreur: ${error.message || "Une erreur est survenue lors de la création"}`);
-        setIsSubmitting(false);
         return;
       }
       
-      console.log("Utilisateur créé avec succès, formulaire réinitialisé");
+      console.log("Utilisateur créé avec succès");
       toast.success("Utilisateur créé avec succès");
       form.reset(); // Réinitialiser le formulaire après succès
       

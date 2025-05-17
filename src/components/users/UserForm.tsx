@@ -1,5 +1,5 @@
 
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Profile } from "@/types/profile";
 import CreateUserForm from "./CreateUserForm";
@@ -57,6 +57,11 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
           <DialogTitle>
             {isEditMode ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}
           </DialogTitle>
+          <DialogDescription>
+            {isEditMode 
+              ? "Modifiez les informations de l'utilisateur ci-dessous." 
+              : "Remplissez le formulaire pour créer un nouvel utilisateur."}
+          </DialogDescription>
         </DialogHeader>
         
         {isEditMode ? (

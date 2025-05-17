@@ -10,8 +10,13 @@ export const logUserActivity = async (userId: string, activityType: string, deta
     // Vérifier que userId est défini
     if (!userId || userId === 'undefined') {
       console.error("ID utilisateur non défini lors de l'enregistrement de l'activité");
-      const session = await supabase.auth.getSession();
-      userId = session.data.session?.user.id || 'system';
+      try {
+        const session = await supabase.auth.getSession();
+        userId = session.data.session?.user.id || 'system';
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la session:", error);
+        userId = 'system';
+      }
     }
     
     const { error } = await supabase
@@ -40,7 +45,7 @@ export const getUserActivityLogs = async () => {
       .from('user_activity_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100); // Limitation pour éviter l'erreur "stack depth limit exceeded"
+      .limit(100);
       
     if (error) {
       console.error("Erreur lors de la récupération des journaux d'activité:", error);

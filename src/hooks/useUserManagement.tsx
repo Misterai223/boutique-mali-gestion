@@ -21,6 +21,7 @@ export const useUserManagement = () => {
       const data = await userService.getProfiles();
       console.log("Profils chargés:", data);
       setProfiles(data);
+      
       // Appliquer immédiatement le filtrage après chargement
       applyFilters(data, searchTerm, roleFilter);
     } catch (error) {
