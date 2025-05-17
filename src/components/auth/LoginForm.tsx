@@ -18,59 +18,95 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
-  // Check for existing session on component mount
+  // Vérifier s'il existe déjà une session active
   useEffect(() => {
-    const checkExistingSession = async () => {
-      const session = await authService.getSession();
-      if (session) {
-        onLogin();
+    const checkSession = async () => {
+      try {
+        const session = await authService.getSession();
+        if (session) {
+          console.log("Session existante trouvée, connexion automatique");
+          onLogin();
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de session:", error);
       }
     };
-    checkExistingSession();
+    
+    checkSession();
+  }, [onLogin]);
+
+  // S'abonner aux changements d'état d'authentification
+  useEffect(() => {
+    const { data: { subscription } } = authService.subscribeToAuthChanges(
+      (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          console.log("Événement de connexion détecté");
+          onLogin();
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [onLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      setErrorMsg("Veuillez remplir tous les champs");
+    // Validation des entrées
+    if (!email.trim()) {
+      setErrorMsg("L'adresse email est requise");
       return;
     }
     
-    // Reset state before attempting login
+    if (!password) {
+      setErrorMsg("Le mot de passe est requis");
+      return;
+    }
+    
+    // Réinitialiser l'état d'erreur et activer le chargement
     setErrorMsg("");
     setIsLoading(true);
     
     try {
-      const { data, error } = await authService.simpleLogin(email, password);
+      console.log("Tentative de connexion avec:", email);
+      
+      // Utiliser la méthode de login améliorée pour une meilleure gestion des erreurs
+      const { data, error } = await authService.loginWithErrorHandling(email, password);
       
       if (error) {
-        console.error("Erreur de connexion:", error.message);
+        console.error("Erreur lors de la connexion:", error.message);
         setErrorMsg(error.message);
         setIsLoading(false);
         return;
       }
       
       if (data?.session) {
-        // We have a valid session, proceed with login
+        console.log("Session établie avec succès:", data.session.user.email);
         toast.success("Connexion réussie!");
         onLogin();
       } else {
-        // This should rarely happen - we have data but no session
-        setErrorMsg("Session non établie. Veuillez réessayer.");
+        console.error("Session non établie malgré une réponse sans erreur");
+        setErrorMsg("Impossible d'établir la session. Veuillez réessayer.");
         setIsLoading(false);
       }
     } catch (error: any) {
-      console.error("Exception lors de la connexion:", error);
+      console.error("Exception non gérée lors de la connexion:", error);
       setErrorMsg(error.message || "Une erreur inattendue s'est produite");
       setIsLoading(false);
     }
   };
 
-  // Handle password recovery - can be expanded in the future
   const handlePasswordRecovery = (e: React.MouseEvent) => {
     e.preventDefault();
     toast.info("Fonctionnalité de récupération de mot de passe à venir");
+  };
+
+  const clearErrors = () => {
+    if (errorMsg) {
+      setErrorMsg("");
+    }
   };
 
   return (
@@ -100,7 +136,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                   email={email}
                   setEmail={(value) => {
                     setEmail(value);
-                    setErrorMsg(""); // Clear errors when input changes
+                    clearErrors();
                   }}
                 />
                 
@@ -108,7 +144,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                   password={password}
                   setPassword={(value) => {
                     setPassword(value);
-                    setErrorMsg(""); // Clear errors when input changes
+                    clearErrors();
                   }}
                   onForgotPassword={handlePasswordRecovery}
                 />
