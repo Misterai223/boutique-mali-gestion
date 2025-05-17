@@ -4,6 +4,7 @@ import {
   getCloudName, 
   getApiKey, 
   getUploadUrl, 
+  getUploadPreset,
   configureCloudinary 
 } from '@/integrations/cloudinary/client';
 import { toast } from 'sonner';
@@ -36,8 +37,8 @@ export const cloudinaryService = {
   /**
    * Configure les identifiants Cloudinary
    */
-  configureCredentials: (cloudName: string, apiKey: string, apiSecret: string): void => {
-    configureCloudinary(cloudName, apiKey, apiSecret);
+  configureCredentials: (cloudName: string, apiKey: string, apiSecret: string, uploadPreset?: string): void => {
+    configureCloudinary(cloudName, apiKey, apiSecret, uploadPreset);
     toast.success('Identifiants Cloudinary enregistrés');
   },
 
@@ -54,7 +55,7 @@ export const cloudinaryService = {
       // Cette fonction utilise l'API Upload de Cloudinary directement via le frontend
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'shop_manager_upload'); // Preset non signé configuré dans Cloudinary
+      formData.append('upload_preset', getUploadPreset()); // Preset non signé configuré dans Cloudinary
       formData.append('cloud_name', getCloudName());
       
       if (options.folder) {

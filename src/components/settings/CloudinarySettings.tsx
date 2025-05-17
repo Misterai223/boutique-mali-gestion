@@ -9,9 +9,10 @@ import { toast } from "sonner";
 import { CloudFog, Check } from "lucide-react";
 
 const CloudinarySettings = () => {
-  const [cloudName, setCloudName] = useState<string>(localStorage.getItem('CLOUDINARY_CLOUD_NAME') || '');
-  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('CLOUDINARY_API_KEY') || '');
-  const [apiSecret, setApiSecret] = useState<string>(localStorage.getItem('CLOUDINARY_API_SECRET') || '');
+  const [cloudName, setCloudName] = useState<string>(localStorage.getItem('CLOUDINARY_CLOUD_NAME') || 'dqhdjnmrq');
+  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('CLOUDINARY_API_KEY') || '833693739153773');
+  const [apiSecret, setApiSecret] = useState<string>(localStorage.getItem('CLOUDINARY_API_SECRET') || '7spozpGI-CN333Qo8Zp_FMXWzg0');
+  const [uploadPreset, setUploadPreset] = useState<string>(localStorage.getItem('CLOUDINARY_UPLOAD_PRESET') || 'testprojet');
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const CloudinarySettings = () => {
     }
     
     try {
-      cloudinaryService.configureCredentials(cloudName, apiKey, apiSecret);
+      cloudinaryService.configureCredentials(cloudName, apiKey, apiSecret, uploadPreset);
       checkConfiguration();
       toast.success("Configuration Cloudinary enregistrée avec succès");
     } catch (error: any) {
@@ -88,6 +89,20 @@ const CloudinarySettings = () => {
             />
             <p className="text-xs text-muted-foreground">
               Note: Cette clé est stockée localement et n'est pas partagée.
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="uploadPreset">Upload Preset (non signé)</Label>
+            <Input
+              id="uploadPreset"
+              value={uploadPreset}
+              onChange={(e) => setUploadPreset(e.target.value)}
+              placeholder="Preset d'upload non signé"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Note: Assurez-vous que ce preset est configuré comme "non signé" dans votre compte Cloudinary.
             </p>
           </div>
           
