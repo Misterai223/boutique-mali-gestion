@@ -21,6 +21,7 @@ import Inventory from "./pages/Inventory";
 import Reports from "./pages/Reports";
 import MediaLibrary from "./pages/MediaLibrary";
 import { toast } from "sonner";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -82,7 +83,7 @@ function App() {
           element={
             isAuthenticated ? (
               <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
-                <div>Dashboard</div>
+                <Dashboard />
               </DashboardLayout>
             ) : (
               <Navigate to="/login" />

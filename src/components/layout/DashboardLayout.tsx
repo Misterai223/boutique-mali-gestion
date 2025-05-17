@@ -74,7 +74,7 @@ const DashboardLayout = ({
   
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar className={collapsed ? "w-20" : "w-64"} />
+      <Sidebar className={collapsed ? "w-20" : "w-64"} collapsed={collapsed} />
       
       <motion.div 
         className="flex-1 flex flex-col overflow-hidden"
