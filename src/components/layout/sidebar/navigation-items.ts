@@ -48,7 +48,7 @@ export const navItems: NavItem[] = [
     badge: 5,
   },
   {
-    title: "Clients",
+    title: "Utilisateurs",
     icon: Users,
     href: "/users",
     color: "text-emerald-500",
