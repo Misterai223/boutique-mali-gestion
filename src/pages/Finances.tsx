@@ -7,6 +7,8 @@ import TransactionList from "@/components/finances/TransactionList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
 import { PlusCircle, Download, FileText } from "lucide-react";
+import AddTransactionForm from "@/components/finances/AddTransactionForm";
+import { exportTransactionsToPDF } from "@/utils/pdfExporter";
 
 const financialData = [
   {
@@ -43,6 +45,7 @@ const financialData = [
 
 const Finances = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -65,6 +68,25 @@ const Finances = () => {
     },
   };
 
+  const handleAddTransaction = (transaction: any) => {
+    // Dans une application réelle, nous ajouterions la transaction à une base de données
+    console.log("Nouvelle transaction:", transaction);
+    setIsAddTransactionOpen(false);
+  };
+
+  const handleExportFinancialData = () => {
+    const transformedData = financialData.map(item => ({
+      id: item.month,
+      description: `Récapitulatif financier - ${item.month}`,
+      amount: item.revenus,
+      type: "income" as const,
+      date: new Date().toISOString().split('T')[0],
+      category: "Récapitulatif",
+    }));
+    
+    exportTransactionsToPDF(transformedData, "Récapitulatif Financier");
+  };
+
   return (
     <div className="space-y-6">
       <motion.div 
@@ -75,11 +97,11 @@ const Finances = () => {
       >
         <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExportFinancialData}>
             <Download className="h-4 w-4 mr-2" />
             Exporter PDF
           </Button>
-          <Button>
+          <Button onClick={() => setIsAddTransactionOpen(true)}>
             <PlusCircle className="h-4 w-4 mr-2" />
             Ajouter une transaction
           </Button>
@@ -268,6 +290,12 @@ const Finances = () => {
           </motion.div>
         </TabsContent>
       </Tabs>
+      
+      <AddTransactionForm 
+        open={isAddTransactionOpen} 
+        onOpenChange={setIsAddTransactionOpen} 
+        onAddTransaction={handleAddTransaction}
+      />
     </div>
   );
 };
