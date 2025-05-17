@@ -18,31 +18,44 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!email || !password) {
+      setErrorMsg("Veuillez remplir tous les champs");
+      return;
+    }
+    
+    // Reset error message and set loading state
     setErrorMsg("");
+    setIsLoading(true);
     
     try {
-      if (!email || !password) {
-        setErrorMsg("Veuillez remplir tous les champs");
-        setIsLoading(false);
-        return;
-      }
-      
       console.log("Tentative de connexion avec:", { email });
       
-      // Utiliser la méthode de connexion améliorée
-      const result = await authService.login(email, password);
+      // Utiliser la méthode de connexion améliorée avec timeout pour éviter le blocage
+      const loginPromise = authService.login(email, password);
+      
+      // Set a timeout to prevent UI from being stuck in loading state
+      const timeoutPromise = new Promise<boolean>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error("Délai de connexion dépassé. Veuillez réessayer."));
+        }, 10000); // 10 seconds timeout
+      });
+      
+      // Race between login and timeout
+      const result = await Promise.race([loginPromise, timeoutPromise]);
       
       if (result) {
         console.log("Connexion réussie, redirection...");
-        toast.success(`Bienvenue !`);
+        toast.success("Bienvenue !");
         onLogin();
       } else {
+        console.warn("Échec de la connexion");
         setIsLoading(false);
-        // Le message d'erreur est déjà géré par authService.login
+        // Les messages d'erreur sont déjà gérés par authService.login
       }
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);
+      toast.error(error.message || "Erreur lors de la connexion");
       setErrorMsg(error.message || "Erreur lors de la connexion");
       setIsLoading(false);
     }

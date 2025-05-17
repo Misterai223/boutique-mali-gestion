@@ -46,9 +46,11 @@ export const authService = {
             localStorage.setItem("userRole", profileData.role);
             localStorage.setItem("accessLevel", profileData.access_level.toString());
             console.log("Profil utilisateur chargé:", profileData);
-          } else if (profileError && !profileError.message.includes("JSON object requested, multiple (or no) rows returned")) {
-            // Signaler uniquement les erreurs qui ne sont pas liées à l'absence de profil
+          } else if (profileError) {
             console.warn("Impossible de récupérer le profil:", profileError);
+            // Définir un rôle par défaut en cas d'erreur pour ne pas bloquer la connexion
+            localStorage.setItem("userRole", "user");
+            localStorage.setItem("accessLevel", "1");
           } else {
             // Si l'utilisateur n'a pas de profil, on définit un rôle par défaut
             console.log("Aucun profil trouvé pour l'utilisateur. Utilisation des valeurs par défaut");
@@ -58,6 +60,8 @@ export const authService = {
         } catch (profileFetchError) {
           console.error("Erreur lors de la récupération du profil:", profileFetchError);
           // Ne pas bloquer la connexion pour un problème de profil
+          localStorage.setItem("userRole", "user");
+          localStorage.setItem("accessLevel", "1");
         }
       }
       
@@ -117,7 +121,10 @@ export const authService = {
     try {
       const { data, error } = await supabase.auth.getSession();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur de récupération de session:", error);
+        throw error;
+      }
       
       return data.session;
     } catch (error) {
