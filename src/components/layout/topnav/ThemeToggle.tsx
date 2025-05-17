@@ -8,29 +8,32 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   
   useEffect(() => {
-    // Check for system preference
-    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else if (isDark) {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-    }
+    // Charger le thème actuel depuis localStorage sans l'appliquer immédiatement
+    const savedTheme = localStorage.getItem("darkMode") === "true" ? "dark" : "light";
+    setTheme(savedTheme);
   }, []);
   
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    
+    // Mettre à jour le stockage local
+    localStorage.setItem("darkMode", newTheme === "dark" ? "true" : "false");
+    
+    // Appliquer le thème en mettant à jour uniquement la classe du document sans effet secondaire
     document.documentElement.classList.toggle("dark", newTheme === "dark");
+    
+    // Déclencher l'événement personnalisé pour informer les autres composants
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
+    
+    toast.success(`Mode ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`);
   };
 
   return (

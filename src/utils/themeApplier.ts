@@ -3,7 +3,8 @@ import { hexToHSL } from "./colorUtils";
 import type { ThemeSettings } from "../types/theme";
 
 /**
- * Applies theme settings to the document
+ * Applies theme settings to the document in a controlled way
+ * to avoid unwanted side effects during navigation
  */
 export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accentColor' | 'secondaryColor' | 'borderRadius' | 'fontFamily' | 'darkMode'>) => {
   const { primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode } = settings;
@@ -19,14 +20,14 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
   root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   
-  // Update variables for the sidebar
+  // Update variables for the sidebar (éviter de changer le background automatiquement)
   if (darkMode) {
     root.style.setProperty('--sidebar-background', '222.2 47.4% 11.2%');
     root.style.setProperty('--sidebar-foreground', '210 40% 98%');
     root.style.setProperty('--sidebar-accent', '217.2 32.6% 17.5%');
     root.style.setProperty('--sidebar-accent-foreground', '210 40% 98%');
   } else {
-    // Light mode - use the primary color for sidebar
+    // Light mode - use the primary color for sidebar but only through CSS variables
     root.style.setProperty('--sidebar-background', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
     root.style.setProperty('--sidebar-foreground', '210 40% 98%');
     root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${Math.max(0, primaryHSL.s - 15)}% ${Math.min(100, primaryHSL.l + 10)}%`);
@@ -52,22 +53,6 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
     root.style.fontFamily = "'Open Sans', sans-serif";
   }
 
-  // Apply dark mode immediately
+  // Apply dark mode mais sans forcer le rechargement du style
   document.documentElement.classList.toggle("dark", darkMode);
-  
-  // Force re-application of theme on main background
-  const mainElement = document.querySelector('main');
-  if (mainElement) {
-    mainElement.classList.remove('bg-background/50');
-    void mainElement.offsetWidth; // Trigger reflow
-    mainElement.classList.add('bg-background/50');
-  }
-  
-  // Force re-application of sidebar styles
-  const sidebarElement = document.querySelector('aside');
-  if (sidebarElement) {
-    sidebarElement.classList.remove('bg-sidebar');
-    void sidebarElement.offsetWidth; // Trigger reflow
-    sidebarElement.classList.add('bg-sidebar');
-  }
 };

@@ -21,7 +21,7 @@ const DashboardLayout = ({
   
   const { handleLogout } = LogoutHandler({ onLogout });
   
-  // Apply theme effect
+  // Appliquer le thème une seule fois au chargement, sans effets secondaires lors de la navigation
   useThemeEffect();
   
   return (

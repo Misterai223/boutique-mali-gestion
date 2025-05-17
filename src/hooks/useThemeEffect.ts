@@ -1,46 +1,62 @@
 
 import { useEffect } from "react";
+import { applyTheme } from "@/utils/themeApplier";
+import { loadThemeSettings } from "@/utils/themeStorage";
 
 /**
  * Hook to handle theme application effects across the application
+ * Improved to avoid unwanted side effects when navigating
  */
 export const useThemeEffect = () => {
   useEffect(() => {
-    const applyThemeToBackground = () => {
-      const savedPrimaryColor = localStorage.getItem("primaryColor");
-      const savedAccentColor = localStorage.getItem("accentColor");
-      const savedSecondaryColor = localStorage.getItem("secondaryColor");
-      const savedDarkMode = localStorage.getItem("darkMode") === "true";
-      
-      if (savedPrimaryColor || savedAccentColor || savedSecondaryColor) {
-        // Déclencher un reflow pour forcer une mise à jour visuelle
-        const mainElement = document.querySelector('main');
-        if (mainElement) {
-          mainElement.style.transition = "background-color 0.3s ease";
-        }
-        
-        const sidebarElement = document.querySelector('aside');
-        if (sidebarElement) {
-          sidebarElement.style.transition = "background-color 0.3s ease";
-        }
-        
-        // Appliquer la classe dark au documentElement si nécessaire
-        document.documentElement.classList.toggle("dark", savedDarkMode);
+    // Charge les paramètres de thème une seule fois au montage du composant
+    const settings = loadThemeSettings();
+    
+    // Applique le thème avec des paramètres chargés
+    applyTheme({
+      primaryColor: settings.primaryColor,
+      accentColor: settings.accentColor,
+      secondaryColor: settings.secondaryColor,
+      borderRadius: settings.borderRadius,
+      fontFamily: settings.fontFamily,
+      darkMode: settings.darkMode
+    });
+    
+    // Observer pour les changements de thème via localStorage
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key && ['primaryColor', 'accentColor', 'secondaryColor', 'darkMode', 'borderRadius', 'fontFamily'].includes(event.key)) {
+        // Recharger uniquement si les clés liées au thème changent
+        const updatedSettings = loadThemeSettings();
+        applyTheme({
+          primaryColor: updatedSettings.primaryColor,
+          accentColor: updatedSettings.accentColor,
+          secondaryColor: updatedSettings.secondaryColor,
+          borderRadius: updatedSettings.borderRadius,
+          fontFamily: updatedSettings.fontFamily,
+          darkMode: updatedSettings.darkMode
+        });
       }
     };
     
-    applyThemeToBackground();
+    // Écouter les événements personnalisés pour la mise à jour du thème
+    const handleCustomEvent = () => {
+      const updatedSettings = loadThemeSettings();
+      applyTheme({
+        primaryColor: updatedSettings.primaryColor,
+        accentColor: updatedSettings.accentColor,
+        secondaryColor: updatedSettings.secondaryColor,
+        borderRadius: updatedSettings.borderRadius,
+        fontFamily: updatedSettings.fontFamily,
+        darkMode: updatedSettings.darkMode
+      });
+    };
     
-    // Observer les changements dans le DOM pour reappliquer le thème si nécessaire
-    const observer = new MutationObserver(() => {
-      applyThemeToBackground();
-    });
+    window.addEventListener('storage', handleStorageChange);
+    document.addEventListener('localStorage.updated', handleCustomEvent);
     
-    observer.observe(document.documentElement, { 
-      attributes: true,
-      attributeFilter: ['style', 'class']
-    });
-    
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('localStorage.updated', handleCustomEvent);
+    };
   }, []);
 };
