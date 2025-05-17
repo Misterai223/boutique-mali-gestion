@@ -13,7 +13,6 @@ import MediaLibrary from "@/pages/MediaLibrary";
 import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import Clients from "@/pages/Clients";
-import Index from "@/pages/Index";
 
 interface AppRoutesProps {
   isAuthenticated: boolean;
@@ -22,25 +21,22 @@ interface AppRoutesProps {
 }
 
 const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
+  // Rediriger vers le dashboard si l'utilisateur est authentifié, sinon vers le login
+  const homeRedirect = isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginForm onLogin={onLogin} />;
+  
   return (
     <Routes>
       <Route 
         path="/login" 
         element={
           isAuthenticated ? 
-            <Navigate to="/" replace /> : 
+            <Navigate to="/dashboard" replace /> : 
             <LoginForm onLogin={onLogin} />
         } 
       />
-      <Route
-        path="/"
-        element={
-          <Index 
-            isAuthenticated={isAuthenticated} 
-            onAuthChange={(value) => value ? onLogin() : onLogout()} 
-          />
-        }
-      />
+      
+      {/* Modifier la route d'accueil pour simplement rediriger */}
+      <Route path="/" element={homeRedirect} />
 
       {/* Routes protégées avec le DashboardLayout */}
       <Route

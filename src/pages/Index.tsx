@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
 import LoadingScreen from "@/components/layout/LoadingScreen";
 
@@ -43,14 +42,12 @@ const Index = ({
     return <LoadingScreen />;
   }
   
-  // Si l'utilisateur est authentifié, afficher le tableau de bord
+  // Si l'utilisateur est authentifié, rediriger vers le tableau de bord
+  // Mais ne pas utiliser le DashboardLayout ici car il est déjà utilisé dans ProtectedRoute
   if (isAuthenticated) {
-    console.log("Index - User authentifié, affichage du dashboard");
-    return (
-      <DashboardLayout onLogout={handleLogout}>
-        <Dashboard />
-      </DashboardLayout>
-    );
+    console.log("Index - User authentifié, redirection vers le dashboard");
+    // Ne pas rendre directement le dashboard ici pour éviter les duplications de layout
+    return <Dashboard />;
   }
   
   // Sinon, afficher le formulaire de login
