@@ -33,7 +33,7 @@ const Index = ({
     onAuthChange(true);
   };
   
-  const handleLogout = async () => {
+  const handleLogout = () => {
     console.log("Index - handleLogout appelé");
     onAuthChange(false);
   };

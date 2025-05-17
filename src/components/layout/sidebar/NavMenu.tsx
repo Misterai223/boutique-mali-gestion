@@ -1,6 +1,5 @@
 
-import { useLocation } from "react-router-dom";
-import { Link, Navigate } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { 

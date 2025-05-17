@@ -5,6 +5,7 @@ import { initializeApp } from "./utils/initApp";
 import { useAuth } from "./hooks/useAuth";
 import AppRoutes from "./routes/AppRoutes";
 import LoadingScreen from "./components/layout/LoadingScreen";
+import { Toaster } from "sonner";
 
 function App() {
   const { isAuthenticated, loading, handleLogin, handleLogout } = useAuth();
@@ -25,6 +26,7 @@ function App() {
         onLogin={handleLogin} 
         onLogout={handleLogout} 
       />
+      <Toaster position="top-right" richColors />
     </BrowserRouter>
   );
 }

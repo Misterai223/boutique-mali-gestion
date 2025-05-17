@@ -42,6 +42,8 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
           />
         }
       />
+
+      {/* Routes protégées avec le DashboardLayout */}
       <Route
         path="/dashboard"
         element={
