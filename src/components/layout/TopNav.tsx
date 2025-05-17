@@ -56,7 +56,13 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
       <div className="flex items-center justify-between h-14 px-4">
         {/* Partie gauche */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} aria-label={collapsed ? "Ouvrir le menu" : "Fermer le menu"}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar} 
+            className="flex items-center justify-center"
+            aria-label={collapsed ? "Ouvrir le menu" : "Fermer le menu"}
+          >
             <MenuSquare className="h-5 w-5" />
           </Button>
           <ShopBranding />
@@ -74,7 +80,6 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               Hors ligne
             </div>
           )}
-          {/* Toujours afficher le prompt d'installation pour PWA */}
           {showInstallPrompt && <PWAInstallPrompt />}
           <NotificationButton />
           <ThemeToggle />

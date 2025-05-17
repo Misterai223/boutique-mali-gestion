@@ -12,7 +12,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const { shopName, shopLogo } = useSidebarData();
-  const isCollapsed = className?.includes("w-20") || className?.includes("w-0") || false;
+  const isCollapsed = className?.includes("w-20") || false;
   const [sidebarColor, setSidebarColor] = useState("");
   const isMobile = useIsMobile();
   
@@ -40,11 +40,6 @@ export function Sidebar({ className }: SidebarProps) {
       document.removeEventListener('localStorage.updated', updateSidebarColor);
     };
   }, []);
-
-  // Cacher complètement la sidebar sur mobile quand elle est repliée
-  if (isMobile && isCollapsed && className?.includes("w-0")) {
-    return null;
-  }
 
   return (
     <aside
