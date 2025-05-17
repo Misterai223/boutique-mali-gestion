@@ -51,6 +51,26 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 }
 
+// Check if MFA is required for a user
+export async function checkMfaFactors(): Promise<{isMfaEnabled: boolean, factors: any[]}> {
+  try {
+    const { data, error } = await supabase.auth.mfa.listFactors();
+    
+    if (error) {
+      console.error("Erreur lors de la vérification MFA:", error);
+      return { isMfaEnabled: false, factors: [] };
+    }
+    
+    return { 
+      isMfaEnabled: data.factors && data.factors.length > 0,
+      factors: data.factors || []
+    };
+  } catch (error) {
+    console.error("Erreur lors de la vérification MFA:", error);
+    return { isMfaEnabled: false, factors: [] };
+  }
+}
+
 // Subscribe to auth changes
 export function subscribeToAuthChanges(callback: (event: AuthChangeEvent, session: Session | null) => void) {
   return supabase.auth.onAuthStateChange((event, session) => {

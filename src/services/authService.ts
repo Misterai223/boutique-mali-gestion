@@ -1,7 +1,7 @@
 
 // Main auth service that re-exports all authentication functionality
 import { simpleLogin } from "./auth/simpleAuth";
-import { getSession, getCurrentUser, subscribeToAuthChanges } from "./auth/sessionManager";
+import { getSession, getCurrentUser, subscribeToAuthChanges, checkMfaFactors } from "./auth/sessionManager";
 import { logout, updatePassword, resetPassword } from "./auth/accountManager";
 import { login, loginWithErrorHandling } from "./auth/loginWithErrorHandling";
 
@@ -15,5 +15,6 @@ export const authService = {
   getCurrentUser,
   subscribeToAuthChanges,
   updatePassword,
-  resetPassword
+  resetPassword,
+  checkMfaFactors
 };
