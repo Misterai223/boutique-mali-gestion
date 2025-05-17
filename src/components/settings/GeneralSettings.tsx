@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,11 +124,6 @@ const GeneralSettings = ({
     }
   };
 
-  const handleCloudinaryUploadComplete = (url: string) => {
-    setLocalLogoUrl(url);
-    setHasChanges(true);
-  };
-
   const handleMediaLibrarySelect = (url: string) => {
     setLocalLogoUrl(url);
     setHasChanges(true);
@@ -180,9 +174,7 @@ const GeneralSettings = ({
                     
                     <LogoUploader
                       isUploading={isUploading}
-                      useCloudinary={false}
                       onFileChange={handleFileChange}
-                      onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
                       onMediaLibrarySelect={handleMediaLibrarySelect}
                     />
                     

@@ -2,23 +2,18 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Image } from "lucide-react";
-import CloudinaryUpload from "@/components/shared/CloudinaryUpload";
 import ImageSelectorModal from "./ImageSelectorModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface LogoUploaderProps {
   isUploading: boolean;
-  useCloudinary: boolean;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onCloudinaryUploadComplete: (url: string) => void;
   onMediaLibrarySelect: (url: string) => void;
 }
 
 const LogoUploader = ({ 
   isUploading,
-  useCloudinary,
   onFileChange,
-  onCloudinaryUploadComplete,
   onMediaLibrarySelect
 }: LogoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,41 +27,30 @@ const LogoUploader = ({
     <div className="flex flex-col gap-3 w-full">
       <div className="grid grid-cols-2 gap-3 w-full">
         <TooltipProvider>
-          {useCloudinary ? (
-            <CloudinaryUpload
-              onUploadComplete={onCloudinaryUploadComplete}
-              folder="logos"
-              buttonText="Télécharger"
-              category="logos"
-              accept="image/jpeg,image/png,image/gif,image/svg+xml"
-              className="w-full"
-            />
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  variant="outline"
-                  className="w-full flex items-center justify-center"
-                  size="icon"
-                >
-                  <Upload className="h-5 w-5" />
-                  <span className="sr-only">Importer un fichier</span>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={onFileChange}
-                    accept="image/jpeg,image/png,image/gif,image/svg+xml"
-                    className="hidden"
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                variant="outline"
+                className="w-full flex items-center justify-center"
+                size="icon"
+              >
+                <Upload className="h-5 w-5" />
+                <span className="sr-only">Importer un fichier</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={onFileChange}
+                  accept="image/jpeg,image/png,image/gif,image/svg+xml"
+                  className="hidden"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
+            </TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
