@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
+import { Sidebar } from "./Sidebar";
 import TopNav from "./TopNav";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
