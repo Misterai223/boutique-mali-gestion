@@ -28,8 +28,8 @@ const LogoUploader = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-3 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
         {useCloudinary ? (
           <CloudinaryUpload
             onUploadComplete={onCloudinaryUploadComplete}
@@ -37,18 +37,18 @@ const LogoUploader = ({
             buttonText="Télécharger un logo"
             category="logos"
             accept="image/jpeg,image/png,image/gif,image/svg+xml"
+            className="w-full"
           />
         ) : (
-          <>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              variant="outline"
-              className="flex-1 sm:flex-none"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isUploading ? "Téléchargement..." : "Importer un fichier"}
-            </Button>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            variant="outline"
+            className="w-full text-xs sm:text-sm truncate"
+            size="sm"
+          >
+            <Upload className="mr-1 h-3 w-3" />
+            {isUploading ? "Téléchargement..." : "Importer un fichier"}
             <input
               type="file"
               ref={fileInputRef}
@@ -56,15 +56,16 @@ const LogoUploader = ({
               accept="image/jpeg,image/png,image/gif,image/svg+xml"
               className="hidden"
             />
-          </>
+          </Button>
         )}
 
         <Button
           onClick={handleOpenMediaSelector}
           variant="outline"
-          className="flex-1 sm:flex-none"
+          className="w-full text-xs sm:text-sm truncate"
+          size="sm"
         >
-          <Image className="mr-2 h-4 w-4" />
+          <Image className="mr-1 h-3 w-3" />
           Choisir depuis la médiathèque
         </Button>
       </div>
