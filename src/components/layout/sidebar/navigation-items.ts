@@ -10,7 +10,8 @@ import {
   CreditCard, 
   BarChart3, 
   Tags, 
-  Image 
+  Image,
+  User
 } from "lucide-react";
 
 export interface NavItem {
@@ -46,6 +47,12 @@ export const navItems: NavItem[] = [
     href: "/orders",
     color: "text-orange-500",
     badge: 5,
+  },
+  {
+    title: "Clients",
+    icon: User,
+    href: "/clients",
+    color: "text-green-500",
   },
   {
     title: "Utilisateurs",

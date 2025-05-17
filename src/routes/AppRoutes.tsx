@@ -13,6 +13,7 @@ import Reports from "@/pages/Reports";
 import MediaLibrary from "@/pages/MediaLibrary";
 import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
+import Clients from "@/pages/Clients";
 import Index from "@/pages/Index";
 
 interface AppRoutesProps {
@@ -102,6 +103,14 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
             <Reports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
+            <Clients />
           </ProtectedRoute>
         }
       />

@@ -11,7 +11,8 @@ const ALLOWED_EMPLOYEE_MENUS = [
   "/orders", 
   "/employees", 
   "/finances", 
-  "/media"
+  "/media",
+  "/clients"
 ];
 
 export const useRolePermissions = () => {
