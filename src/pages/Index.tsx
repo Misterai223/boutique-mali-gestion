@@ -31,7 +31,7 @@ const Index = ({
           // Récupérer les données utilisateur
           const userData = await authService.getCurrentUser();
           if (userData) {
-            console.log("Session valide trouvée, utilisateur authentifié:", userData?.data?.email);
+            console.log("Session valide trouvée, utilisateur authentifié:", userData?.email);
             onAuthChange(true);
             localStorage.setItem("isAuthenticated", "true");
             toast.success(`Bienvenue sur Shop Manager`);
