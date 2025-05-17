@@ -32,11 +32,13 @@ export const useUserManagement = () => {
   }, [searchTerm, roleFilter]);
   
   useEffect(() => {
+    console.log("useUserManagement: Effet initial, chargement des profils");
     loadProfiles();
   }, [loadProfiles]);
 
   // Fonction séparée pour appliquer les filtres
   const applyFilters = useCallback((data: Profile[], search: string, role: string) => {
+    console.log("Application des filtres:", { search, role });
     let result = [...data];
     
     // Appliquer la recherche textuelle
@@ -52,51 +54,57 @@ export const useUserManagement = () => {
       result = result.filter(profile => profile.role === role);
     }
     
+    console.log(`Filtrage: ${data.length} profils -> ${result.length} profils filtrés`);
     setFilteredProfiles(result);
   }, []);
 
   // Appliquer les filtres quand les filtres ou les données changent
   useEffect(() => {
+    console.log("useUserManagement: Effet de filtrage, application des filtres");
     applyFilters(profiles, searchTerm, roleFilter);
   }, [searchTerm, roleFilter, profiles, applyFilters]);
 
   const handleAddEdit = useCallback(() => {
+    console.log("useUserManagement: Ouverture du formulaire d'ajout");
     setCurrentProfile(null);
     setFormOpen(true);
   }, []);
 
   const handleViewDetails = useCallback((profile: Profile) => {
+    console.log("useUserManagement: Affichage des détails pour le profil:", profile.id);
     setCurrentProfile(profile);
     setDetailOpen(true);
   }, []);
 
   const handleEditUser = useCallback((profile: Profile) => {
+    console.log("useUserManagement: Édition du profil:", profile.id);
     setCurrentProfile(profile);
     setFormOpen(true);
   }, []);
 
   const handleUserCreated = useCallback(async () => {
-    console.log("Nouvel utilisateur créé, rechargement des profils...");
+    console.log("useUserManagement: Nouvel utilisateur créé, rechargement des profils...");
     setFormOpen(false);
     await loadProfiles();
     toast.success("Utilisateur ajouté avec succès");
   }, [loadProfiles]);
 
   const handleUserUpdated = useCallback(async () => {
-    console.log("Utilisateur mis à jour, rechargement des profils...");
+    console.log("useUserManagement: Utilisateur mis à jour, rechargement des profils...");
     setFormOpen(false);
     await loadProfiles();
     toast.success("Utilisateur mis à jour avec succès");
   }, [loadProfiles]);
 
   const handleUserDeleted = useCallback(async () => {
-    console.log("Utilisateur supprimé, rechargement des profils...");
+    console.log("useUserManagement: Utilisateur supprimé, rechargement des profils...");
     setDetailOpen(false);
     await loadProfiles();
     toast.success("Utilisateur supprimé avec succès");
   }, [loadProfiles]);
 
   const handleResetFilters = useCallback(() => {
+    console.log("useUserManagement: Réinitialisation des filtres");
     setSearchTerm("");
     setRoleFilter("");
   }, []);

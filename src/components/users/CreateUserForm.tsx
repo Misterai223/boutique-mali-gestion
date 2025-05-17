@@ -58,6 +58,8 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       if (onUserCreated) {
         console.log("Appel du callback onUserCreated");
         onUserCreated();
+      } else {
+        console.warn("Aucun callback onUserCreated fourni");
       }
     } catch (error: any) {
       console.error("Exception lors de la création de l'utilisateur:", error);
@@ -66,6 +68,8 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       setIsSubmitting(false);
     }
   };
+
+  console.log("CreateUserForm rendu, onUserCreated callback présent:", !!onUserCreated);
 
   return (
     <Form {...form}>

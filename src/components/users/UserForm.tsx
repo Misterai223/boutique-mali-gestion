@@ -17,22 +17,38 @@ const UserForm = ({ open, onOpenChange, initialData, onUserCreated, onUserUpdate
   const isEditMode = !!initialData;
   
   const handleCancel = () => {
+    console.log("UserForm: annulation, fermeture du formulaire");
     onOpenChange(false);
   };
 
   const handleUserCreated = () => {
     console.log("UserForm: utilisateur créé, appel du callback onUserCreated");
+    onOpenChange(false); // Fermer le formulaire après création réussie
+    
     if (onUserCreated) {
       onUserCreated();
+    } else {
+      console.warn("UserForm: callback onUserCreated non fourni");
     }
   };
 
   const handleUserUpdated = () => {
     console.log("UserForm: utilisateur mis à jour, appel du callback onUserUpdated");
+    onOpenChange(false); // Fermer le formulaire après mise à jour réussie
+    
     if (onUserUpdated) {
       onUserUpdated();
+    } else {
+      console.warn("UserForm: callback onUserUpdated non fourni");
     }
   };
+
+  console.log("UserForm rendu:", {
+    isEditMode,
+    hasInitialData: !!initialData,
+    onUserCreatedProvided: !!onUserCreated,
+    onUserUpdatedProvided: !!onUserUpdated
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
