@@ -1,11 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "./Dashboard";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
+import LoadingScreen from "@/components/layout/LoadingScreen";
 
 const Index = ({ 
   isAuthenticated, 
@@ -16,6 +17,7 @@ const Index = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
   useEffect(() => {
     setMounted(true);
@@ -52,25 +54,26 @@ const Index = ({
     const { data: { subscription } } = authService.subscribeToAuthChanges((event, session) => {
       console.log("Événement d'authentification global:", event);
       
-      // Utiliser setTimeout pour éviter les problèmes de deadlock
-      setTimeout(() => {
-        if (session) {
-          console.log("Session active détectée, mise à jour de l'état");
+      if (session) {
+        console.log("Session active détectée, mise à jour de l'état");
+        setTimeout(() => {
           onAuthChange(true);
-        } else if (event === 'SIGNED_OUT') {
-          console.log("Déconnexion détectée, mise à jour de l'état");
+        }, 0);
+      } else if (event === 'SIGNED_OUT') {
+        console.log("Déconnexion détectée, mise à jour de l'état");
+        setTimeout(() => {
           onAuthChange(false);
           localStorage.removeItem("userRole");
           localStorage.removeItem("accessLevel");
           localStorage.removeItem("isAuthenticated");
-        }
-      }, 0);
+        }, 0);
+      }
     });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, [onAuthChange]);
+  }, [onAuthChange, navigate]);
   
   // Gérer le thème au chargement initial
   useEffect(() => {
@@ -101,25 +104,20 @@ const Index = ({
   };
   
   if (!mounted || loading) {
+    return <LoadingScreen />;
+  }
+  
+  // Si l'utilisateur est authentifié, afficher le tableau de bord
+  if (isAuthenticated) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-lg font-medium text-foreground">Chargement...</p>
-        </div>
-      </div>
+      <DashboardLayout onLogout={handleLogout}>
+        <Dashboard />
+      </DashboardLayout>
     );
   }
   
-  if (!isAuthenticated) {
-    return <LoginForm onLogin={handleLogin} />;
-  }
-  
-  return (
-    <DashboardLayout onLogout={handleLogout}>
-      <Dashboard />
-    </DashboardLayout>
-  );
+  // Sinon, afficher le formulaire de login
+  return <LoginForm onLogin={handleLogin} />;
 };
 
 export default Index;

@@ -42,6 +42,7 @@ const LoginFormFields = ({
           // S'assurer que le profil utilisateur est également chargé
           await authService.getCurrentUser();
           onLogin();
+          navigate('/');
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de session:", error);
@@ -51,7 +52,7 @@ const LoginFormFields = ({
     };
     
     checkSession();
-  }, [onLogin, setIsLoading]);
+  }, [onLogin, setIsLoading, navigate]);
 
   // S'abonner aux changements d'état d'authentification
   useEffect(() => {
@@ -61,9 +62,9 @@ const LoginFormFields = ({
         if (event === "SIGNED_IN" && session) {
           console.log("Événement de connexion détecté");
           
-          // Utiliser setTimeout pour éviter les problèmes de deadlock
           setTimeout(() => {
             onLogin();
+            navigate('/');
           }, 0);
         }
       }
@@ -72,7 +73,7 @@ const LoginFormFields = ({
     return () => {
       subscription.unsubscribe();
     };
-  }, [onLogin]);
+  }, [onLogin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +111,7 @@ const LoginFormFields = ({
         localStorage.setItem("isAuthenticated", "true");
         toast.success("Connexion réussie!");
         onLogin();
+        navigate('/');
       } else {
         console.error("Session non établie malgré une réponse sans erreur");
         setErrorMsg("Impossible d'établir la session. Veuillez réessayer.");

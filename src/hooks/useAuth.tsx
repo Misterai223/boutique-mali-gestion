@@ -40,18 +40,19 @@ export const useAuth = () => {
       (event, session) => {
         console.log("App - Événement d'authentification:", event);
         
-        // Utiliser setTimeout pour éviter les problèmes de deadlock
-        setTimeout(() => {
-          if (event === 'SIGNED_IN' && session) {
-            console.log("App - Connexion détectée");
+        if (event === 'SIGNED_IN' && session) {
+          console.log("App - Connexion détectée");
+          setTimeout(() => {
             setIsAuthenticated(true);
             localStorage.setItem("isAuthenticated", "true");
-          } else if (event === 'SIGNED_OUT') {
-            console.log("App - Déconnexion détectée");
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          console.log("App - Déconnexion détectée");
+          setTimeout(() => {
             setIsAuthenticated(false);
             localStorage.removeItem("isAuthenticated");
-          }
-        }, 0);
+          }, 0);
+        }
       }
     );
     
@@ -68,9 +69,16 @@ export const useAuth = () => {
   
   const handleLogout = async () => {
     console.log("Déconnexion initiée");
-    await authService.logout();
-    localStorage.removeItem("isAuthenticated");
-    setIsAuthenticated(false);
+    try {
+      await authService.logout();
+      localStorage.removeItem("isAuthenticated");
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      // Force logout even if there's an error
+      localStorage.removeItem("isAuthenticated");
+      setIsAuthenticated(false);
+    }
   };
   
   return {
