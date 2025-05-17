@@ -24,4 +24,14 @@ export default defineConfig(({ mode }) => ({
     // Fournir un polyfill pour process.env
     "process.env": {},
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@/components/ui'],
+        }
+      }
+    }
+  }
 }));

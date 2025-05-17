@@ -7,7 +7,19 @@
     <title>Shop Manager - Gestion de Boutique pour Commerçants Maliens</title>
     <meta name="description" content="Application de gestion de boutique pour commerçants maliens avec gestion de stock, finances et employés" />
     <meta name="author" content="Shop Manager" />
-
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1E3A8A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Shop Manager" />
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    
+    <!-- Social Meta Tags -->
     <meta property="og:title" content="Shop Manager - Gestion de Boutique pour Commerçants Maliens" />
     <meta property="og:description" content="Application de gestion de boutique pour commerçants maliens avec gestion de stock, finances et employés" />
     <meta property="og:type" content="website" />
@@ -23,5 +35,20 @@
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Script pour enregistrer le Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('Service Worker enregistré avec succès:', registration.scope);
+            })
+            .catch(error => {
+              console.log('Échec de l\'enregistrement du Service Worker:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
