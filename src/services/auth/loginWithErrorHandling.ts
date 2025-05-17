@@ -21,14 +21,12 @@ export async function loginWithErrorHandling(email: string, password: string) {
       
       // Detailed and user-friendly error message
       if (error.message.includes("Invalid login credentials")) {
-        toast.error("Email ou mot de passe incorrect. Veuillez réessayer.");
         return { 
           data: null, 
           error: new Error("Email ou mot de passe incorrect. Veuillez réessayer.") 
         };
       }
       
-      toast.error(error.message || "Erreur de connexion");
       return { data: null, error };
     }
     
@@ -69,7 +67,6 @@ export async function loginWithErrorHandling(email: string, password: string) {
     return { data, error: null };
   } catch (error: any) {
     console.error("Exception lors de la connexion:", error);
-    toast.error("Une erreur inattendue s'est produite. Veuillez réessayer.");
     return { 
       data: null, 
       error: new Error("Une erreur inattendue s'est produite. Veuillez réessayer.") 
@@ -87,13 +84,6 @@ export async function login(email: string, password: string): Promise<boolean> {
     
     if (error) {
       console.error("Erreur de connexion:", error);
-      
-      if (error.message.includes("Invalid login credentials")) {
-        toast.error("Email ou mot de passe incorrect");
-      } else {
-        toast.error(error.message || "Erreur de connexion");
-      }
-      
       return false;
     }
     
@@ -125,10 +115,9 @@ export async function login(email: string, password: string): Promise<boolean> {
       return true;
     }
     
-    toast.error("Impossible d'établir une session");
     return false;
   } catch (error: any) {
-    toast.error(`Erreur de connexion: ${error.message}`);
+    console.error("Erreur de connexion:", error);
     return false;
   }
 }

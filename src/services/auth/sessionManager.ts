@@ -53,5 +53,10 @@ export async function getCurrentUser(): Promise<User | null> {
 
 // Subscribe to auth changes
 export function subscribeToAuthChanges(callback: (event: AuthChangeEvent, session: Session | null) => void) {
-  return supabase.auth.onAuthStateChange(callback);
+  return supabase.auth.onAuthStateChange((event, session) => {
+    // Utiliser un timeout pour éviter les problèmes de deadlock
+    setTimeout(() => {
+      callback(event, session);
+    }, 0);
+  });
 }

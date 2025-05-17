@@ -13,11 +13,14 @@ export async function logout(): Promise<void> {
     
     if (error) throw error;
     
+    // Clear local storage
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("userRole");
     localStorage.removeItem("accessLevel");
+    
     toast.success("Déconnexion réussie");
   } catch (error: any) {
+    console.error("Erreur lors de la déconnexion:", error.message);
     toast.error(`Erreur de déconnexion: ${error.message}`);
   }
 }
@@ -54,6 +57,23 @@ export async function updatePassword(currentPassword: string, newPassword: strin
     return true;
   } catch (error: any) {
     toast.error(`Erreur de mise à jour du mot de passe: ${error.message}`);
+    return false;
+  }
+}
+
+// Reset password (send reset email)
+export async function resetPassword(email: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password'
+    });
+    
+    if (error) throw error;
+    
+    toast.success("Instructions de réinitialisation envoyées par email");
+    return true;
+  } catch (error: any) {
+    toast.error(`Erreur de réinitialisation: ${error.message}`);
     return false;
   }
 }

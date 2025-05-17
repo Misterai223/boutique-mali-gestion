@@ -21,14 +21,12 @@ export async function simpleLogin(email: string, password: string) {
       
       // User-friendly error messages
       if (error.message.includes("Invalid login credentials")) {
-        toast.error("Email ou mot de passe incorrect");
         return { 
           data: null, 
           error: new Error("Email ou mot de passe incorrect") 
         };
       }
       
-      toast.error(error.message || "Erreur de connexion");
       return { data: null, error };
     }
     
@@ -65,7 +63,6 @@ export async function simpleLogin(email: string, password: string) {
     return { data, error: null };
   } catch (error: any) {
     console.error("Exception lors de la connexion:", error);
-    toast.error("Une erreur inattendue s'est produite");
     return { 
       data: null, 
       error: new Error("Une erreur inattendue s'est produite") 

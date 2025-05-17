@@ -16,19 +16,26 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [isForgotPasswordSubmitted, setIsForgotPasswordSubmitted] = useState(false);
   const navigate = useNavigate();
 
-  // Vérifier s'il existe déjà une session active
+  // Vérification initiale de session
   useEffect(() => {
     const checkSession = async () => {
+      setIsLoading(true);
       try {
         const session = await authService.getSession();
         if (session) {
           console.log("Session existante trouvée, connexion automatique");
+          // S'assurer que le profil utilisateur est également chargé
+          await authService.getCurrentUser();
           onLogin();
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de session:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -72,8 +79,8 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
     try {
       console.log("Tentative de connexion avec:", email);
       
-      // Utiliser la méthode de login améliorée pour une meilleure gestion des erreurs
-      const { data, error } = await authService.loginWithErrorHandling(email, password);
+      // Utiliser simpleLogin pour une meilleure compatibilité
+      const { data, error } = await authService.simpleLogin(email, password);
       
       if (error) {
         console.error("Erreur lors de la connexion:", error.message);
@@ -98,9 +105,29 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
     }
   };
 
-  const handlePasswordRecovery = (e: React.MouseEvent) => {
+  const handlePasswordRecovery = async (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.info("Fonctionnalité de récupération de mot de passe à venir");
+    
+    if (!email.trim()) {
+      setErrorMsg("Veuillez entrer votre email pour réinitialiser votre mot de passe");
+      return;
+    }
+    
+    setIsLoading(true);
+    setForgotPasswordEmail(email);
+    
+    try {
+      const success = await authService.resetPassword(email);
+      if (success) {
+        setIsForgotPasswordSubmitted(true);
+        toast.success(`Instructions de récupération envoyées à ${email}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de l'email de récupération:", error);
+      toast.error("Impossible d'envoyer l'email de récupération");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const clearErrors = () => {
