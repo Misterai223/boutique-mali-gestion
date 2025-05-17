@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 
@@ -60,6 +61,8 @@ export const getCurrentUserProfile = async (): Promise<Profile | null> => {
       return null;
     }
     
+    console.log("Session active pour l'utilisateur:", sessionData.session.user.id);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -68,6 +71,34 @@ export const getCurrentUserProfile = async (): Promise<Profile | null> => {
       
     if (error) {
       console.error("Erreur lors de la récupération du profil:", error);
+      
+      // Si le profil n'existe pas encore, nous allons le créer automatiquement
+      if (error.code === 'PGRST116') {
+        console.log("Profil non trouvé, création automatique...");
+        const newProfile: Partial<Profile> = {
+          id: sessionData.session.user.id,
+          role: 'admin', // Par défaut, les utilisateurs authentifiés sont administrateurs
+          access_level: 5,
+          full_name: sessionData.session.user.email?.split('@')[0] || 'Utilisateur'
+        };
+        
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert(newProfile);
+          
+        if (insertError) {
+          console.error("Erreur lors de la création du profil:", insertError);
+          return null;
+        }
+        
+        return {
+          ...newProfile, 
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          avatar_url: null
+        } as Profile;
+      }
+      
       throw error;
     }
     

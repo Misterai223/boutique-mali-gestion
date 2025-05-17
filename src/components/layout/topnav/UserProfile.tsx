@@ -35,6 +35,7 @@ export function UserProfile({ onLogout }: UserProfileProps) {
       setIsProfileLoading(true);
       try {
         const profile = await getCurrentUserProfile();
+        console.log("Profil récupéré dans UserProfile:", profile);
         setUserProfile(profile);
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -62,6 +63,11 @@ export function UserProfile({ onLogout }: UserProfileProps) {
     if (isAdmin) {
       return "Administrateur";
     }
+    
+    if (userProfile?.role === "admin") {
+      return "Administrateur";
+    }
+    
     return userProfile?.role === "employee" ? "Employé" : userProfile?.role || "Utilisateur";
   };
   
