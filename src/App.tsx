@@ -20,6 +20,7 @@ import { authService } from "./services/authService";
 import Finances from "./pages/Finances";
 import Inventory from "./pages/Inventory";
 import Reports from "./pages/Reports";
+import MediaLibrary from "./pages/MediaLibrary";
 import { toast } from "sonner";
 
 function App() {
@@ -191,6 +192,18 @@ function App() {
             isAuthenticated ? (
               <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
                 <Settings />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/media-library"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <MediaLibrary />
               </DashboardLayout>
             ) : (
               <Navigate to="/login" />

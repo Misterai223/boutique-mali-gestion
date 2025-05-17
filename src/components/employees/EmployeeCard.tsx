@@ -3,14 +3,15 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/types/employee";
-import { Edit, User } from "lucide-react";
+import { Edit, User, Trash } from "lucide-react";
 
 interface EmployeeCardProps {
   employee: Employee;
   onEdit: (employee: Employee) => void;
+  onDelete: (employee: Employee) => void;
 }
 
-const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
+const EmployeeCard = ({ employee, onEdit, onDelete }: EmployeeCardProps) => {
   // Function to determine the badge variant based on the role
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -21,7 +22,7 @@ const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
       case "cashier":
         return "secondary";
       case "salesperson":
-        return "secondary"; // Changed from "accent" to "secondary"
+        return "secondary"; 
       default:
         return "outline";
     }
@@ -44,7 +45,7 @@ const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden card-hover">
+    <Card className="overflow-hidden card-hover transition-all hover:shadow-md">
       <div className="aspect-square relative bg-muted">
         {employee.photoUrl ? (
           <img
@@ -66,9 +67,13 @@ const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
       </div>
       <CardContent className="p-4">
         <div>
-          <h3 className="font-medium text-lg">{employee.name}</h3>
-          <p className="text-sm text-muted-foreground">{employee.email}</p>
-          <p className="text-sm mt-2">{employee.phone}</p>
+          <h3 className="font-medium text-lg truncate">{employee.name}</h3>
+          {employee.email && (
+            <p className="text-sm text-muted-foreground truncate">{employee.email}</p>
+          )}
+          {employee.phone && (
+            <p className="text-sm mt-2">{employee.phone}</p>
+          )}
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between">
@@ -76,7 +81,15 @@ const EmployeeCard = ({ employee, onEdit }: EmployeeCardProps) => {
           <Edit className="h-4 w-4 mr-2" />
           Modifier
         </Button>
-        <Button size="sm">Détails</Button>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => onDelete(employee)}
+        >
+          <Trash className="h-4 w-4 mr-2" />
+          Supprimer
+        </Button>
       </CardFooter>
     </Card>
   );
