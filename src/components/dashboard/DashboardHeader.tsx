@@ -1,14 +1,23 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Activity } from "lucide-react";
+import { Calendar, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface DashboardHeaderProps {
   currentTime: Date;
+  onRefresh: () => void;
+  onSelectWeek: () => void;
+  isWeekSelected: boolean;
 }
 
-const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
+const DashboardHeader = ({ 
+  currentTime, 
+  onRefresh, 
+  onSelectWeek,
+  isWeekSelected 
+}: DashboardHeaderProps) => {
   // Formatter la date actuelle
   const formattedDate = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long',
@@ -21,6 +30,16 @@ const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(currentTime);
+
+  const handleRefresh = () => {
+    onRefresh();
+    toast.success("Données rafraîchies avec succès");
+  };
+
+  const handleSelectWeek = () => {
+    onSelectWeek();
+    toast.success(isWeekSelected ? "Affichage de toutes les données" : "Affichage des données de cette semaine");
+  };
 
   return (
     <motion.div 
@@ -54,12 +73,22 @@ const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4, duration: 0.3 }}
       >
-        <Button size="sm" variant="outline" className="flex items-center gap-1">
+        <Button 
+          size="sm" 
+          variant={isWeekSelected ? "default" : "outline"} 
+          className="flex items-center gap-1"
+          onClick={handleSelectWeek}
+        >
           <Calendar className="h-4 w-4" />
           <span>Cette semaine</span>
         </Button>
-        <Button size="sm" variant="default" className="flex items-center gap-1">
-          <Activity className="h-4 w-4" />
+        <Button 
+          size="sm" 
+          variant="default" 
+          className="flex items-center gap-1"
+          onClick={handleRefresh}
+        >
+          <RefreshCw className="h-4 w-4" />
           <span>Rafraîchir</span>
         </Button>
       </motion.div>
