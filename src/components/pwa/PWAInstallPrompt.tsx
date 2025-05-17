@@ -34,6 +34,15 @@ const PWAInstallPrompt = () => {
       // Stocker l'événement pour l'utiliser plus tard
       setInstallPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
+      
+      // Afficher une notification pour informer l'utilisateur
+      toast.info("Cette application peut être installée sur votre appareil", {
+        action: {
+          label: "Installer",
+          onClick: () => handleInstallClick(),
+        },
+        duration: 10000,
+      });
     };
 
     const handleAppInstalled = () => {
@@ -82,7 +91,7 @@ const PWAInstallPrompt = () => {
         <Button 
           size="sm" 
           variant="outline" 
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 animate-pulse hover:animate-none"
         >
           <Download className="h-4 w-4" />
           <span>Installer</span>

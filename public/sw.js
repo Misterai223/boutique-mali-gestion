@@ -7,11 +7,13 @@ const INITIAL_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
-  '/icons/icon-512x512.png'
+  '/icons/icon-512x512.png',
+  '/offline.html'
 ];
 
 // Installation du Service Worker
 self.addEventListener('install', (event) => {
+  console.log('Service Worker: Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -24,6 +26,7 @@ self.addEventListener('install', (event) => {
 
 // Activation du Service Worker
 self.addEventListener('activate', (event) => {
+  console.log('Service Worker: Activating...');
   // Nettoyer les anciens caches
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,7 +42,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Stratégie de cache pour les requêtes
+// Interception des requêtes de récupération
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
@@ -76,3 +79,36 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// Gérer les notifications push
+self.addEventListener('push', (event) => {
+  console.log('Push notification reçue', event);
+  
+  const title = 'Shop Manager';
+  const options = {
+    body: event.data ? event.data.text() : 'Nouvelle notification',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-72x72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: '1'
+    }
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Gérer les clics sur les notifications
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification cliquée', event);
+  
+  event.notification.close();
+  
+  event.waitUntil(
+    clients.openWindow('/')
+  );
+});
+
