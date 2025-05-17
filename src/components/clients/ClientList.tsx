@@ -9,16 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, ShoppingCart } from "lucide-react";
 import { Client } from "@/types/client";
 
 interface ClientListProps {
   clients: Client[];
   onEdit: (client: Client) => void;
   onDelete: (id: string) => void;
+  onAddPurchase: (client: Client) => void;
 }
 
-export default function ClientList({ clients, onEdit, onDelete }: ClientListProps) {
+export default function ClientList({ clients, onEdit, onDelete, onAddPurchase }: ClientListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -61,6 +62,14 @@ export default function ClientList({ clients, onEdit, onDelete }: ClientListProp
               <TableCell className="max-w-[200px] truncate">{client.address}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onAddPurchase(client)}
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    <span className="sr-only">Achats</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

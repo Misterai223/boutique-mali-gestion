@@ -1,6 +1,7 @@
 
-import { Client, CreateClientData, UpdateClientData } from "@/types/client";
+import { Client, CreateClientData, UpdateClientData, ClientWithPurchases } from "@/types/client";
 import { supabase } from "@/integrations/supabase/client";
+import { getClientPurchases } from "./clientPurchaseService";
 
 // Fonction pour récupérer tous les clients
 export const getClients = async (): Promise<Client[]> => {
@@ -17,8 +18,8 @@ export const getClients = async (): Promise<Client[]> => {
   return data as Client[];
 };
 
-// Fonction pour récupérer un client spécifique
-export const getClientById = async (id: string): Promise<Client | null> => {
+// Fonction pour récupérer un client spécifique avec ses achats
+export const getClientById = async (id: string): Promise<ClientWithPurchases | null> => {
   const { data, error } = await supabase
     .from('clients')
     .select('*')
@@ -30,7 +31,16 @@ export const getClientById = async (id: string): Promise<Client | null> => {
     throw error;
   }
 
-  return data as Client | null;
+  if (!data) return null;
+
+  // Récupérer les achats du client
+  try {
+    const purchases = await getClientPurchases(id);
+    return { ...(data as Client), purchases };
+  } catch (err) {
+    console.error("Erreur lors de la récupération des achats du client:", err);
+    return data as Client;
+  }
 };
 
 // Fonction pour créer un client

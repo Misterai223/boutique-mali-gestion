@@ -4,19 +4,24 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Client, CreateClientData, UpdateClientData } from "@/types/client";
+import { Client, ClientWithPurchases, CreateClientData, UpdateClientData, CreatePurchaseData } from "@/types/client";
 import { getClients, createClient, updateClient, deleteClient } from "@/services/clientService";
+import { addClientPurchase, deleteClientPurchase } from "@/services/clientPurchaseService";
 import ClientList from "@/components/clients/ClientList";
 import ClientForm from "@/components/clients/ClientForm";
 import ClientSearchFilter from "@/components/clients/ClientSearchFilter";
+import PurchaseForm from "@/components/clients/PurchaseForm";
+import PurchaseList from "@/components/clients/PurchaseList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
+  const [isPurchaseDialogOpen, setIsPurchaseDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentClient, setCurrentClient] = useState<Client | undefined>(undefined);
+  const [currentClient, setCurrentClient] = useState<ClientWithPurchases | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -61,12 +66,17 @@ export default function Clients() {
 
   const handleAddClient = () => {
     setCurrentClient(undefined);
-    setIsDialogOpen(true);
+    setIsClientDialogOpen(true);
   };
 
   const handleEditClient = (client: Client) => {
-    setCurrentClient(client);
-    setIsDialogOpen(true);
+    setCurrentClient(client as ClientWithPurchases);
+    setIsClientDialogOpen(true);
+  };
+
+  const handleAddPurchase = (client: Client) => {
+    setCurrentClient(client as ClientWithPurchases);
+    setIsPurchaseDialogOpen(true);
   };
 
   const handleDeleteClient = async (id: string) => {
@@ -81,6 +91,31 @@ export default function Clients() {
       toast({
         title: "Erreur",
         description: "Impossible de supprimer ce client",
+        variant: "destructive",
+      });
+      console.error(error);
+    }
+  };
+
+  const handleDeletePurchase = async (purchaseId: string) => {
+    try {
+      await deleteClientPurchase(purchaseId);
+      
+      if (currentClient) {
+        setCurrentClient({
+          ...currentClient,
+          purchases: currentClient.purchases?.filter(p => p.id !== purchaseId)
+        });
+      }
+      
+      toast({
+        title: "Succès",
+        description: "Achat supprimé avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer cet achat",
         variant: "destructive",
       });
       console.error(error);
@@ -112,7 +147,7 @@ export default function Clients() {
           description: "Client ajouté avec succès",
         });
       }
-      setIsDialogOpen(false);
+      setIsClientDialogOpen(false);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -123,6 +158,38 @@ export default function Clients() {
       });
       console.error(error);
     } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitPurchase = async (data: CreatePurchaseData) => {
+    setIsSubmitting(true);
+    try {
+      const newPurchase = await addClientPurchase(data);
+      
+      if (currentClient) {
+        // Mettre à jour la liste des achats du client
+        const updatedPurchases = currentClient.purchases ? [...currentClient.purchases, newPurchase] : [newPurchase];
+        setCurrentClient({
+          ...currentClient,
+          purchases: updatedPurchases
+        });
+      }
+      
+      toast({
+        title: "Succès",
+        description: "Produit ajouté avec succès",
+      });
+      
+      // Ne pas fermer le dialogue pour permettre d'ajouter plusieurs produits
+      setIsSubmitting(false);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce produit",
+        variant: "destructive",
+      });
+      console.error(error);
       setIsSubmitting(false);
     }
   };
@@ -152,10 +219,12 @@ export default function Clients() {
           clients={filteredClients}
           onEdit={handleEditClient}
           onDelete={handleDeleteClient}
+          onAddPurchase={handleAddPurchase}
         />
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Dialogue pour ajouter/modifier un client */}
+      <Dialog open={isClientDialogOpen} onOpenChange={setIsClientDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
@@ -165,9 +234,47 @@ export default function Clients() {
           <ClientForm
             initialData={currentClient}
             onSubmit={handleSubmitClient}
-            onCancel={() => setIsDialogOpen(false)}
+            onCancel={() => setIsClientDialogOpen(false)}
             isSubmitting={isSubmitting}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogue pour ajouter un achat */}
+      <Dialog open={isPurchaseDialogOpen} onOpenChange={setIsPurchaseDialogOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>
+              Produits achetés par {currentClient?.full_name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Tabs defaultValue="add" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="add">Ajouter un produit</TabsTrigger>
+              <TabsTrigger value="list">Liste des produits</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="add" className="mt-4">
+              {currentClient && (
+                <PurchaseForm
+                  clientId={currentClient.id}
+                  onSubmit={handleSubmitPurchase}
+                  onCancel={() => setIsPurchaseDialogOpen(false)}
+                  isSubmitting={isSubmitting}
+                />
+              )}
+            </TabsContent>
+            
+            <TabsContent value="list" className="mt-4">
+              {currentClient && currentClient.purchases && (
+                <PurchaseList
+                  purchases={currentClient.purchases}
+                  onDelete={handleDeletePurchase}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>

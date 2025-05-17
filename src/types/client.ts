@@ -20,3 +20,24 @@ export interface CreateClientData {
 export interface UpdateClientData extends Partial<CreateClientData> {
   id: string;
 }
+
+export interface ClientPurchase {
+  id: string;
+  client_id: string;
+  product_name: string;
+  purchase_date: string;
+  quantity: number;
+  price: number;
+}
+
+export interface CreatePurchaseData {
+  client_id: string;
+  product_name: string;
+  quantity?: number;
+  price: number;
+  purchase_date?: string;
+}
+
+export interface ClientWithPurchases extends Client {
+  purchases?: ClientPurchase[];
+}

@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_purchases: {
+        Row: {
+          client_id: string
+          id: string
+          price: number
+          product_name: string
+          purchase_date: string
+          quantity: number
+        }
+        Insert: {
+          client_id: string
+          id?: string
+          price: number
+          product_name: string
+          purchase_date?: string
+          quantity?: number
+        }
+        Update: {
+          client_id?: string
+          id?: string
+          price?: number
+          product_name?: string
+          purchase_date?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_purchases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string
