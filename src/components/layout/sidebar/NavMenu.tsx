@@ -48,6 +48,12 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
                       ? "bg-accent text-accent-foreground font-medium"
                       : "transparent"
                   )}
+                  onClick={(e) => {
+                    // Si on est déjà sur cette page, empêcher la navigation
+                    if (location.pathname === item.href) {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   <item.icon className={cn("h-[18px] w-[18px]", item.color)} />
                   {!isCollapsed && <span className="truncate">{item.title}</span>}

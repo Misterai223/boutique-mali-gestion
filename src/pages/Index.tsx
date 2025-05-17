@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
-import Dashboard from "./Dashboard";
 import LoadingScreen from "@/components/layout/LoadingScreen";
 
 const Index = ({ 
@@ -33,21 +33,14 @@ const Index = ({
     onAuthChange(true);
   };
   
-  const handleLogout = () => {
-    console.log("Index - handleLogout appelé");
-    onAuthChange(false);
-  };
-  
   if (!mounted) {
     return <LoadingScreen />;
   }
   
-  // Si l'utilisateur est authentifié, rediriger vers le tableau de bord
-  // Mais ne pas utiliser le DashboardLayout ici car il est déjà utilisé dans ProtectedRoute
+  // Si l'utilisateur est authentifié, rediriger vers le dashboard
   if (isAuthenticated) {
-    console.log("Index - User authentifié, redirection vers le dashboard");
-    // Ne pas rendre directement le dashboard ici pour éviter les duplications de layout
-    return <Dashboard />;
+    console.log("Index - User authentifié, redirection vers /dashboard");
+    return <Navigate to="/dashboard" replace />;
   }
   
   // Sinon, afficher le formulaire de login
