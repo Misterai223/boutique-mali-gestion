@@ -4,6 +4,73 @@ import { Session, User, AuthChangeEvent, AuthError } from "@supabase/supabase-js
 import { toast } from "sonner";
 
 export const authService = {
+  // Nouvelle méthode simplifiée pour la connexion
+  async simpleLogin(email: string, password: string) {
+    try {
+      console.log("Tentative de connexion avec email:", email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error("Erreur d'authentification Supabase:", error);
+        
+        // Messages d'erreur plus conviviaux
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Email ou mot de passe incorrect");
+          return { 
+            data: null, 
+            error: new Error("Email ou mot de passe incorrect") 
+          };
+        }
+        
+        toast.error(error.message || "Erreur de connexion");
+        return { data: null, error };
+      }
+      
+      // Si nous avons une session, c'est un succès
+      if (data.session) {
+        console.log("Authentification réussie");
+        localStorage.setItem("isAuthenticated", "true");
+        
+        // Récupération des données de profil
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, access_level')
+            .eq('id', data.user.id)
+            .maybeSingle();
+          
+          if (profileData) {
+            localStorage.setItem("userRole", profileData.role);
+            localStorage.setItem("accessLevel", profileData.access_level.toString());
+            console.log("Profil utilisateur chargé:", profileData);
+          } else {
+            // Valeurs par défaut si pas de profil
+            localStorage.setItem("userRole", "user");
+            localStorage.setItem("accessLevel", "1");
+          }
+        } catch (profileError) {
+          console.warn("Erreur lors de la récupération du profil:", profileError);
+          // Valeurs par défaut en cas d'erreur
+          localStorage.setItem("userRole", "user");
+          localStorage.setItem("accessLevel", "1");
+        }
+      }
+      
+      return { data, error: null };
+    } catch (error: any) {
+      console.error("Exception lors de la connexion:", error);
+      toast.error("Une erreur inattendue s'est produite");
+      return { 
+        data: null, 
+        error: new Error("Une erreur inattendue s'est produite") 
+      };
+    }
+  },
+  
   async loginWithErrorHandling(email: string, password: string): Promise<{
     data: { session: Session | null; user: User | null } | null;
     error: AuthError | Error | null;
@@ -78,23 +145,52 @@ export const authService = {
   
   async login(email: string, password: string): Promise<boolean> {
     try {
-      const result = await this.loginWithErrorHandling(email, password);
-      if (result.error) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error("Erreur de connexion:", error);
+        
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Email ou mot de passe incorrect");
+        } else {
+          toast.error(error.message || "Erreur de connexion");
+        }
+        
         return false;
       }
       
-      if (result.data?.session) {
-        // Vérifier explicitement que la connexion est établie
-        const session = await this.getSession();
-        if (session) {
-          localStorage.setItem("isAuthenticated", "true");
-          return true;
-        } else {
-          toast.error("Impossible d'initialiser la session");
-          return false;
+      if (data.session) {
+        // Vérifier explicitement que la session est établie
+        localStorage.setItem("isAuthenticated", "true");
+        
+        // Récupérer le profil utilisateur
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, access_level')
+            .eq('id', data.user.id)
+            .maybeSingle();
+            
+          if (profileData) {
+            localStorage.setItem("userRole", profileData.role);
+            localStorage.setItem("accessLevel", profileData.access_level.toString());
+          } else {
+            localStorage.setItem("userRole", "user");
+            localStorage.setItem("accessLevel", "1");
+          }
+        } catch (profileError) {
+          console.warn("Erreur lors de la récupération du profil:", profileError);
+          localStorage.setItem("userRole", "user");
+          localStorage.setItem("accessLevel", "1");
         }
+        
+        return true;
       }
       
+      toast.error("Impossible d'établir une session");
       return false;
     } catch (error: any) {
       toast.error(`Erreur de connexion: ${error.message}`);
@@ -145,7 +241,7 @@ export const authService = {
           .from('profiles')
           .select('role, access_level')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
           
         if (!profileError && profileData) {
           localStorage.setItem("userRole", profileData.role);

@@ -24,21 +24,22 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       return;
     }
     
-    // Reset error message and set loading state
+    // Réinitialiser l'état avant de commencer
     setErrorMsg("");
     setIsLoading(true);
     
     try {
-      // Appeler le service d'authentification
-      const result = await authService.loginWithErrorHandling(email, password);
+      // Version simplifiée sans gérer la session manuellement
+      const { data, error } = await authService.simpleLogin(email, password);
       
-      if (result.error) {
-        setErrorMsg(result.error.message);
+      if (error) {
+        console.error("Erreur de connexion:", error);
+        setErrorMsg(error.message);
         setIsLoading(false);
         return;
       }
       
-      if (result.data?.session) {
+      if (data?.user) {
         toast.success("Connexion réussie!");
         onLogin();
       } else {
