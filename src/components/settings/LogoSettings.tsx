@@ -33,6 +33,7 @@ const LogoSettings = () => {
             useCloudinary={useCloudinary}
             onFileChange={handleFileChange}
             onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
+            onMediaLibrarySelect={handleSelectLogo}
           />
           
           <CurrentLogo logoUrl={currentLogo} />

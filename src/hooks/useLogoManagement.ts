@@ -54,14 +54,14 @@ export const useLogoManagement = () => {
     
     // Check file type
     if (!['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'].includes(file.type)) {
-      toast.error("Unsupported file format. Please use JPG, PNG, GIF, or SVG.");
+      toast.error("Format de fichier non supporté. Veuillez utiliser JPG, PNG, GIF ou SVG.");
       return;
     }
     
     // Check size (maximum 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
-      toast.error("File is too large. Maximum 5MB.");
+      toast.error("Le fichier est trop volumineux. 5MB maximum.");
       return;
     }
     
@@ -85,7 +85,7 @@ export const useLogoManagement = () => {
       }
       
       if (url) {
-        toast.success("Logo uploaded successfully");
+        toast.success("Logo téléchargé avec succès");
         // Refresh the full list to ensure consistency
         await fetchLogos();
         // Set as current logo
@@ -109,7 +109,12 @@ export const useLogoManagement = () => {
   const handleSelectLogo = (url: string) => {
     setCurrentLogo(url);
     localStorage.setItem("shopLogo", url);
-    toast.success("Logo set as current logo");
+    
+    // Dispatch a custom event to notify other components of the changes
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
+    
+    toast.success("Logo défini comme logo actuel");
   };
 
   const handleDeleteLogo = async (url: string) => {
@@ -135,10 +140,14 @@ export const useLogoManagement = () => {
       if (url === currentLogo) {
         localStorage.removeItem("shopLogo");
         setCurrentLogo(null);
+        
+        // Dispatch a custom event to notify other components of the changes
+        const event = new Event('localStorage.updated');
+        document.dispatchEvent(event);
       }
       
       if (success) {
-        toast.success("Logo deleted successfully");
+        toast.success("Logo supprimé avec succès");
       }
     } catch (error) {
       console.error("Error deleting:", error);
