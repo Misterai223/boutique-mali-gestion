@@ -93,8 +93,27 @@ export const authService = {
     return supabase.auth.onAuthStateChange(callback);
   },
   
-  async updatePassword(newPassword: string): Promise<boolean> {
+  async updatePassword(currentPassword: string, newPassword: string): Promise<boolean> {
     try {
+      // Vérifier le mot de passe actuel
+      const user = await this.getCurrentUser();
+      if (!user || !user.email) {
+        toast.error("Aucun utilisateur connecté");
+        return false;
+      }
+      
+      // Tentative de connexion avec le mot de passe actuel pour vérification
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+      });
+      
+      if (signInError) {
+        toast.error("Mot de passe actuel incorrect");
+        return false;
+      }
+      
+      // Mettre à jour le mot de passe
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
