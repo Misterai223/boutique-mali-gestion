@@ -15,7 +15,9 @@ export function ShopLogo({ shopName, shopLogo, isCollapsed }: ShopLogoProps) {
   
   // Reset error state when logo URL changes
   useEffect(() => {
-    setImageError(false);
+    if (shopLogo) {
+      setImageError(false);
+    }
   }, [shopLogo]);
 
   const handleImageError = () => {
@@ -53,12 +55,12 @@ export function ShopLogo({ shopName, shopLogo, isCollapsed }: ShopLogoProps) {
 
   return (
     <div className="px-3 py-2">
-      <Link to="/" className="flex items-center gap-2 px-1">
-        <div className="relative h-9 w-9 overflow-hidden rounded-lg border">
+      <Link to="/" className="flex items-center gap-2 px-1 max-w-full">
+        <div className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg border">
           {renderLogoImage()}
         </div>
-        <div className="flex flex-col">
-          <span className="text-lg font-semibold tracking-tight overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
+        <div className="flex flex-col min-w-0">
+          <span className="text-lg font-semibold tracking-tight truncate max-w-[150px]">
             {shopName}
           </span>
           <span className="text-xs text-muted-foreground">Gestion commerciale</span>
