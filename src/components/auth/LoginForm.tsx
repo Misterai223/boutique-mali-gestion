@@ -8,6 +8,7 @@ import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import LoginButton from "./LoginButton";
 import LoginError from "./LoginError";
+import { toast } from "sonner";
 
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
@@ -21,16 +22,30 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
     setErrorMsg("");
     
     try {
-      const success = await authService.login(email, password);
+      if (!email || !password) {
+        setErrorMsg("Veuillez remplir tous les champs");
+        setIsLoading(false);
+        return;
+      }
       
-      if (success) {
+      console.log("Tentative de connexion avec:", { email });
+      const { data, error } = await authService.loginWithErrorHandling(email, password);
+      
+      if (error) {
+        console.error("Erreur de connexion:", error);
+        setErrorMsg(error.message || "Identifiants incorrects. Veuillez réessayer.");
+        return;
+      }
+      
+      if (data?.session) {
         localStorage.setItem("isAuthenticated", "true");
+        toast.success(`Bienvenue ${data.user?.email || ''}`);
         onLogin();
       } else {
-        setErrorMsg("Identifiants incorrects. Veuillez réessayer.");
+        setErrorMsg("Erreur lors de la connexion. Veuillez réessayer.");
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Exception lors de la connexion:", error);
       setErrorMsg(error.message || "Erreur lors de la connexion");
     } finally {
       setIsLoading(false);

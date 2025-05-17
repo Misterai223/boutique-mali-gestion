@@ -1,33 +1,70 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
+import { Session, User, AuthChangeEvent, AuthError } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 export const authService = {
-  async login(email: string, password: string): Promise<boolean> {
+  async loginWithErrorHandling(email: string, password: string): Promise<{
+    data: { session: Session | null; user: User | null } | null;
+    error: AuthError | Error | null;
+  }> {
     try {
+      console.log("Tentative de connexion avec email:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur de connexion Supabase:", error);
+        
+        // Message d'erreur plus détaillé et convivial
+        if (error.message.includes("Invalid login credentials")) {
+          return { 
+            data: null, 
+            error: new Error("Email ou mot de passe incorrect. Veuillez réessayer.") 
+          };
+        }
+        
+        return { data: null, error };
+      }
+      
+      console.log("Connexion réussie, récupération du profil utilisateur");
       
       // Récupérer le profil utilisateur après connexion
       if (data.session) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, access_level')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (!profileError && profileData) {
-          localStorage.setItem("userRole", profileData.role);
-          localStorage.setItem("accessLevel", profileData.access_level.toString());
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role, access_level')
+            .eq('id', data.user.id)
+            .single();
+            
+          if (!profileError && profileData) {
+            localStorage.setItem("userRole", profileData.role);
+            localStorage.setItem("accessLevel", profileData.access_level.toString());
+            console.log("Profil utilisateur chargé:", profileData);
+          } else if (profileError) {
+            console.warn("Impossible de récupérer le profil:", profileError);
+          }
+        } catch (profileFetchError) {
+          console.error("Erreur lors de la récupération du profil:", profileFetchError);
         }
       }
       
-      return !!data.session;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error("Exception lors de la connexion:", error);
+      return { 
+        data: null, 
+        error: new Error("Une erreur inattendue s'est produite. Veuillez réessayer.") 
+      };
+    }
+  },
+  
+  async login(email: string, password: string): Promise<boolean> {
+    try {
+      const result = await this.loginWithErrorHandling(email, password);
+      return !!result.data?.session;
     } catch (error: any) {
       toast.error(`Erreur de connexion: ${error.message}`);
       return false;
