@@ -9,6 +9,7 @@ import { UserProfile } from "./topnav/UserProfile";
 import { NotificationButton } from "./topnav/NotificationButton";
 import PWAInstallPrompt from "../pwa/PWAInstallPrompt";
 import { toast } from "sonner";
+import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 
 export interface TopNavProps {
   toggleSidebar: () => void;
@@ -19,6 +20,8 @@ export interface TopNavProps {
 const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
   
   useEffect(() => {
     const handleOnlineStatus = () => {
@@ -38,7 +41,6 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     
     // Afficher le prompt d'installation après un délai
     const timer = setTimeout(() => {
-      console.log("Affichage du prompt d'installation PWA");
       setShowInstallPrompt(true);
     }, 2000);
     
@@ -49,13 +51,11 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     };
   }, []);
 
-  console.log("TopNav - showInstallPrompt:", showInstallPrompt);
-  
   return (
     <header className="sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between h-14 px-4">
+      <div className="flex items-center justify-between h-14 px-2 sm:px-4">
         {/* Partie gauche */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -65,25 +65,36 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
           >
             <MenuSquare className="h-5 w-5" />
           </Button>
-          <ShopBranding />
+          {!isMobile && <ShopBranding />}
         </div>
 
         {/* Partie centrale - Recherche */}
-        <div className="hidden md:block flex-1 mx-4">
+        <div className={`${isMobile ? "hidden" : "hidden md:block"} flex-1 mx-4`}>
           <SearchBar />
         </div>
 
         {/* Partie droite */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {!isOnline && (
-            <div className="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-md">
+            <div className="hidden sm:block text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-md">
               Hors ligne
             </div>
           )}
-          {showInstallPrompt && <PWAInstallPrompt />}
-          <NotificationButton />
-          <ThemeToggle />
-          <UserProfile onLogout={onLogout} />
+          {showInstallPrompt && !isMobile && <PWAInstallPrompt />}
+          
+          {/* Sur mobile, afficher seulement les éléments essentiels */}
+          {isMobile ? (
+            <>
+              <SearchBar />
+              <UserProfile onLogout={onLogout} />
+            </>
+          ) : (
+            <>
+              <NotificationButton />
+              <ThemeToggle />
+              <UserProfile onLogout={onLogout} />
+            </>
+          )}
         </div>
       </div>
     </header>

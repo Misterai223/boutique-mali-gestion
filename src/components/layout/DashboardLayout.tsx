@@ -17,10 +17,23 @@ const DashboardLayout = ({
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(isMobile);
   
-  // Gérer les changements de taille d'écran
+  // Gérer les changements de taille d'écran et fermer automatiquement la sidebar sur mobile
   useEffect(() => {
     setCollapsed(isMobile);
-  }, [isMobile]);
+    
+    // Sur mobile, si la sidebar est ouverte, la refermer au scroll
+    const handleScroll = () => {
+      if (isMobile && !collapsed) {
+        setCollapsed(true);
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMobile, collapsed]);
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);

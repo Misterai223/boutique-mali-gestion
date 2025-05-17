@@ -11,7 +11,7 @@ import {
   AreaChart,
   Area
 } from "recharts";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { AnimatePresence, motion } from "framer-motion";
 import { CircleDashed } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -29,6 +29,7 @@ const data = [
 
 const SalesChart = () => {
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
   const [activeData, setActiveData] = useState("week");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,7 +56,7 @@ const SalesChart = () => {
     >
       <Card className="col-span-2 overflow-hidden border-none shadow-lg bg-white dark:bg-slate-900">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10 dark:to-transparent">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <CardTitle className="text-xl md:text-2xl font-bold">Ventes de la semaine</CardTitle>
               <CardDescription className="text-base mt-1">
@@ -63,10 +64,10 @@ const SalesChart = () => {
               </CardDescription>
             </div>
             
-            <div className="flex gap-2 p-1 bg-muted/30 rounded-lg">
+            <div className="flex gap-2 p-1 bg-muted/30 rounded-lg w-full sm:w-auto">
               <button
                 onClick={() => setActiveData("week")}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors flex-1 sm:flex-none ${
                   activeData === "week" 
                     ? "bg-primary text-white"
                     : "hover:bg-muted"
@@ -76,7 +77,7 @@ const SalesChart = () => {
               </button>
               <button
                 onClick={() => setActiveData("month")}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors flex-1 sm:flex-none ${
                   activeData === "month" 
                     ? "bg-primary text-white"
                     : "hover:bg-muted"
@@ -86,7 +87,7 @@ const SalesChart = () => {
               </button>
               <button
                 onClick={() => setActiveData("year")}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors flex-1 sm:flex-none ${
                   activeData === "year" 
                     ? "bg-primary text-white"
                     : "hover:bg-muted"
@@ -97,7 +98,7 @@ const SalesChart = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="h-[350px] pt-4">
+        <CardContent className={`${isMobile ? 'h-[250px]' : 'h-[350px]'} pt-4`}>
           {isLoading ? (
             <div className="flex h-full w-full items-center justify-center">
               <CircleDashed className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -109,8 +110,8 @@ const SalesChart = () => {
                 data={data}
                 margin={{
                   top: 10,
-                  right: 30,
-                  left: 10,
+                  right: isMobile ? 10 : 30,
+                  left: isMobile ? 5 : 10,
                   bottom: 5,
                 }}
               >
@@ -129,14 +130,14 @@ const SalesChart = () => {
                   dataKey="name"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
                 />
                 <YAxis
                   tickFormatter={formatValue}
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fontSize: 12 }}
-                  width={40}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                  width={isMobile ? 30 : 40}
                 />
                 <Tooltip
                   formatter={(value) => [`${value.toLocaleString()} F CFA`, 'Ventes']}

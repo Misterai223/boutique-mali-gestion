@@ -25,7 +25,7 @@ export function SearchBar() {
   
   // Version active sur mobile (plein écran) ou version desktop
   return (
-    <div className={`relative ${isMobile ? "fixed inset-0 z-50 p-4 bg-background/95 flex items-center" : "w-64"}`}>
+    <div className={`relative ${isMobile ? "fixed inset-0 z-50 p-4 bg-background/95 flex items-center" : "w-full max-w-xs lg:max-w-md"}`}>
       {isMobile && (
         <button
           onClick={() => setIsActive(false)}

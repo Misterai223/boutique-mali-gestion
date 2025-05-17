@@ -43,7 +43,7 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
                 <Link
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground",
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary/30",
                     location.pathname === item.href
                       ? "bg-accent text-accent-foreground font-medium"
                       : "transparent"
@@ -55,11 +55,15 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
                     }
                   }}
                 >
-                  <item.icon className={cn("h-[18px] w-[18px]", item.color)} />
-                  {!isCollapsed && <span className="truncate">{item.title}</span>}
+                  <item.icon className={cn("h-[18px] w-[18px] flex-shrink-0", item.color)} />
+                  {!isCollapsed && (
+                    <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      {item.title}
+                    </span>
+                  )}
                   {!isCollapsed && item.badge && (
                     <Badge 
-                      className="ml-auto h-5 min-w-5 px-1 flex items-center justify-center bg-primary text-primary-foreground" 
+                      className="ml-auto h-5 min-w-5 px-1 flex items-center justify-center bg-primary text-primary-foreground flex-shrink-0" 
                       variant="secondary"
                     >
                       {item.badge}
@@ -69,6 +73,7 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-accent text-accent-foreground font-medium">
                 {item.title}
+                {item.badge && <span className="ml-1">({item.badge})</span>}
               </TooltipContent>
             </Tooltip>
           ))}

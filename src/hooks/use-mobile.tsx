@@ -4,15 +4,17 @@ import * as React from "react"
 const MOBILE_BREAKPOINT = 768 // Correspond à la valeur md de Tailwind
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < MOBILE_BREAKPOINT
+    }
+    return false
+  })
   
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    
-    // Vérifier au chargement initial
-    checkMobile()
     
     // Ajouter un écouteur d'événement pour les changements de taille
     window.addEventListener("resize", checkMobile)
@@ -21,12 +23,23 @@ export function useIsMobile() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  return !!isMobile
+  return isMobile
 }
 
 // Hook pour avoir des breakpoints plus précis
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = React.useState<'xs'|'sm'|'md'|'lg'|'xl'|'2xl'>('md')
+  const [breakpoint, setBreakpoint] = React.useState<'xs'|'sm'|'md'|'lg'|'xl'|'2xl'>(() => {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth
+      if (width < 640) return 'xs'
+      if (width < 768) return 'sm'
+      if (width < 1024) return 'md'
+      if (width < 1280) return 'lg'
+      if (width < 1536) return 'xl'
+      return '2xl'
+    }
+    return 'md' // Valeur par défaut
+  })
   
   React.useEffect(() => {
     const checkBreakpoint = () => {
@@ -39,10 +52,35 @@ export function useBreakpoint() {
       return setBreakpoint('2xl')
     }
     
-    checkBreakpoint()
     window.addEventListener("resize", checkBreakpoint)
     return () => window.removeEventListener("resize", checkBreakpoint)
   }, [])
 
   return breakpoint
+}
+
+// Hook pour récupérer la taille de l'écran
+export function useWindowSize() {
+  const [windowSize, setWindowSize] = React.useState<{
+    width: number;
+    height: number;
+  }>({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  })
+  
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+    
+    window.addEventListener("resize", handleResize)
+    
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+  
+  return windowSize
 }

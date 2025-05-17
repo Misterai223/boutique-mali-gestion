@@ -38,7 +38,7 @@ const StatsSection = ({ conversionRate, inView }: StatsSectionProps) => {
   
   // Déterminer le nombre de colonnes en fonction de la taille de l'écran
   const getGridCols = () => {
-    if (breakpoint === 'xs') return 'grid-cols-1 gap-2';
+    if (breakpoint === 'xs') return 'grid-cols-1 gap-3';
     if (breakpoint === 'sm') return 'grid-cols-2 gap-3';
     if (breakpoint === 'md') return 'grid-cols-2 gap-4';
     return 'grid-cols-4 gap-4';
