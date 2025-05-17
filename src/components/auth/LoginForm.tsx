@@ -29,33 +29,24 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
     setIsLoading(true);
     
     try {
-      console.log("Tentative de connexion avec:", { email });
+      // Appeler le service d'authentification
+      const result = await authService.loginWithErrorHandling(email, password);
       
-      // Utiliser la méthode de connexion améliorée avec timeout pour éviter le blocage
-      const loginPromise = authService.login(email, password);
+      if (result.error) {
+        setErrorMsg(result.error.message);
+        setIsLoading(false);
+        return;
+      }
       
-      // Set a timeout to prevent UI from being stuck in loading state
-      const timeoutPromise = new Promise<boolean>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error("Délai de connexion dépassé. Veuillez réessayer."));
-        }, 10000); // 10 seconds timeout
-      });
-      
-      // Race between login and timeout
-      const result = await Promise.race([loginPromise, timeoutPromise]);
-      
-      if (result) {
-        console.log("Connexion réussie, redirection...");
-        toast.success("Bienvenue !");
+      if (result.data?.session) {
+        toast.success("Connexion réussie!");
         onLogin();
       } else {
-        console.warn("Échec de la connexion");
+        setErrorMsg("Erreur inattendue lors de la connexion");
         setIsLoading(false);
-        // Les messages d'erreur sont déjà gérés par authService.login
       }
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);
-      toast.error(error.message || "Erreur lors de la connexion");
       setErrorMsg(error.message || "Erreur lors de la connexion");
       setIsLoading(false);
     }
