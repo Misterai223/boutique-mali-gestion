@@ -1,5 +1,11 @@
 
-import { cloudinaryClient, isCloudinaryConfigured } from '@/integrations/cloudinary/client';
+import { 
+  isCloudinaryConfigured, 
+  getCloudName, 
+  getApiKey, 
+  getUploadUrl, 
+  configureCloudinary 
+} from '@/integrations/cloudinary/client';
 import { toast } from 'sonner';
 
 // Configuration et types
@@ -31,9 +37,7 @@ export const cloudinaryService = {
    * Configure les identifiants Cloudinary
    */
   configureCredentials: (cloudName: string, apiKey: string, apiSecret: string): void => {
-    localStorage.setItem('CLOUDINARY_CLOUD_NAME', cloudName);
-    localStorage.setItem('CLOUDINARY_API_KEY', apiKey);
-    localStorage.setItem('CLOUDINARY_API_SECRET', apiSecret);
+    configureCloudinary(cloudName, apiKey, apiSecret);
     toast.success('Identifiants Cloudinary enregistrés');
   },
 
@@ -48,11 +52,10 @@ export const cloudinaryService = {
 
     try {
       // Cette fonction utilise l'API Upload de Cloudinary directement via le frontend
-      // Remarque: En production, cette opération devrait idéalement être effectuée via le backend
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', 'shop_manager_upload'); // Preset non signé configuré dans Cloudinary
-      formData.append('cloud_name', localStorage.getItem('CLOUDINARY_CLOUD_NAME') || '');
+      formData.append('cloud_name', getCloudName());
       
       if (options.folder) {
         formData.append('folder', options.folder);
@@ -67,8 +70,7 @@ export const cloudinaryService = {
       }
 
       // URL de l'API d'upload de Cloudinary
-      const cloudName = localStorage.getItem('CLOUDINARY_CLOUD_NAME');
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+      const uploadUrl = getUploadUrl();
       
       const response = await fetch(uploadUrl, {
         method: 'POST',
@@ -95,7 +97,6 @@ export const cloudinaryService = {
     try {
       // Cette fonction devrait idéalement être implémentée via le backend
       // Pour le moment, nous allons utiliser une approche simplifiée
-      // Note: Cela nécessiterait d'implémenter une fonction backend ou un edge function avec Supabase
       
       console.log(`Recherche des fichiers dans le dossier ${folder} (fonctionnalité limitée en frontend)`);
       

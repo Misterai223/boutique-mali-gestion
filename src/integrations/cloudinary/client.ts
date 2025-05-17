@@ -1,20 +1,7 @@
 
-// Configuration du client Cloudinary
-import { v2 as cloudinary } from 'cloudinary';
+// Configuration client Cloudinary pour le frontend
 
-// Initialisation de la configuration Cloudinary
-export const initCloudinary = () => {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || localStorage.getItem('CLOUDINARY_CLOUD_NAME') || '',
-    api_key: process.env.CLOUDINARY_API_KEY || localStorage.getItem('CLOUDINARY_API_KEY') || '',
-    api_secret: process.env.CLOUDINARY_API_SECRET || localStorage.getItem('CLOUDINARY_API_SECRET') || '',
-    secure: true
-  });
-
-  return cloudinary;
-};
-
-// Fonction pour vérifier si les clés Cloudinary sont configurées
+// Vérifie si les clés Cloudinary sont configurées dans localStorage
 export const isCloudinaryConfigured = (): boolean => {
   const cloudName = localStorage.getItem('CLOUDINARY_CLOUD_NAME');
   const apiKey = localStorage.getItem('CLOUDINARY_API_KEY');
@@ -23,5 +10,25 @@ export const isCloudinaryConfigured = (): boolean => {
   return !!(cloudName && apiKey && apiSecret);
 };
 
-// Client Cloudinary initialisé par défaut
-export const cloudinaryClient = initCloudinary();
+// Obtient le nom du cloud Cloudinary
+export const getCloudName = (): string => {
+  return localStorage.getItem('CLOUDINARY_CLOUD_NAME') || '';
+};
+
+// Obtient la clé API Cloudinary
+export const getApiKey = (): string => {
+  return localStorage.getItem('CLOUDINARY_API_KEY') || '';
+};
+
+// Obtient l'URL de base pour les uploads
+export const getUploadUrl = (): string => {
+  const cloudName = getCloudName();
+  return `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+};
+
+// Initialise la configuration Cloudinary
+export const configureCloudinary = (cloudName: string, apiKey: string, apiSecret: string): void => {
+  localStorage.setItem('CLOUDINARY_CLOUD_NAME', cloudName);
+  localStorage.setItem('CLOUDINARY_API_KEY', apiKey);
+  localStorage.setItem('CLOUDINARY_API_SECRET', apiSecret);
+};
