@@ -28,14 +28,22 @@ const Index = ({
       try {
         const session = await authService.getSession();
         if (session) {
-          // Récupérer les données utilisateur
-          const userData = await authService.getCurrentUser();
-          if (userData) {
-            console.log("Session valide trouvée, utilisateur authentifié:", userData?.email);
-            onAuthChange(true);
-            localStorage.setItem("isAuthenticated", "true");
-            toast.success(`Bienvenue sur Shop Manager`);
-          }
+          console.log("Session valide trouvée, utilisateur authentifié");
+          onAuthChange(true);
+          localStorage.setItem("isAuthenticated", "true");
+          
+          // Récupérer les données utilisateur de manière asynchrone
+          setTimeout(async () => {
+            try {
+              const userData = await authService.getCurrentUser();
+              if (userData) {
+                console.log("Données utilisateur chargées:", userData?.email);
+                toast.success(`Bienvenue sur Shop Manager`);
+              }
+            } catch (err) {
+              console.error("Erreur lors du chargement des données utilisateur:", err);
+            }
+          }, 0);
         } else {
           console.log("Aucune session active trouvée");
           localStorage.removeItem("isAuthenticated");
@@ -54,26 +62,22 @@ const Index = ({
     const { data: { subscription } } = authService.subscribeToAuthChanges((event, session) => {
       console.log("Événement d'authentification global:", event);
       
-      if (session) {
+      if (event === 'SIGNED_IN' && session) {
         console.log("Session active détectée, mise à jour de l'état");
-        setTimeout(() => {
-          onAuthChange(true);
-        }, 0);
+        onAuthChange(true);
       } else if (event === 'SIGNED_OUT') {
         console.log("Déconnexion détectée, mise à jour de l'état");
-        setTimeout(() => {
-          onAuthChange(false);
-          localStorage.removeItem("userRole");
-          localStorage.removeItem("accessLevel");
-          localStorage.removeItem("isAuthenticated");
-        }, 0);
+        onAuthChange(false);
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("accessLevel");
+        localStorage.removeItem("isAuthenticated");
       }
     });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, [onAuthChange, navigate]);
+  }, [onAuthChange]);
   
   // Gérer le thème au chargement initial
   useEffect(() => {

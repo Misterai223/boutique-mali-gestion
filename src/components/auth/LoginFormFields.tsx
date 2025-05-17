@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
@@ -30,59 +30,6 @@ const LoginFormFields = ({
   onLogin
 }: LoginFormFieldsProps) => {
   const navigate = useNavigate();
-  const [hasRedirected, setHasRedirected] = useState(false);
-
-  // Vérification initiale de session
-  useEffect(() => {
-    const checkSession = async () => {
-      if (hasRedirected) return; // Éviter plusieurs redirections
-      
-      setIsLoading(true);
-      try {
-        const session = await authService.getSession();
-        if (session) {
-          console.log("Session existante trouvée, connexion automatique");
-          // S'assurer que le profil utilisateur est également chargé
-          await authService.getCurrentUser();
-          setHasRedirected(true);
-          onLogin();
-          navigate('/', { replace: true });
-        }
-      } catch (error) {
-        console.error("Erreur lors de la vérification de session:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkSession();
-  }, [onLogin, setIsLoading, navigate, hasRedirected]);
-
-  // S'abonner aux changements d'état d'authentification
-  useEffect(() => {
-    if (hasRedirected) return; // Ne pas ajouter de listener si déjà redirigé
-    
-    const { data: { subscription } } = authService.subscribeToAuthChanges(
-      (event, session) => {
-        console.log("Événement d'authentification:", event);
-        if (event === "SIGNED_IN" && session) {
-          console.log("Événement de connexion détecté");
-          
-          if (!hasRedirected) {
-            setHasRedirected(true);
-            setTimeout(() => {
-              onLogin();
-              navigate('/', { replace: true });
-            }, 0);
-          }
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [onLogin, navigate, hasRedirected]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +66,6 @@ const LoginFormFields = ({
         console.log("Session établie avec succès:", data.session.user.email);
         localStorage.setItem("isAuthenticated", "true");
         toast.success("Connexion réussie!");
-        setHasRedirected(true);
         onLogin();
         navigate('/', { replace: true });
       } else {

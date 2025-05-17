@@ -7,21 +7,20 @@ import { authService } from "@/services/authService";
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const navigate = useNavigate();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [hasRedirected, setHasRedirected] = useState(false); // Ajouter un état pour éviter les redirections multiples
   
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
     const checkAuthStatus = async () => {
-      if (hasRedirected) return; // Ne pas continuer si déjà redirigé
-      
       setIsCheckingAuth(true);
       try {
         const session = await authService.getSession();
         if (session) {
           console.log("Session active trouvée dans LoginForm, redirection vers /");
-          setHasRedirected(true); // Marquer comme redirigé
-          onLogin(); // Met à jour l'état d'authentification
+          // Mettre à jour l'état global avant la redirection
+          onLogin();
+          // Utiliser replace: true pour éviter les problèmes d'historique de navigation
           navigate("/", { replace: true });
+          return;
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de session:", error);
@@ -31,7 +30,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
     };
     
     checkAuthStatus();
-  }, [navigate, onLogin, hasRedirected]);
+  }, [navigate, onLogin]);
   
   if (isCheckingAuth) {
     return <div className="flex justify-center items-center min-h-screen">
