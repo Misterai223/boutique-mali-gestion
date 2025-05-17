@@ -37,6 +37,7 @@ const DashboardHeader = ({
   // État pour le sélecteur de date
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>(undefined);
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Formatter la date actuelle
   const formattedDate = new Intl.DateTimeFormat('fr-FR', {
@@ -65,8 +66,14 @@ const DashboardHeader = ({
   );
 
   const handleRefresh = () => {
+    setIsRefreshing(true);
     onRefresh();
-    toast.success("Données rafraîchies avec succès");
+    
+    // Animation pendant le rafraîchissement
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.success("Données rafraîchies avec succès");
+    }, 800);
   };
 
   const handleSelectWeek = () => {
@@ -140,11 +147,12 @@ const DashboardHeader = ({
         <Button 
           size="sm" 
           variant="default" 
-          className="flex items-center gap-1"
+          className={`flex items-center gap-1 ${isRefreshing ? 'opacity-80' : ''}`}
           onClick={handleRefresh}
+          disabled={isRefreshing}
         >
-          <RefreshCw className="h-4 w-4" />
-          <span>Rafraîchir</span>
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span>{isRefreshing ? 'Rafraîchissement...' : 'Rafraîchir'}</span>
         </Button>
       </motion.div>
 

@@ -90,12 +90,12 @@ const Dashboard = () => {
       } else {
         // Données complètes (sans filtre)
         setSalesData({
-          todaySales: "120,000",
-          weekSales: "785,350",
-          monthSales: "8,500,000",
-          totalCustomers: "1,257",
-          avgOrderValue: "32,500",
-          pendingOrders: "23"
+          todaySales: Math.round(120000 + Math.random() * 30000).toLocaleString('fr-FR'),
+          weekSales: Math.round(785350 + Math.random() * 50000).toLocaleString('fr-FR'),
+          monthSales: Math.round(8500000 + Math.random() * 300000).toLocaleString('fr-FR'),
+          totalCustomers: Math.round(1257 + Math.random() * 50).toString(),
+          avgOrderValue: Math.round(32500 + Math.random() * 3000).toLocaleString('fr-FR'),
+          pendingOrders: Math.round(23 + Math.random() * 10).toString()
         });
       }
       setLoading(false);
@@ -141,6 +141,9 @@ const Dashboard = () => {
 
   // Fonction pour rafraîchir les données
   const handleRefresh = () => {
+    // Rafraîchir l'heure actuelle également
+    setCurrentTime(new Date());
+    // Recharger toutes les données
     loadData();
   };
 
