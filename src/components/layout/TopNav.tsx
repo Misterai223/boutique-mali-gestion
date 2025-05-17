@@ -2,11 +2,11 @@
 import { MenuSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import SearchBar from "./topnav/SearchBar";
-import ShopBranding from "./topnav/ShopBranding";
-import ThemeToggle from "./topnav/ThemeToggle";
-import UserProfile from "./topnav/UserProfile";
-import NotificationButton from "./topnav/NotificationButton";
+import { SearchBar } from "./topnav/SearchBar";
+import { ShopBranding } from "./topnav/ShopBranding";
+import { ThemeToggle } from "./topnav/ThemeToggle";
+import { UserProfile } from "./topnav/UserProfile";
+import { NotificationButton } from "./topnav/NotificationButton";
 import PWAInstallPrompt from "../pwa/PWAInstallPrompt";
 
 export interface TopNavProps {
