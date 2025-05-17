@@ -75,8 +75,8 @@ const Finances = () => {
   };
 
   const handleExportFinancialData = () => {
-    const transformedData = financialData.map(item => ({
-      id: item.month,
+    const transformedData = financialData.map((item, index) => ({
+      id: index + 1, // Convert to number by using the array index + 1
       description: `Récapitulatif financier - ${item.month}`,
       amount: item.revenus,
       type: "income" as const,
