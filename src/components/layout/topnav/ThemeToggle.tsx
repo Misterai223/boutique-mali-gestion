@@ -13,27 +13,41 @@ import { toast } from "sonner";
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   
+  // Charger le thème actuel au montage du composant
   useEffect(() => {
-    // Charger le thème actuel depuis localStorage sans l'appliquer immédiatement
-    const savedTheme = localStorage.getItem("darkMode") === "true" ? "dark" : "light";
-    setTheme(savedTheme);
+    const savedDarkMode = localStorage.getItem("darkMode") === "true";
+    setTheme(savedDarkMode ? "dark" : "light");
+    
+    // Écouter les changements de thème depuis d'autres parties de l'application
+    const handleStorageChange = () => {
+      const currentDarkMode = localStorage.getItem("darkMode") === "true";
+      setTheme(currentDarkMode ? "dark" : "light");
+    };
+    
+    document.addEventListener('localStorage.updated', handleStorageChange);
+    
+    return () => {
+      document.removeEventListener('localStorage.updated', handleStorageChange);
+    };
   }, []);
   
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     
-    // Mettre à jour le stockage local
+    // Mettre à jour localStorage
     localStorage.setItem("darkMode", newTheme === "dark" ? "true" : "false");
     
-    // Appliquer le thème en mettant à jour uniquement la classe du document sans effet secondaire
+    // Appliquer le changement de thème
     document.documentElement.classList.toggle("dark", newTheme === "dark");
     
-    // Déclencher l'événement personnalisé pour informer les autres composants
+    // Notifier les autres composants
     const event = new Event('localStorage.updated');
     document.dispatchEvent(event);
     
-    toast.success(`Mode ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`);
+    toast.success(`Mode ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`, {
+      duration: 2000,
+    });
   };
 
   return (
@@ -45,13 +59,14 @@ export function ThemeToggle() {
             size="icon" 
             onClick={toggleTheme}
             className="hover:bg-muted transition-all duration-200"
+            aria-label="Changer le thème"
           >
             {theme === "light" ? (
               <Moon className="h-5 w-5" />
             ) : (
               <Sun className="h-5 w-5" />
             )}
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">Changer le thème</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>

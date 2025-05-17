@@ -4,15 +4,14 @@ import { applyTheme } from "@/utils/themeApplier";
 import { loadThemeSettings } from "@/utils/themeStorage";
 
 /**
- * Hook to handle theme application effects across the application
- * Improved to avoid unwanted side effects when navigating
+ * Hook pour gérer l'application du thème dans toute l'application
  */
 export const useThemeEffect = () => {
   useEffect(() => {
-    // Charge les paramètres de thème une seule fois au montage du composant
+    // Charger les paramètres de thème une seule fois au montage du composant
     const settings = loadThemeSettings();
     
-    // Applique le thème avec des paramètres chargés
+    // Appliquer le thème avec les paramètres chargés
     applyTheme({
       primaryColor: settings.primaryColor,
       accentColor: settings.accentColor,
@@ -22,24 +21,8 @@ export const useThemeEffect = () => {
       darkMode: settings.darkMode
     });
     
-    // Observer pour les changements de thème via localStorage
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key && ['primaryColor', 'accentColor', 'secondaryColor', 'darkMode', 'borderRadius', 'fontFamily'].includes(event.key)) {
-        // Recharger uniquement si les clés liées au thème changent
-        const updatedSettings = loadThemeSettings();
-        applyTheme({
-          primaryColor: updatedSettings.primaryColor,
-          accentColor: updatedSettings.accentColor,
-          secondaryColor: updatedSettings.secondaryColor,
-          borderRadius: updatedSettings.borderRadius,
-          fontFamily: updatedSettings.fontFamily,
-          darkMode: updatedSettings.darkMode
-        });
-      }
-    };
-    
-    // Écouter les événements personnalisés pour la mise à jour du thème
-    const handleCustomEvent = () => {
+    // Écouter les changements de thème via localStorage
+    const handleThemeChange = () => {
       const updatedSettings = loadThemeSettings();
       applyTheme({
         primaryColor: updatedSettings.primaryColor,
@@ -51,12 +34,18 @@ export const useThemeEffect = () => {
       });
     };
     
-    window.addEventListener('storage', handleStorageChange);
-    document.addEventListener('localStorage.updated', handleCustomEvent);
+    // Configurer les écouteurs d'événements pour les changements de thème
+    document.addEventListener('localStorage.updated', handleThemeChange);
+    window.addEventListener('storage', (event) => {
+      if (event.key && ['primaryColor', 'accentColor', 'secondaryColor', 'darkMode', 'borderRadius', 'fontFamily'].includes(event.key)) {
+        handleThemeChange();
+      }
+    });
     
+    // Nettoyer les écouteurs d'événements
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', handleCustomEvent);
+      document.removeEventListener('localStorage.updated', handleThemeChange);
+      window.removeEventListener('storage', handleThemeChange as any);
     };
   }, []);
 };
