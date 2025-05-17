@@ -199,7 +199,7 @@ function App() {
           }
         />
         <Route
-          path="/media-library"
+          path="/media"
           element={
             isAuthenticated ? (
               <DashboardLayout onLogout={() => setIsAuthenticated(false)}>

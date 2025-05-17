@@ -14,12 +14,14 @@ import {
   BarChart3,
   Tags,
   Building,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { authService } from "@/services/authService";
 
 const navItems = [
   {
@@ -73,7 +75,7 @@ const navItems = [
   },
   {
     title: "Médias",
-    icon: Package,
+    icon: Image,
     href: "/media",
     color: "text-rose-500",
   },
@@ -93,6 +95,7 @@ export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const [shopName, setShopName] = useState<string>("");
   const [shopLogo, setShopLogo] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   useEffect(() => {
     // Load saved shop name and logo
@@ -101,6 +104,18 @@ export function Sidebar({ className }: SidebarProps) {
     
     setShopName(savedShopName || "Shop Manager");
     setShopLogo(savedShopLogo || null);
+    
+    // Get current user
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+    
+    fetchCurrentUser();
     
     // Setup a listener for localStorage changes
     const handleStorageChange = (e: StorageEvent) => {
@@ -204,4 +219,4 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
     </aside>
   );
-};
+}
