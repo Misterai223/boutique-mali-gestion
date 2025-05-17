@@ -21,6 +21,8 @@ export const useUserManagement = () => {
       const data = await userService.getProfiles();
       console.log("Profils chargés:", data);
       setProfiles(data);
+      // Appliquer immédiatement le filtrage après chargement
+      applyFilters(data, searchTerm, roleFilter);
     } catch (error) {
       console.error("Erreur lors du chargement des profils:", error);
       toast.error("Erreur lors du chargement des profils");
@@ -33,28 +35,30 @@ export const useUserManagement = () => {
     loadProfiles();
   }, [loadProfiles]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [searchTerm, roleFilter, profiles]);
-
-  const applyFilters = () => {
-    let result = [...profiles];
+  // Fonction séparée pour appliquer les filtres
+  const applyFilters = useCallback((data: Profile[], search: string, role: string) => {
+    let result = [...data];
     
     // Appliquer la recherche textuelle
-    if (searchTerm) {
+    if (search) {
       result = result.filter(profile => 
-        profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.role.toLowerCase().includes(searchTerm.toLowerCase())
+        profile.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        profile.role.toLowerCase().includes(search.toLowerCase())
       );
     }
     
     // Appliquer le filtre de rôle
-    if (roleFilter && roleFilter !== "all") {
-      result = result.filter(profile => profile.role === roleFilter);
+    if (role && role !== "all") {
+      result = result.filter(profile => profile.role === role);
     }
     
     setFilteredProfiles(result);
-  };
+  }, []);
+
+  // Appliquer les filtres quand les filtres ou les données changent
+  useEffect(() => {
+    applyFilters(profiles, searchTerm, roleFilter);
+  }, [searchTerm, roleFilter, profiles, applyFilters]);
 
   const handleAddEdit = useCallback(() => {
     setCurrentProfile(null);

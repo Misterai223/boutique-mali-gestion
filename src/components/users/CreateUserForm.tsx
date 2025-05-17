@@ -44,16 +44,19 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       
       if (error) {
         console.error("Erreur lors de la création:", error);
-        toast.error(`Erreur lors de la création: ${error.message}`);
+        toast.error(`Erreur: ${error.message}`);
         setIsSubmitting(false);
         return;
       }
       
       toast.success("Utilisateur créé avec succès");
-      onUserCreated?.();
+      form.reset(); // Réinitialiser le formulaire après succès
+      if (onUserCreated) {
+        onUserCreated();
+      }
     } catch (error: any) {
       console.error("Exception lors de la création de l'utilisateur:", error);
-      toast.error(`Erreur: ${error.message}`);
+      toast.error(`Erreur: ${error.message || "Une erreur est survenue"}`);
     } finally {
       setIsSubmitting(false);
     }

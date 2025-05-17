@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { logUserActivity } from "./userActivityService";
 
@@ -7,7 +6,7 @@ export const createUser = async (email: string, password: string, userData: any)
   try {
     console.log("Tentative de création d'un utilisateur:", email, userData);
     
-    // Création d'un utilisateur via l'API publique (pas admin)
+    // Création d'un utilisateur via l'API publique
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -20,7 +19,7 @@ export const createUser = async (email: string, password: string, userData: any)
 
     if (error) {
       console.error("Erreur lors de la création de l'utilisateur:", error);
-      throw error;
+      return { data: null, error };
     }
 
     console.log("Utilisateur créé:", data.user);
@@ -39,7 +38,7 @@ export const createUser = async (email: string, password: string, userData: any)
 
       if (profileError) {
         console.error("Erreur lors de la mise à jour du profil:", profileError);
-        throw profileError;
+        return { data: null, error: profileError };
       }
       
       console.log("Profil mis à jour avec succès");

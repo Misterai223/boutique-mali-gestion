@@ -1,17 +1,23 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 
 // Fonction pour récupérer tous les profils utilisateurs
 export const getProfiles = async (): Promise<Profile[]> => {
   try {
+    console.log("Chargement des profils...");
+    // Ajout de limit pour éviter les problèmes de profondeur de pile
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100); // Limitation pour éviter l'erreur "stack depth limit exceeded"
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur dans getProfiles:", error);
+      throw error;
+    }
     
+    console.log("Profils chargés:", data);
     return data || [];
   } catch (error) {
     console.error("Erreur lors de la récupération des profils:", error);
