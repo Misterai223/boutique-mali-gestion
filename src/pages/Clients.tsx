@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { Client, ClientWithPurchases, CreateClientData, UpdateClientData, CreatePurchaseData } from "@/types/client";
 import { getClients, createClient, updateClient, deleteClient } from "@/services/clientService";
 import { addClientPurchase, deleteClientPurchase } from "@/services/clientPurchaseService";
@@ -23,7 +24,22 @@ export default function Clients() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentClient, setCurrentClient] = useState<ClientWithPurchases | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
+
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.6 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
 
   const fetchClients = async () => {
     setIsLoading(true);
@@ -32,11 +48,7 @@ export default function Clients() {
       setClients(clientsData);
       setFilteredClients(clientsData);
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des clients",
-        variant: "destructive",
-      });
+      toast.error("Impossible de charger la liste des clients");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -83,16 +95,9 @@ export default function Clients() {
     try {
       await deleteClient(id);
       setClients((prev) => prev.filter((client) => client.id !== id));
-      toast({
-        title: "Succès",
-        description: "Client supprimé avec succès",
-      });
+      toast.success("Client supprimé avec succès");
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer ce client",
-        variant: "destructive",
-      });
+      toast.error("Impossible de supprimer ce client");
       console.error(error);
     }
   };
@@ -108,16 +113,9 @@ export default function Clients() {
         });
       }
       
-      toast({
-        title: "Succès",
-        description: "Achat supprimé avec succès",
-      });
+      toast.success("Achat supprimé avec succès");
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer cet achat",
-        variant: "destructive",
-      });
+      toast.error("Impossible de supprimer cet achat");
       console.error(error);
     }
   };
@@ -134,28 +132,16 @@ export default function Clients() {
         setClients((prev) =>
           prev.map((c) => (c.id === currentClient.id ? updatedClient : c))
         );
-        toast({
-          title: "Succès",
-          description: "Client modifié avec succès",
-        });
+        toast.success("Client modifié avec succès");
       } else {
         // Création d'un nouveau client
         const newClient = await createClient(data);
         setClients((prev) => [newClient, ...prev]);
-        toast({
-          title: "Succès",
-          description: "Client ajouté avec succès",
-        });
+        toast.success("Client ajouté avec succès");
       }
       setIsClientDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: currentClient
-          ? "Impossible de modifier ce client"
-          : "Impossible d'ajouter ce client",
-        variant: "destructive",
-      });
+      toast.error(currentClient ? "Impossible de modifier ce client" : "Impossible d'ajouter ce client");
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -168,7 +154,6 @@ export default function Clients() {
       const newPurchase = await addClientPurchase(data);
       
       if (currentClient) {
-        // Mettre à jour la liste des achats du client
         const updatedPurchases = currentClient.purchases ? [...currentClient.purchases, newPurchase] : [newPurchase];
         setCurrentClient({
           ...currentClient,
@@ -176,19 +161,12 @@ export default function Clients() {
         });
       }
       
-      toast({
-        title: "Succès",
-        description: "Produit ajouté avec succès",
-      });
+      toast.success("Produit ajouté avec succès");
       
       // Ne pas fermer le dialogue pour permettre d'ajouter plusieurs produits
       setIsSubmitting(false);
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce produit",
-        variant: "destructive",
-      });
+      toast.error("Impossible d'ajouter ce produit");
       console.error(error);
       setIsSubmitting(false);
     }
@@ -199,35 +177,77 @@ export default function Clients() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gestion des Clients</h1>
-        <Button onClick={handleAddClient}>
-          <Plus className="mr-2 h-4 w-4" />
-          Ajouter un client
-        </Button>
-      </div>
-
-      <ClientSearchFilter onSearch={handleSearch} count={filteredClients.length} />
-
-      {isLoading ? (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      className="container mx-auto py-6 space-y-6"
+    >
+      {/* En-tête de la page avec titre et bouton d'ajout */}
+      <motion.div 
+        variants={fadeIn}
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
+      >
+        <div className="flex items-center space-x-3">
+          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Users className="h-6 w-6 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Gestion des Clients
+          </h1>
         </div>
-      ) : (
-        <ClientList
-          clients={filteredClients}
-          onEdit={handleEditClient}
-          onDelete={handleDeleteClient}
-          onAddPurchase={handleAddPurchase}
-        />
-      )}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button 
+            onClick={handleAddClient} 
+            size="lg"
+            className="shadow-md rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Ajouter un client
+          </Button>
+        </motion.div>
+      </motion.div>
+
+      <motion.div variants={fadeIn} className="bg-card rounded-xl shadow-md p-6 border">
+        <ClientSearchFilter onSearch={handleSearch} count={filteredClients.length} />
+      </motion.div>
+
+      <AnimatePresence>
+        {isLoading ? (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-10 space-y-4"
+          >
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground animate-pulse">Chargement des clients...</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <ClientList
+              clients={filteredClients}
+              onEdit={handleEditClient}
+              onDelete={handleDeleteClient}
+              onAddPurchase={handleAddPurchase}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dialogue pour ajouter/modifier un client */}
       <Dialog open={isClientDialogOpen} onOpenChange={setIsClientDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-card/90 backdrop-blur-sm border border-primary/20 shadow-xl">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               {currentClient ? "Modifier un client" : "Ajouter un client"}
             </DialogTitle>
           </DialogHeader>
@@ -242,17 +262,21 @@ export default function Clients() {
 
       {/* Dialogue pour ajouter un achat */}
       <Dialog open={isPurchaseDialogOpen} onOpenChange={setIsPurchaseDialogOpen}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[700px] bg-card/90 backdrop-blur-sm border border-primary/20 shadow-xl">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Produits achetés par {currentClient?.full_name}
             </DialogTitle>
           </DialogHeader>
           
           <Tabs defaultValue="add" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="add">Ajouter un produit</TabsTrigger>
-              <TabsTrigger value="list">Liste des produits</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 rounded-lg mb-4">
+              <TabsTrigger value="add" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                Ajouter un produit
+              </TabsTrigger>
+              <TabsTrigger value="list" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                Liste des produits
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="add" className="mt-4">
@@ -277,6 +301,6 @@ export default function Clients() {
           </Tabs>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }
