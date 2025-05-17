@@ -54,7 +54,7 @@ const DashboardLayout = ({
       <div 
         className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out ${
           collapsed ? "w-0 md:w-20" : "w-64"
-        } ${isMobile && collapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        } ${isMobile && collapsed ? "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto" : "opacity-100"}`}
       >
         <Sidebar className={collapsed ? "w-20" : "w-64"} />
       </div>

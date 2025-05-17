@@ -42,7 +42,7 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
     <ScrollArea className="flex-1 py-3">
       <nav className="grid gap-1 px-2">
         <TooltipProvider delayDuration={0}>
-          {items.map((item: NavItem, index: number) => (
+          {items && items.length > 0 ? items.map((item: NavItem, index: number) => (
             <Tooltip key={index}>
               <TooltipTrigger asChild>
                 <Link
@@ -81,7 +81,11 @@ export function NavMenu({ isCollapsed }: NavMenuProps) {
                 {item.badge && <span className="ml-1">({item.badge})</span>}
               </TooltipContent>
             </Tooltip>
-          ))}
+          )) : (
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              Menu en cours de chargement...
+            </div>
+          )}
         </TooltipProvider>
       </nav>
     </ScrollArea>

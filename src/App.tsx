@@ -40,28 +40,6 @@ function App() {
                 });
               }
             });
-            
-            // Écouter les messages du Service Worker
-            navigator.serviceWorker.addEventListener('message', (event) => {
-              console.log('Message du Service Worker:', event.data);
-              
-              if (event.data && event.data.type === 'TRIGGER_INSTALL_PROMPT') {
-                console.log('Déclenchement du prompt d\'installation depuis le SW');
-                // Déclencher le prompt d'installation via une notification
-                toast.info("Installez l'application", {
-                  description: "Pour une meilleure expérience utilisateur",
-                  action: {
-                    label: "Installer",
-                    onClick: () => {
-                      // Cette fonction sera détectée par PWAInstallPrompt via l'événement personnalisé
-                      const event = new CustomEvent('pwa-install-request');
-                      window.dispatchEvent(event);
-                    },
-                  },
-                  duration: 10000,
-                });
-              }
-            });
           })
           .catch(error => {
             console.error('Échec de l\'enregistrement du Service Worker:', error);

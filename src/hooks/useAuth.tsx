@@ -55,8 +55,8 @@ export const useAuth = () => {
     const checkAuthentication = async () => {
       try {
         console.log("Vérification de l'authentification au démarrage");
-        // Pour le développement, considérez toujours l'utilisateur comme authentifié
-        const devMode = process.env.NODE_ENV === 'development';
+        // Pour le développement, considérer toujours l'utilisateur comme authentifié
+        const devMode = true; // Force en mode développement pour tester
         if (devMode) {
           console.log("Mode développement activé, authentification automatique");
           if (isMounted) {
