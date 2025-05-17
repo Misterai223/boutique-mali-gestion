@@ -96,6 +96,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [shopName, setShopName] = useState<string>("");
   const [shopLogo, setShopLogo] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const isCollapsed = className?.includes("w-20") || false;
   
   useEffect(() => {
     // Load saved shop name and logo
@@ -145,16 +146,46 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full flex-col w-full border-r bg-background transition-all duration-300",
+        "flex h-full w-full border-r bg-background transition-all duration-300",
         className
       )}
     >
-      <div className="py-4 px-3 flex flex-col h-full">
-        <div className="px-3 py-2">
-          <Link
-            to="/"
-            className="flex items-center gap-2 px-1"
-          >
+      <div className="py-4 px-3 flex flex-col h-full w-full">
+        {!isCollapsed && (
+          <div className="px-3 py-2">
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-1"
+            >
+              <div className="relative h-9 w-9 overflow-hidden rounded-lg border">
+                {shopLogo ? (
+                  <img
+                    src={shopLogo}
+                    alt="Logo"
+                    className="h-full w-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                    <Building className="h-5 w-5" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold tracking-tight overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
+                  {shopName}
+                </span>
+                <span className="text-xs text-muted-foreground">Gestion commerciale</span>
+              </div>
+            </Link>
+          </div>
+        )}
+        {isCollapsed && (
+          <div className="flex justify-center py-2">
             <div className="relative h-9 w-9 overflow-hidden rounded-lg border">
               {shopLogo ? (
                 <img
@@ -173,14 +204,8 @@ export function Sidebar({ className }: SidebarProps) {
                 </div>
               )}
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold tracking-tight overflow-hidden text-ellipsis whitespace-nowrap max-w-[180px]">
-                {shopName}
-              </span>
-              <span className="text-xs text-muted-foreground">Gestion commerciale</span>
-            </div>
-          </Link>
-        </div>
+          </div>
+        )}
         <ScrollArea className="flex-1 py-3">
           <nav className="grid gap-1 px-2">
             <TooltipProvider delayDuration={0}>
@@ -197,8 +222,8 @@ export function Sidebar({ className }: SidebarProps) {
                       )}
                     >
                       <item.icon className={cn("h-[18px] w-[18px]", item.color)} />
-                      <span className="truncate">{item.title}</span>
-                      {item.badge && (
+                      {!isCollapsed && <span className="truncate">{item.title}</span>}
+                      {!isCollapsed && item.badge && (
                         <Badge 
                           className="ml-auto h-5 min-w-5 px-1 flex items-center justify-center bg-primary text-primary-foreground" 
                           variant="secondary"
@@ -219,4 +244,4 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
     </aside>
   );
-}
+};

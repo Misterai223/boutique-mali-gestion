@@ -97,10 +97,11 @@ const TopNav = ({
           size="icon" 
           onClick={toggleSidebar} 
           className="mr-2 hover:bg-muted transition-all duration-200"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle Sidebar</span>
         </Button>
+        
         <div className="flex items-center gap-2">
           {shopLogo ? (
             <img 

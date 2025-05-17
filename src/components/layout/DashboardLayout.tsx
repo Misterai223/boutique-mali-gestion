@@ -67,33 +67,21 @@ const DashboardLayout = ({
     return () => observer.disconnect();
   }, []);
   
-  const mainVariants = {
-    expanded: { marginLeft: 0, width: collapsed ? "calc(100% - 80px)" : "calc(100% - 256px)" },
-    collapsed: { marginLeft: 0, width: "calc(100% - 80px)" }
-  };
-  
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar className={collapsed ? "w-20" : "w-64"} />
+    <div className="flex h-screen w-full bg-background overflow-hidden">
+      <div className={`transition-all duration-300 ease-in-out ${collapsed ? "w-20" : "w-64"}`}>
+        <Sidebar className={collapsed ? "w-20" : "w-64"} />
+      </div>
       
-      <motion.div 
-        className="flex-1 flex flex-col overflow-hidden"
-        initial={false}
-        animate={collapsed ? "collapsed" : "expanded"}
-        variants={mainVariants}
-        transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
-      >
+      <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav 
           toggleSidebar={toggleSidebar} 
           collapsed={collapsed}
           onLogout={handleLogout}
         />
         
-        <motion.main 
+        <main 
           className="flex-1 overflow-y-auto p-4 md:p-6 bg-background"
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
         >
           <AnimatePresence mode="wait">
             <motion.div 
@@ -107,8 +95,8 @@ const DashboardLayout = ({
               {children}
             </motion.div>
           </AnimatePresence>
-        </motion.main>
-      </motion.div>
+        </main>
+      </div>
     </div>
   );
 };
