@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   Users,
@@ -17,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 export function Sidebar({ className }: { className?: string }) {
   return (
-    <aside className={cn("pb-12 md:pb-0", className)}>
+    <aside className={cn("pb-12 md:pb-0 bg-sidebar text-sidebar-foreground", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
@@ -30,8 +29,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -45,8 +44,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -60,8 +59,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -75,8 +74,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -90,8 +89,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -105,8 +104,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -120,8 +119,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -135,8 +134,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -150,8 +149,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -169,8 +168,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
@@ -184,8 +183,8 @@ export function Sidebar({ className }: { className?: string }) {
                 cn(
                   "flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
                 )
               }
             >
