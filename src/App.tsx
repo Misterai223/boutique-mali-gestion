@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { initializeSupabase } from "./utils/supabaseSetup";
 import {
