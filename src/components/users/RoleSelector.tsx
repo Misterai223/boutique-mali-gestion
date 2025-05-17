@@ -11,6 +11,15 @@ interface RoleSelectorProps {
   name: "role";
 }
 
+// Définition des rôles disponibles
+const roles = [
+  { value: "admin", label: "Administrateur" },
+  { value: "manager", label: "Manager" },
+  { value: "cashier", label: "Caissier" },
+  { value: "salesperson", label: "Vendeur" },
+  { value: "user", label: "Utilisateur" }
+];
+
 const RoleSelector = ({ form, name }: RoleSelectorProps) => {
   return (
     <FormField
@@ -20,7 +29,7 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
         <FormItem>
           <FormLabel>Rôle</FormLabel>
           <Select 
-            value={field.value} 
+            value={field.value || "user"} 
             onValueChange={field.onChange}
           >
             <FormControl>
@@ -29,11 +38,11 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="admin">Administrateur</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="cashier">Caissier</SelectItem>
-              <SelectItem value="salesperson">Vendeur</SelectItem>
-              <SelectItem value="user">Utilisateur</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.value} value={role.value}>
+                  {role.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormMessage />

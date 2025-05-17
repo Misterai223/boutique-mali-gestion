@@ -93,7 +93,7 @@ const AddTransactionForm = ({ open, onOpenChange, onAddTransaction }: AddTransac
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Catégorie</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category || undefined} onValueChange={setCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionnez une catégorie" />
               </SelectTrigger>
