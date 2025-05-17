@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { authService } from "@/services/authService";
@@ -9,12 +9,25 @@ import PasswordInput from "./PasswordInput";
 import LoginButton from "./LoginButton";
 import LoginError from "./LoginError";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      const session = await authService.getSession();
+      if (session) {
+        onLogin();
+      }
+    };
+    checkExistingSession();
+  }, [onLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,33 +37,40 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       return;
     }
     
-    // Réinitialiser l'état avant de commencer
+    // Reset state before attempting login
     setErrorMsg("");
     setIsLoading(true);
     
     try {
-      // Version simplifiée sans gérer la session manuellement
       const { data, error } = await authService.simpleLogin(email, password);
       
       if (error) {
-        console.error("Erreur de connexion:", error);
+        console.error("Erreur de connexion:", error.message);
         setErrorMsg(error.message);
         setIsLoading(false);
         return;
       }
       
-      if (data?.user) {
+      if (data?.session) {
+        // We have a valid session, proceed with login
         toast.success("Connexion réussie!");
         onLogin();
       } else {
-        setErrorMsg("Erreur inattendue lors de la connexion");
+        // This should rarely happen - we have data but no session
+        setErrorMsg("Session non établie. Veuillez réessayer.");
         setIsLoading(false);
       }
     } catch (error: any) {
       console.error("Exception lors de la connexion:", error);
-      setErrorMsg(error.message || "Erreur lors de la connexion");
+      setErrorMsg(error.message || "Une erreur inattendue s'est produite");
       setIsLoading(false);
     }
+  };
+
+  // Handle password recovery - can be expanded in the future
+  const handlePasswordRecovery = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.info("Fonctionnalité de récupération de mot de passe à venir");
   };
 
   return (
@@ -78,12 +98,19 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               >
                 <EmailInput 
                   email={email}
-                  setEmail={setEmail}
+                  setEmail={(value) => {
+                    setEmail(value);
+                    setErrorMsg(""); // Clear errors when input changes
+                  }}
                 />
                 
                 <PasswordInput
                   password={password}
-                  setPassword={setPassword}
+                  setPassword={(value) => {
+                    setPassword(value);
+                    setErrorMsg(""); // Clear errors when input changes
+                  }}
+                  onForgotPassword={handlePasswordRecovery}
                 />
               </motion.div>
               

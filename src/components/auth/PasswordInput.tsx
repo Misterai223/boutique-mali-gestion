@@ -8,9 +8,15 @@ interface PasswordInputProps {
   password: string;
   setPassword: (value: string) => void;
   required?: boolean;
+  onForgotPassword?: (e: React.MouseEvent) => void;
 }
 
-const PasswordInput = ({ password, setPassword, required = true }: PasswordInputProps) => {
+const PasswordInput = ({ 
+  password, 
+  setPassword, 
+  required = true,
+  onForgotPassword 
+}: PasswordInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -23,7 +29,11 @@ const PasswordInput = ({ password, setPassword, required = true }: PasswordInput
         <Label htmlFor="password" className="text-sm font-medium">
           Mot de passe
         </Label>
-        <a href="#" className="text-xs text-primary hover:underline">
+        <a 
+          href="#" 
+          className="text-xs text-primary hover:underline"
+          onClick={onForgotPassword}
+        >
           Mot de passe oublié?
         </a>
       </div>
