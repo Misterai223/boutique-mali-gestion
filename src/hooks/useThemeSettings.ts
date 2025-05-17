@@ -65,26 +65,42 @@ export const useThemeSettings = () => {
 
   const setPrimaryColor = (primaryColor: string) => {
     setSettings(prev => ({ ...prev, primaryColor }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("primaryColor", primaryColor);
   };
 
   const setAccentColor = (accentColor: string) => {
     setSettings(prev => ({ ...prev, accentColor }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("accentColor", accentColor);
   };
 
   const setSecondaryColor = (secondaryColor: string) => {
     setSettings(prev => ({ ...prev, secondaryColor }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("secondaryColor", secondaryColor);
   };
 
   const setSidebarColor = (sidebarColor: string) => {
     setSettings(prev => ({ ...prev, sidebarColor }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("sidebarColor", sidebarColor);
+    
+    // Notifier les autres composants pour une mise à jour instantanée
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
   };
 
   const setBorderRadius = (borderRadius: string) => {
     setSettings(prev => ({ ...prev, borderRadius }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("borderRadius", borderRadius);
   };
 
   const setFontFamily = (fontFamily: string) => {
     setSettings(prev => ({ ...prev, fontFamily }));
+    // Mettre à jour immédiatement dans localStorage pour la prévisualisation
+    localStorage.setItem("fontFamily", fontFamily);
   };
 
   // Sauvegarder tous les paramètres dans le stockage local
@@ -120,6 +136,15 @@ export const useThemeSettings = () => {
     setSettings(initialSettings);
     setHasChanges(false);
     
+    // Mise à jour immédiate du localStorage pour la prévisualisation
+    localStorage.setItem("primaryColor", initialSettings.primaryColor);
+    localStorage.setItem("accentColor", initialSettings.accentColor);
+    localStorage.setItem("secondaryColor", initialSettings.secondaryColor);
+    localStorage.setItem("sidebarColor", initialSettings.sidebarColor);
+    localStorage.setItem("borderRadius", initialSettings.borderRadius);
+    localStorage.setItem("fontFamily", initialSettings.fontFamily);
+    localStorage.setItem("darkMode", initialSettings.darkMode.toString());
+    
     // Appliquer les paramètres initiaux
     applyTheme({
       primaryColor: initialSettings.primaryColor,
@@ -130,6 +155,10 @@ export const useThemeSettings = () => {
       fontFamily: initialSettings.fontFamily,
       darkMode: initialSettings.darkMode
     });
+    
+    // Notifier les autres composants
+    const event = new Event('localStorage.updated');
+    document.dispatchEvent(event);
     
     toast.info("Modifications annulées");
   };

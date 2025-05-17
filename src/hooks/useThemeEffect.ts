@@ -39,7 +39,15 @@ export const useThemeEffect = () => {
     // Configurer les écouteurs d'événements pour les changements de thème
     document.addEventListener('localStorage.updated', handleThemeChange);
     window.addEventListener('storage', (event) => {
-      if (event.key && ['primaryColor', 'accentColor', 'secondaryColor', 'sidebarColor', 'darkMode', 'borderRadius', 'fontFamily'].includes(event.key)) {
+      if (event.key && [
+        'primaryColor', 
+        'accentColor', 
+        'secondaryColor', 
+        'sidebarColor', 
+        'darkMode', 
+        'borderRadius', 
+        'fontFamily'
+      ].includes(event.key)) {
         handleThemeChange();
       }
     });
