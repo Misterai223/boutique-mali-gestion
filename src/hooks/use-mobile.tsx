@@ -1,17 +1,17 @@
 
-import React from "react";
+import { useState, useEffect } from "react";
 
 const MOBILE_BREAKPOINT = 768; // Correspond à la valeur md de Tailwind
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(() => {
+  const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < MOBILE_BREAKPOINT;
     }
     return false;
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
@@ -28,7 +28,7 @@ export function useIsMobile() {
 
 // Hook pour avoir des breakpoints plus précis
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = React.useState(() => {
+  const [breakpoint, setBreakpoint] = useState(() => {
     if (typeof window !== 'undefined') {
       const width = window.innerWidth;
       if (width < 640) return 'xs';
@@ -41,7 +41,7 @@ export function useBreakpoint() {
     return 'md'; // Valeur par défaut
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     const checkBreakpoint = () => {
       const width = window.innerWidth;
       if (width < 640) return setBreakpoint('xs');
@@ -61,12 +61,12 @@ export function useBreakpoint() {
 
 // Hook pour récupérer la taille de l'écran
 export function useWindowSize() {
-  const [windowSize, setWindowSize] = React.useState({
+  const [windowSize, setWindowSize] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
     height: typeof window !== 'undefined' ? window.innerHeight : 0,
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
