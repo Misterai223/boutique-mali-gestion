@@ -22,6 +22,12 @@ const LogoUploader = ({
   const handleOpenMediaSelector = () => {
     setIsMediaSelectorOpen(true);
   };
+  
+  const handleLocalFileClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -30,14 +36,14 @@ const LogoUploader = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleLocalFileClick}
                 disabled={isUploading}
                 variant="outline"
-                className="w-full flex items-center justify-center"
-                size="icon"
+                className="w-full flex items-center justify-center gap-2"
+                type="button"
               >
                 <Upload className="h-5 w-5" />
-                <span className="sr-only">Importer un fichier</span>
+                <span className="hidden sm:inline">{isUploading ? "Téléchargement..." : "Importer"}</span>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -57,11 +63,11 @@ const LogoUploader = ({
               <Button
                 onClick={handleOpenMediaSelector}
                 variant="outline"
-                className="w-full flex items-center justify-center"
-                size="icon"
+                className="w-full flex items-center justify-center gap-2"
+                type="button"
               >
                 <Image className="h-5 w-5" />
-                <span className="sr-only">Choisir depuis la médiathèque</span>
+                <span className="hidden sm:inline">Médiathèque</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">

@@ -42,12 +42,17 @@ export function ShopBranding() {
       }
     };
     
+    // Setup event listener for custom localStorage update event
+    const handleCustomEvent = () => {
+      updateLocalData();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    document.addEventListener('localStorage.updated', updateLocalData);
+    document.addEventListener('localStorage.updated', handleCustomEvent);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', updateLocalData);
+      document.removeEventListener('localStorage.updated', handleCustomEvent);
     };
   }, []);
   

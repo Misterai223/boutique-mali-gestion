@@ -17,6 +17,25 @@ export const useLogoManagement = () => {
     if (storedLogo) {
       setCurrentLogo(storedLogo);
     }
+    
+    // Écouter les changements de logo dans le localStorage
+    const handleStorageEvent = () => {
+      const logo = localStorage.getItem("shopLogo");
+      if (logo) {
+        setCurrentLogo(logo);
+      } else {
+        setCurrentLogo(null);
+      }
+    };
+    
+    // Écouter l'événement personnalisé pour les mises à jour du localStorage
+    document.addEventListener('localStorage.updated', handleStorageEvent);
+    window.addEventListener('storage', handleStorageEvent);
+    
+    return () => {
+      document.removeEventListener('localStorage.updated', handleStorageEvent);
+      window.removeEventListener('storage', handleStorageEvent);
+    };
   }, []);
 
   const fetchLogos = async () => {
@@ -24,9 +43,26 @@ export const useLogoManagement = () => {
     try {
       // Use Supabase
       const urls = await settingsService.getLogos();
-      setLogoUrls(urls);
+      
+      // Ajouter également le logo actuellement stocké dans localStorage s'il existe
+      const currentLogoFromStorage = localStorage.getItem("shopLogo");
+      
+      if (currentLogoFromStorage && currentLogoFromStorage.startsWith('data:image')) {
+        // C'est une image en base64, on l'ajoute à la liste
+        const allUrls = [currentLogoFromStorage, ...urls];
+        // Dédupliquer
+        setLogoUrls([...new Set(allUrls)]);
+      } else {
+        setLogoUrls(urls);
+      }
     } catch (error) {
       console.error("Error retrieving logos:", error);
+      
+      // Fallback: utiliser le localStorage
+      const currentLogoFromStorage = localStorage.getItem("shopLogo");
+      if (currentLogoFromStorage) {
+        setLogoUrls([currentLogoFromStorage]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -53,15 +89,15 @@ export const useLogoManagement = () => {
     
     setIsUploading(true);
     try {
-      // Upload using Supabase
+      // Try using Supabase first
       const url = await settingsService.uploadLogo(file);
       
       if (url) {
-        toast.success("Logo téléchargé avec succès");
         // Refresh the full list to ensure consistency
         await fetchLogos();
         // Set as current logo
         handleSelectLogo(url);
+        toast.success("Logo téléchargé avec succès");
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -101,6 +137,7 @@ export const useLogoManagement = () => {
       
       if (success) {
         toast.success("Logo supprimé avec succès");
+        await fetchLogos(); // Refresh the list
       }
     } catch (error) {
       console.error("Error deleting:", error);
