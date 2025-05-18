@@ -14,38 +14,23 @@ const DashboardLayout = ({
   children: React.ReactNode;
   onLogout: () => void;
 }) => {
+  // Utiliser correctement le hook useIsMobile
+  const isMobileScreen = useIsMobile();
+  
   // État pour le statut mobile avec valeur par défaut false
-  const [isMobileView, setIsMobileView] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(isMobileScreen);
   
-  // État du sidebar avec la valeur par défaut false
-  const [collapsed, setCollapsed] = useState(false);
+  // État du sidebar avec la valeur par défaut basée sur le mobile
+  const [collapsed, setCollapsed] = useState(isMobileScreen);
   
-  // Utiliser le hook de manière sécurisée
+  // Synchroniser l'état local avec la valeur du hook
   useEffect(() => {
-    // Détecter manuellement si c'est mobile en cas d'erreur avec le hook
-    const checkMobileView = () => {
-      try {
-        const isMobile = window.innerWidth < 768;
-        setIsMobileView(isMobile);
-        if (!collapsed && isMobile) {
-          setCollapsed(true);
-        }
-      } catch (e) {
-        console.error("Erreur lors de la détection du mode mobile:", e);
-      }
-    };
-    
-    // Vérifier immédiatement
-    checkMobileView();
-    
-    // Ajouter l'écouteur pour les changements de taille
-    window.addEventListener("resize", checkMobileView);
-    
-    // Nettoyage
-    return () => {
-      window.removeEventListener("resize", checkMobileView);
-    };
-  }, [collapsed]);
+    setIsMobileView(isMobileScreen);
+    // Si on passe en mode mobile et que la sidebar est ouverte, la refermer
+    if (isMobileScreen && !collapsed) {
+      setCollapsed(true);
+    }
+  }, [isMobileScreen, collapsed]);
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);

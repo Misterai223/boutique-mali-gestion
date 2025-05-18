@@ -14,13 +14,14 @@ const BREAKPOINTS = {
  * Hook pour détecter si l'écran est de taille mobile
  */
 export function useIsMobile() {
+  // Utiliser un état local pour stocker le statut mobile
   const [isMobile, setIsMobile] = React.useState(false);
   
   React.useEffect(() => {
     // Vérifier si window est défini (pour compatibilité SSR)
     if (typeof window === 'undefined') return;
     
-    // Vérifier la taille initiale de l'écran
+    // Fonction pour vérifier la taille de l'écran
     const checkMobile = () => {
       setIsMobile(window.innerWidth < BREAKPOINTS.sm);
     };
