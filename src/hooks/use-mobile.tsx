@@ -1,10 +1,10 @@
 
-import * as React from "react";
+import React from "react";
 
 const MOBILE_BREAKPOINT = 768; // Correspond à la valeur md de Tailwind
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+  const [isMobile, setIsMobile] = React.useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < MOBILE_BREAKPOINT;
     }
@@ -28,7 +28,7 @@ export function useIsMobile() {
 
 // Hook pour avoir des breakpoints plus précis
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = React.useState<'xs'|'sm'|'md'|'lg'|'xl'|'2xl'>(() => {
+  const [breakpoint, setBreakpoint] = React.useState(() => {
     if (typeof window !== 'undefined') {
       const width = window.innerWidth;
       if (width < 640) return 'xs';
@@ -61,10 +61,7 @@ export function useBreakpoint() {
 
 // Hook pour récupérer la taille de l'écran
 export function useWindowSize() {
-  const [windowSize, setWindowSize] = React.useState<{
-    width: number;
-    height: number;
-  }>({
+  const [windowSize, setWindowSize] = React.useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
     height: typeof window !== 'undefined' ? window.innerHeight : 0,
   });
