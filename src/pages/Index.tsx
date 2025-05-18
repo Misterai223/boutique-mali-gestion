@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import LoadingScreen from "@/components/layout/LoadingScreen";
 
@@ -12,6 +12,7 @@ const Index = ({
   onAuthChange: (value: boolean) => void;
 }) => {
   const [mounted, setMounted] = useState(false);
+  const location = useLocation();
   
   useEffect(() => {
     setMounted(true);
@@ -37,8 +38,9 @@ const Index = ({
     return <LoadingScreen />;
   }
   
-  // Si l'utilisateur est authentifié, rediriger vers le dashboard
-  if (isAuthenticated) {
+  // Si l'utilisateur est authentifié et qu'il est sur la route racine, rediriger vers le dashboard
+  // On vérifie le pathname pour éviter une boucle de redirection
+  if (isAuthenticated && location.pathname === "/") {
     console.log("Index - User authentifié, redirection vers /dashboard");
     return <Navigate to="/dashboard" replace />;
   }

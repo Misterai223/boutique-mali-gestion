@@ -35,6 +35,8 @@ export const useAuth = () => {
     try {
       await authService.logout();
       localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("accessLevel");
       setUser(null);
       setIsAuthenticated(false);
       toast.success("Déconnexion réussie");
@@ -42,6 +44,8 @@ export const useAuth = () => {
       console.error("Erreur lors de la déconnexion:", error);
       // Force logout even if there's an error
       localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("accessLevel");
       setUser(null);
       setIsAuthenticated(false);
     }
@@ -138,6 +142,8 @@ export const useAuth = () => {
           setUser(null);
           setIsAuthenticated(false);
           localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("accessLevel");
         }
       }
     );

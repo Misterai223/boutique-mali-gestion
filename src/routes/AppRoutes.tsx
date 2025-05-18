@@ -33,7 +33,7 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         } 
       />
       
-      {/* Route d'accueil - soit vers dashboard, soit vers login selon l'état d'authentification */}
+      {/* Route d'accueil - utilise le composant Index */}
       <Route 
         path="/" 
         element={
