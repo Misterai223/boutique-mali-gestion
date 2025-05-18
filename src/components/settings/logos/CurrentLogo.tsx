@@ -1,40 +1,42 @@
 
-import { useState } from "react";
 import { Building } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface CurrentLogoProps {
   logoUrl: string | null;
+  className?: string;
 }
 
-const CurrentLogo = ({ logoUrl }: CurrentLogoProps) => {
-  const [imageError, setImageError] = useState(false);
-  
-  if (!logoUrl) return null;
-  
-  const handleImageError = () => {
-    setImageError(true);
-  };
+const CurrentLogo = ({ logoUrl, className }: CurrentLogoProps) => {
+  const source = logoUrl || "";
+  const isFromCloudinary = source.includes("cloudinary");
+  const isFromSupabase = source.includes("supabase");
 
   return (
-    <div className="mt-3 w-full">
-      <h3 className="text-sm font-medium text-muted-foreground mb-2">Logo actuel</h3>
-      <Card className="p-3 bg-muted/30 flex items-center justify-center h-28 overflow-hidden">
-        {!imageError ? (
-          <img
-            src={logoUrl}
-            alt="Logo actuel"
-            className="max-h-20 max-w-full object-contain"
-            onError={handleImageError}
-          />
-        ) : (
-          <div className="flex flex-col items-center gap-1 text-muted-foreground">
+    <Card className={cn("overflow-hidden border-dashed", className)}>
+      <CardContent className="p-4 flex flex-col items-center space-y-2">
+        <p className="text-xs text-muted-foreground">
+          {logoUrl ? "Logo actuel" : "Aucun logo défini"}
+        </p>
+        
+        <Avatar className="h-16 w-16 rounded-md border shadow-sm">
+          <AvatarImage src={logoUrl || undefined} alt="Logo actuel" className="object-contain" />
+          <AvatarFallback className="bg-muted text-muted-foreground">
             <Building className="h-6 w-6" />
-            <span className="text-xs">Image non disponible</span>
+          </AvatarFallback>
+        </Avatar>
+        
+        {logoUrl && (
+          <div className="text-xs text-muted-foreground text-center">
+            {isFromCloudinary && <span className="text-emerald-500 font-medium">Cloudinary</span>}
+            {isFromSupabase && <span className="text-blue-500 font-medium">Supabase</span>}
+            {!isFromCloudinary && !isFromSupabase && <span className="text-amber-500 font-medium">Local</span>}
           </div>
         )}
-      </Card>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

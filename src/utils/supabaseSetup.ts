@@ -28,18 +28,9 @@ export async function setupRequiredBuckets() {
         if (createError) {
           console.error("Erreur lors de la création du bucket 'logos':", createError);
           
-          // Ajouter une politique d'accès public si possible
-          try {
-            // Note: cette opération peut nécessiter des privilèges administrateur
-            // et peut ne pas fonctionner selon la configuration de Supabase
-            await supabase.rpc('create_storage_policy', {
-              bucket_name: 'logos',
-              policy_name: 'public_access',
-              definition: 'TRUE'
-            });
-          } catch (policyError) {
-            console.error("Impossible de définir la politique d'accès:", policyError);
-          }
+          // Nous supprimons l'appel à create_storage_policy qui cause l'erreur
+          // Cette opération nécessite des privilèges administrateur
+          // Si nécessaire, l'utilisateur devra configurer manuellement les politiques dans la console Supabase
         } else {
           console.log("Bucket 'logos' créé avec succès");
         }

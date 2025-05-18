@@ -18,7 +18,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Store, Building, Bell, Globe } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -116,7 +115,7 @@ const GeneralSettings = ({
       console.error("Upload error:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de télécharger le logo",
+        description: "Impossible de télécharger le logo via Supabase. Veuillez essayer Cloudinary.",
         variant: "destructive"
       });
     } finally {
@@ -125,6 +124,11 @@ const GeneralSettings = ({
   };
 
   const handleMediaLibrarySelect = (url: string) => {
+    setLocalLogoUrl(url);
+    setHasChanges(true);
+  };
+
+  const handleCloudinaryUploadComplete = (url: string) => {
     setLocalLogoUrl(url);
     setHasChanges(true);
   };
@@ -176,6 +180,7 @@ const GeneralSettings = ({
                       isUploading={isUploading}
                       onFileChange={handleFileChange}
                       onMediaLibrarySelect={handleMediaLibrarySelect}
+                      onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
                     />
                     
                     <p className="text-xs text-muted-foreground text-center">

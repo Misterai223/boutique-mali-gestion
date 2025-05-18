@@ -4,20 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Upload, Image } from "lucide-react";
 import ImageSelectorModal from "./ImageSelectorModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CloudinaryUpload from "@/components/shared/CloudinaryUpload";
 
 interface LogoUploaderProps {
   isUploading: boolean;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onMediaLibrarySelect: (url: string) => void;
+  onCloudinaryUploadComplete?: (url: string) => void;
 }
 
 const LogoUploader = ({ 
   isUploading,
   onFileChange,
-  onMediaLibrarySelect
+  onMediaLibrarySelect,
+  onCloudinaryUploadComplete
 }: LogoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("upload");
 
   const handleOpenMediaSelector = () => {
     setIsMediaSelectorOpen(true);
@@ -29,53 +34,72 @@ const LogoUploader = ({
     }
   };
 
+  const handleCloudinaryComplete = (url: string) => {
+    if (onCloudinaryUploadComplete) {
+      onCloudinaryUploadComplete(url);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="grid grid-cols-2 gap-3 w-full">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={handleLocalFileClick}
-                disabled={isUploading}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-                type="button"
-              >
-                <Upload className="h-5 w-5" />
-                <span className="hidden sm:inline">{isUploading ? "Téléchargement..." : "Importer"}</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={onFileChange}
-                  accept="image/jpeg,image/png,image/gif,image/svg+xml"
-                  className="hidden"
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
-            </TooltipContent>
-          </Tooltip>
+      <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-2">
+          <TabsTrigger value="upload">Téléverser</TabsTrigger>
+          <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
+          <TabsTrigger value="gallery">Médiathèque</TabsTrigger>
+        </TabsList>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={handleOpenMediaSelector}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-                type="button"
-              >
-                <Image className="h-5 w-5" />
-                <span className="hidden sm:inline">Médiathèque</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Choisir depuis la médiathèque</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+        <TabsContent value="upload" className="space-y-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleLocalFileClick}
+                  disabled={isUploading}
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                  type="button"
+                >
+                  <Upload className="h-5 w-5" />
+                  <span>{isUploading ? "Téléchargement..." : "Téléverser un fichier"}</span>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={onFileChange}
+                    accept="image/jpeg,image/png,image/gif,image/svg+xml"
+                    className="hidden"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </TabsContent>
+
+        <TabsContent value="cloudinary" className="space-y-2">
+          <CloudinaryUpload
+            onUploadComplete={handleCloudinaryComplete}
+            folder="logos"
+            buttonText="Téléverser via Cloudinary"
+            category="logos"
+            className="w-full"
+          />
+        </TabsContent>
+
+        <TabsContent value="gallery" className="space-y-2">
+          <Button
+            onClick={handleOpenMediaSelector}
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+            type="button"
+          >
+            <Image className="h-5 w-5" />
+            <span>Choisir depuis la médiathèque</span>
+          </Button>
+        </TabsContent>
+      </Tabs>
 
       <p className="text-xs text-muted-foreground text-center mt-1">
         Formats acceptés: JPG, PNG, GIF, SVG
