@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { settingsService } from "@/services/settingsService";
 import { toast } from "sonner";
 import { cloudinaryService } from "@/services/cloudinaryService";
 
@@ -42,9 +41,6 @@ export const useLogoManagement = () => {
   const fetchLogos = async () => {
     setIsLoading(true);
     try {
-      // Get logos from both sources: Supabase and Cloudinary
-      const supabaseUrls = await settingsService.getLogos();
-      
       // Get Cloudinary logos
       let cloudinaryUrls: string[] = [];
       try {
@@ -56,21 +52,18 @@ export const useLogoManagement = () => {
         console.error("Error fetching Cloudinary logos:", error);
       }
       
-      // Combine all logo sources
-      const combinedUrls = [...supabaseUrls, ...cloudinaryUrls];
-      
       // Ajouter également le logo actuellement stocké dans localStorage s'il existe
       const currentLogoFromStorage = localStorage.getItem("shopLogo");
       
       if (currentLogoFromStorage) {
         // Vérifier si le logo est déjà dans la liste
-        if (!combinedUrls.includes(currentLogoFromStorage)) {
-          combinedUrls.unshift(currentLogoFromStorage);
+        if (!cloudinaryUrls.includes(currentLogoFromStorage)) {
+          cloudinaryUrls.unshift(currentLogoFromStorage);
         }
       }
       
       // Dédupliquer les URLs
-      setLogoUrls([...new Set(combinedUrls)]);
+      setLogoUrls([...new Set(cloudinaryUrls)]);
       
     } catch (error) {
       console.error("Error retrieving logos:", error);
@@ -117,19 +110,70 @@ export const useLogoManagement = () => {
     
     setIsUploading(true);
     try {
-      // Try using Supabase first
-      const url = await settingsService.uploadLogo(file);
+      // Check if Cloudinary is configured
+      if (!cloudinaryService.isConfigured()) {
+        toast.error("Cloudinary n'est pas configuré. Veuillez configurer Cloudinary dans les paramètres.");
+        return;
+      }
+      
+      // Upload to Cloudinary
+      const url = await cloudinaryService.uploadFile(file, {
+        folder: 'logos',
+        tags: ['logo']
+      });
       
       if (url) {
-        // Refresh the full list to ensure consistency
-        await fetchLogos();
+        // Store in cloudinary logos list
+        const storedUrls = localStorage.getItem('cloudinary_logos_files');
+        const urls = storedUrls ? JSON.parse(storedUrls) : [];
+        if (!urls.includes(url)) {
+          urls.unshift(url);
+          localStorage.setItem('cloudinary_logos_files', JSON.stringify(urls));
+        }
+        
         // Set as current logo
         handleSelectLogo(url);
-        toast.success("Logo téléchargé avec succès");
+        
+        // Refresh the list
+        await fetchLogos();
+        
+        toast.success("Logo téléchargé avec succès via Cloudinary");
+      } else {
+        // Fallback to base64 if Cloudinary upload fails
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result as string;
+          localStorage.setItem('shopLogo', base64data);
+          
+          // Set as current logo
+          handleSelectLogo(base64data);
+          
+          // Refresh the list
+          fetchLogos();
+          
+          toast.success("Logo enregistré en local (mode hors ligne)");
+        };
+        reader.readAsDataURL(file);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Impossible de télécharger le logo via Supabase. Veuillez essayer Cloudinary.");
+      toast.error("Erreur lors du téléchargement du logo. Veuillez réessayer.");
+      
+      // Fallback to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        localStorage.setItem('shopLogo', base64data);
+        
+        // Set as current logo
+        handleSelectLogo(base64data);
+        
+        // Refresh the list
+        fetchLogos();
+        
+        toast.success("Logo enregistré en local (mode hors ligne)");
+      };
+      reader.readAsDataURL(file);
     } finally {
       setIsUploading(false);
     }
@@ -170,12 +214,8 @@ export const useLogoManagement = () => {
     try {
       let success = false;
       
-      // Try to delete from Supabase first if it's a Supabase URL
-      if (url.includes('supabase')) {
-        success = await settingsService.deleteLogoByUrl(url);
-      } 
       // Check if it's a Cloudinary URL
-      else if (url.includes('cloudinary')) {
+      if (url.includes('cloudinary')) {
         // Remove from Cloudinary local storage
         const storedUrls = localStorage.getItem('cloudinary_logos_files');
         if (storedUrls) {

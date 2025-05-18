@@ -12,7 +12,7 @@ interface CurrentLogoProps {
 const CurrentLogo = ({ logoUrl, className }: CurrentLogoProps) => {
   const source = logoUrl || "";
   const isFromCloudinary = source.includes("cloudinary");
-  const isFromSupabase = source.includes("supabase");
+  const isBase64 = source.startsWith("data:image");
 
   return (
     <Card className={cn("overflow-hidden border-dashed", className)}>
@@ -31,8 +31,8 @@ const CurrentLogo = ({ logoUrl, className }: CurrentLogoProps) => {
         {logoUrl && (
           <div className="text-xs text-muted-foreground text-center">
             {isFromCloudinary && <span className="text-emerald-500 font-medium">Cloudinary</span>}
-            {isFromSupabase && <span className="text-blue-500 font-medium">Supabase</span>}
-            {!isFromCloudinary && !isFromSupabase && <span className="text-amber-500 font-medium">Local</span>}
+            {isBase64 && <span className="text-amber-500 font-medium">Local</span>}
+            {!isFromCloudinary && !isBase64 && <span className="text-gray-500 font-medium">Externe</span>}
           </div>
         )}
       </CardContent>

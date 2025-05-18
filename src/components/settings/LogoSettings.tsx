@@ -57,7 +57,7 @@ const LogoSettings = () => {
               <h3 className="text-lg font-medium">Vos logos</h3>
               
               <LogoGallery
-                logos={logoUrls}
+                logoUrls={logoUrls}
                 currentLogo={currentLogo}
                 isLoading={isLoading}
                 onSelectLogo={handleSelectLogo}

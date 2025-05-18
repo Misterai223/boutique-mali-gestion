@@ -22,7 +22,7 @@ const LogoUploader = ({
 }: LogoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("upload");
+  const [activeTab, setActiveTab] = useState<string>("cloudinary");
 
   const handleOpenMediaSelector = () => {
     setIsMediaSelectorOpen(true);
@@ -42,41 +42,11 @@ const LogoUploader = ({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-2">
-          <TabsTrigger value="upload">Téléverser</TabsTrigger>
+      <Tabs defaultValue="cloudinary" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-2">
           <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
           <TabsTrigger value="gallery">Médiathèque</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="upload" className="space-y-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleLocalFileClick}
-                  disabled={isUploading}
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2"
-                  type="button"
-                >
-                  <Upload className="h-5 w-5" />
-                  <span>{isUploading ? "Téléchargement..." : "Téléverser un fichier"}</span>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={onFileChange}
-                    accept="image/jpeg,image/png,image/gif,image/svg+xml"
-                    className="hidden"
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </TabsContent>
 
         <TabsContent value="cloudinary" className="space-y-2">
           <CloudinaryUpload
