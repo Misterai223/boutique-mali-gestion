@@ -14,23 +14,26 @@ const DashboardLayout = ({
   children: React.ReactNode;
   onLogout: () => void;
 }) => {
-  // Utiliser correctement le hook useIsMobile
-  const isMobileScreen = useIsMobile();
+  // Détecter mobile avec fallback
+  const isMobileDetected = useIsMobile();
   
-  // État pour le statut mobile avec valeur par défaut false
-  const [isMobileView, setIsMobileView] = useState(isMobileScreen);
+  // État pour le statut mobile avec valeur par défaut sécurisée
+  const [isMobileView, setIsMobileView] = useState(false);
   
-  // État du sidebar avec la valeur par défaut basée sur le mobile
-  const [collapsed, setCollapsed] = useState(isMobileScreen);
+  // État du sidebar avec valeur par défaut basé sur mobile
+  // Par défaut, sidebar fermée sur mobile, ouverte sur desktop
+  const [collapsed, setCollapsed] = useState(false);
   
-  // Synchroniser l'état local avec la valeur du hook
+  // Effet pour synchroniser l'état mobile et ajuster la sidebar
   useEffect(() => {
-    setIsMobileView(isMobileScreen);
-    // Si on passe en mode mobile et que la sidebar est ouverte, la refermer
-    if (isMobileScreen && !collapsed) {
+    // Mise à jour sécurisée de l'état mobile
+    setIsMobileView(isMobileDetected);
+    
+    // Fermer automatiquement la sidebar sur mobile au premier chargement
+    if (isMobileDetected && !collapsed) {
       setCollapsed(true);
     }
-  }, [isMobileScreen, collapsed]);
+  }, [isMobileDetected]);
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
