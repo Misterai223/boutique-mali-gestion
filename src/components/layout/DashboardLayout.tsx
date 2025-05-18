@@ -14,8 +14,11 @@ const DashboardLayout = ({
   children: React.ReactNode;
   onLogout: () => void;
 }) => {
+  // Importation du hook useIsMobile et vérification de sa valeur
   const isMobile = useIsMobile();
-  const [collapsed, setCollapsed] = useState(isMobile);
+  
+  // État du sidebar avec la valeur par défaut isMobile
+  const [collapsed, setCollapsed] = useState(isMobile || false);
   
   // Gérer les changements de taille d'écran et fermer automatiquement la sidebar sur mobile
   useEffect(() => {
