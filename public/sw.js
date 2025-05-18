@@ -96,14 +96,17 @@ self.addEventListener('message', (event) => {
   
   // Gérer les notifications d'installation
   if (event.data && event.data.type === 'SHOW_INSTALL_PROMPT') {
+    // Afficher une notification plus discrète
     self.registration.showNotification('Shop Manager', {
       body: 'Installez l\'application pour une meilleure expérience',
       icon: '/icons/icon-192x192.png',
       actions: [
         { action: 'install', title: 'Installer' },
-        { action: 'dismiss', title: 'Plus tard' }
+        { action: 'dismiss', title: 'Fermer' }
       ],
-      requireInteraction: true
+      silent: true,
+      requireInteraction: false, // Ne pas nécessiter d'interaction
+      tag: 'pwa-install', // Tag pour éviter les doublons
     });
   }
 });
@@ -131,7 +134,9 @@ self.addEventListener('push', (event) => {
         action: 'close',
         title: 'Fermer',
       },
-    ]
+    ],
+    silent: false,
+    requireInteraction: false // Ne pas bloquer l'interface
   };
   
   event.waitUntil(
@@ -158,27 +163,17 @@ self.addEventListener('notificationclick', (event) => {
     });
   }
   
-  // Ouvrir l'application
-  event.waitUntil(
-    clients.openWindow('/')
-  );
-});
-
-// Tentative d'affichage du prompt d'installation à l'initialisation du SW
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker: envoi de notification d\'installation');
+  // Ouvrir l'application seulement si l'action est "explore"
+  if (event.action === 'explore') {
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  }
   
-  // Attendre un court délai pour permettre l'initialisation
-  setTimeout(() => {
-    self.registration.showNotification('Shop Manager', {
-      body: 'Installez l\'application pour une meilleure expérience',
-      icon: '/icons/icon-192x192.png',
-      actions: [
-        { action: 'install', title: 'Installer' },
-        { action: 'dismiss', title: 'Plus tard' }
-      ],
-      requireInteraction: true
-    });
-  }, 5000);
+  // Si l'action est "close" ou non spécifiée, ne rien faire de plus
 });
 
+// Supprimer la notification d'installation automatique à l'activation
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: activation terminée');
+});

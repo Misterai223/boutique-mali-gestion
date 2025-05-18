@@ -40,10 +40,11 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
     
-    // Afficher le prompt d'installation après un délai
+    // Afficher le prompt d'installation après un délai plus long
+    // pour être moins intrusif
     const timer = setTimeout(() => {
       setShowInstallPrompt(true);
-    }, 2000);
+    }, 15000); // 15 secondes de délai
     
     return () => {
       window.removeEventListener('online', handleOnlineStatus);
@@ -73,12 +74,14 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               Hors ligne
             </div>
           )}
-          {showInstallPrompt && !isMobile && <PWAInstallPrompt />}
+          {/* Afficher le prompt d'installation de manière plus discrète */}
+          {showInstallPrompt && <PWAInstallPrompt />}
           
           {/* Sur mobile, afficher seulement les éléments essentiels */}
           {isMobile ? (
             <>
               <SearchBar />
+              <NotificationButton />
               <UserProfile onLogout={onLogout} />
             </>
           ) : (
