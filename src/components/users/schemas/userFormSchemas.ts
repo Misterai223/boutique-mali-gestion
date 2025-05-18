@@ -7,14 +7,16 @@ export const createUserSchema = z.object({
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
   full_name: z.string().min(2, "Le nom complet est requis"),
   role: z.string().min(1, "Le rôle est requis"),
-  access_level: z.coerce.number().min(1).max(5)
+  // Le niveau d'accès est maintenant défini automatiquement en fonction du rôle
+  access_level: z.coerce.number().optional()
 });
 
 // Schéma de validation pour la modification d'utilisateur
 export const updateUserSchema = z.object({
   full_name: z.string().min(2, "Le nom complet est requis"),
   role: z.string().min(1, "Le rôle est requis"),
-  access_level: z.coerce.number().min(1).max(5)
+  // Le niveau d'accès est maintenant défini automatiquement en fonction du rôle
+  access_level: z.coerce.number().optional()
 });
 
 export type CreateUserForm = z.infer<typeof createUserSchema>;

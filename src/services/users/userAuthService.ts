@@ -7,6 +7,9 @@ export const createUser = async (email: string, password: string, userData: any)
   try {
     console.log("Tentative de création d'un utilisateur:", email, userData);
     
+    // Assurer que le niveau d'accès est correct en fonction du rôle
+    const access_level = userData.role === 'admin' ? 5 : 1;
+    
     // Création d'un utilisateur via l'API publique
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -14,8 +17,8 @@ export const createUser = async (email: string, password: string, userData: any)
       options: {
         data: {
           full_name: userData.full_name,
-          role: userData.role || 'user',
-          access_level: userData.access_level || 1,
+          role: userData.role || 'employee',
+          access_level: access_level,
           created_by_admin: true // Marquer que cet utilisateur a été créé par un admin
         }
       }
@@ -38,8 +41,8 @@ export const createUser = async (email: string, password: string, userData: any)
         .insert({
           id: data.user.id,
           full_name: userData.full_name,
-          role: userData.role || 'user',
-          access_level: userData.access_level || 1,
+          role: userData.role || 'employee',
+          access_level: access_level,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           created_by_admin: true // Marquer aussi dans la table profiles
@@ -62,7 +65,7 @@ export const createUser = async (email: string, password: string, userData: any)
             created_user_id: data.user.id,
             created_user_email: email,
             role: userData.role,
-            access_level: userData.access_level
+            access_level: access_level
           }
         );
       } catch (activityError) {

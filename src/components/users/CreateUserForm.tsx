@@ -9,7 +9,6 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { userService } from "@/services/userService";
 import RoleSelector from "./RoleSelector";
-import AccessLevelInput from "./AccessLevelInput";
 import { CreateUserForm as CreateUserFormType, createUserSchema } from "./schemas/userFormSchemas";
 
 interface CreateUserFormProps {
@@ -26,10 +25,12 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       email: "",
       password: "",
       full_name: "",
-      role: "user",
-      access_level: 1
+      role: "employee", // Par défaut, on crée un employé
     }
   });
+
+  // Observer le changement de rôle pour définir automatiquement le niveau d'accès
+  const watchRole = form.watch("role");
 
   const handleSubmit = async (data: CreateUserFormType) => {
     if (isSubmitting) {
@@ -40,11 +41,14 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
     setIsSubmitting(true);
     console.log("Soumission du formulaire avec les données:", data);
     
+    // Définir automatiquement le niveau d'accès en fonction du rôle
+    const access_level = data.role === "admin" ? 5 : 1;
+    
     try {
       const { error } = await userService.createUser(data.email, data.password, {
         full_name: data.full_name,
         role: data.role,
-        access_level: data.access_level
+        access_level: access_level
       });
       
       if (error) {
@@ -71,8 +75,6 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
     }
   };
 
-  console.log("CreateUserForm rendu, onUserCreated callback présent:", !!onUserCreated);
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -81,7 +83,7 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Email *</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>
@@ -95,7 +97,7 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mot de passe</FormLabel>
+              <FormLabel>Mot de passe *</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -120,7 +122,9 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
         
         <RoleSelector form={form} name="role" />
         
-        <AccessLevelInput form={form} name="access_level" />
+        <div className="mt-2 text-sm text-muted-foreground">
+          <p><strong>Note:</strong> {watchRole === "admin" ? "Un administrateur aura accès complet à toute l'application." : "Un employé aura un accès limité aux fonctionnalités définies."}</p>
+        </div>
         
         <DialogFooter className="mt-6">
           <Button 
