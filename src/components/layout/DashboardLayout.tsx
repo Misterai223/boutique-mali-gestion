@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import TopNav from "./TopNav";
 import { useThemeEffect } from "@/hooks/useThemeEffect";
@@ -20,54 +20,32 @@ const DashboardLayout = ({
   // État du sidebar avec la valeur par défaut false
   const [collapsed, setCollapsed] = useState(false);
   
-  // Effet pour synchroniser l'état isMobileView avec le hook useIsMobile
+  // Utiliser le hook de manière sécurisée
   useEffect(() => {
-    try {
-      // Récupérer la valeur du hook
-      const mobileStatus = useIsMobile();
-      setIsMobileView(mobileStatus);
-      setCollapsed(mobileStatus);
-    } catch (e) {
-      console.error("Erreur lors de la détection du mode mobile:", e);
-    }
-  }, []);
-  
-  // Gérer les changements de taille d'écran et fermer automatiquement la sidebar sur mobile
-  useEffect(() => {
-    // Ne pas automatiquement fermer la sidebar quand l'écran change de taille
-    // seulement initier l'état au chargement
-    if (typeof window !== 'undefined') {
-      const handleResize = () => {
+    // Détecter manuellement si c'est mobile en cas d'erreur avec le hook
+    const checkMobileView = () => {
+      try {
         const isMobile = window.innerWidth < 768;
         setIsMobileView(isMobile);
-        
-        // Sur mobile, si la sidebar est ouverte, la refermer au redimensionnement
-        if (isMobile && !collapsed) {
+        if (!collapsed && isMobile) {
           setCollapsed(true);
         }
-      };
-      
-      // Vérifier immédiatement
-      handleResize();
-      
-      // Écouter les changements de taille d'écran
-      window.addEventListener("resize", handleResize);
-      
-      // Sur mobile, si la sidebar est ouverte, la refermer au scroll
-      const handleScroll = () => {
-        if (isMobileView && !collapsed) {
-          setCollapsed(true);
-        }
-      };
-      
-      window.addEventListener("scroll", handleScroll, { passive: true });
-      
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        window.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, [collapsed, isMobileView]);
+      } catch (e) {
+        console.error("Erreur lors de la détection du mode mobile:", e);
+      }
+    };
+    
+    // Vérifier immédiatement
+    checkMobileView();
+    
+    // Ajouter l'écouteur pour les changements de taille
+    window.addEventListener("resize", checkMobileView);
+    
+    // Nettoyage
+    return () => {
+      window.removeEventListener("resize", checkMobileView);
+    };
+  }, [collapsed]);
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
