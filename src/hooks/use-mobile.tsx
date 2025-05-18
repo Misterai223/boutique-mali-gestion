@@ -1,5 +1,5 @@
 
-import * as React from "react"
+import React from "react"
 
 const MOBILE_BREAKPOINT = 768 // Correspond à la valeur md de Tailwind
 
