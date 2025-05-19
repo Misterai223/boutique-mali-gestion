@@ -4,61 +4,82 @@ import { authService } from "@/services/authService";
 import { toast } from "sonner";
 
 export const useAuth = () => {
-  // État d'authentification basé sur le localStorage avec une valeur par défaut
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // État d'authentification géré de manière plus robuste
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Récupérer l'état initial depuis localStorage de manière sécurisée
+    try {
+      return localStorage.getItem("isAuthenticated") === "true";
+    } catch (e) {
+      console.error("Erreur lors de la lecture du localStorage:", e);
+      return false;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [authError, setAuthError] = useState<Error | null>(null);
   
-  // Fonction handleLogin mémorisée pour éviter les recréations inutiles
+  // Fonction handleLogin mémorisée et améliorée
   const handleLogin = useCallback(() => {
-    console.log("handleLogin appelé, mise à jour de l'état");
-    setIsAuthenticated(true);
-    localStorage.setItem("isAuthenticated", "true");
-    toast.success("Connexion réussie");
-    
-    // Charger les données utilisateur de manière asynchrone
-    setTimeout(async () => {
-      try {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des données utilisateur:", error);
+    try {
+      console.log("handleLogin appelé, mise à jour de l'état");
+      setIsAuthenticated(true);
+      localStorage.setItem("isAuthenticated", "true");
+      toast.success("Connexion réussie");
+      
+      // Charger les données utilisateur avec un délai minimal mais en dehors du flow principal
+      setTimeout(async () => {
+        try {
+          const userData = await authService.getCurrentUser();
+          setUser(userData);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données utilisateur:", error);
+          // Ne pas modifier l'état d'authentification en cas d'erreur ici
+        }
+      }, 50);
+    } catch (error) {
+      console.error("Erreur dans handleLogin:", error);
+      // En cas d'erreur grave, on maintient quand même l'authentification en mode développement
+      if (process.env.NODE_ENV !== 'development') {
+        setIsAuthenticated(false);
       }
-    }, 0);
+    }
   }, []);
   
-  // Fonction handleLogout mémorisée
+  // Fonction handleLogout améliorée avec gestion d'erreurs
   const handleLogout = useCallback(async () => {
     console.log("Déconnexion initiée");
     try {
-      await authService.logout();
+      // Nettoyer localStorage d'abord pour éviter des problèmes de synchronisation
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("userRole");
       localStorage.removeItem("accessLevel");
+      
+      // Ensuite mettre à jour l'état pour éviter des rendus superflus
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Puis informer l'utilisateur et appeler le service d'authentification
       toast.success("Déconnexion réussie");
+      await authService.logout();
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
-      // Force logout even if there's an error
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("accessLevel");
+      // Toujours considérer l'utilisateur déconnecté même en cas d'erreur
       setUser(null);
       setIsAuthenticated(false);
     }
   }, []);
   
-  // Effet pour vérifier la session au montage du composant
+  // Effet pour vérifier la session au montage avec une logique améliorée
   useEffect(() => {
     console.log("Hook useAuth initialisé");
-    let isMounted = true; // Flag pour éviter les mises à jour après le démontage
+    let isMounted = true; // Protection contre les mises à jour après démontage
+    let initTimeout: ReturnType<typeof setTimeout>;
     
     const checkAuthentication = async () => {
       try {
         console.log("Vérification de l'authentification au démarrage");
-        // Vérifier d'abord le localStorage
+        // Vérifier le localStorage avec gestion d'erreurs
         const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated") === "true";
         
         // Pour le développement, considérer toujours l'utilisateur comme authentifié
@@ -67,29 +88,37 @@ export const useAuth = () => {
           console.log("Mode développement activé, authentification automatique");
           if (isMounted) {
             setIsAuthenticated(true);
-            localStorage.setItem("isAuthenticated", "true");
+            try {
+              localStorage.setItem("isAuthenticated", "true");
+            } catch (e) {
+              console.error("Erreur lors de l'écriture dans localStorage:", e);
+            }
             setAuthInitialized(true);
             
             // Délai pour assurer une meilleure stabilité
-            setTimeout(() => {
+            initTimeout = setTimeout(() => {
               if (isMounted) {
                 setLoading(false);
               }
-            }, 500);
+            }, 800);
           }
           return;
         }
         
-        // Vérification normale de l'authentification
+        // Vérification normale de l'authentification (pour la production)
         const session = await authService.getSession();
         
         if (session && isMounted) {
           console.log("Session trouvée au démarrage, authentification");
           setIsAuthenticated(true);
-          localStorage.setItem("isAuthenticated", "true");
+          try {
+            localStorage.setItem("isAuthenticated", "true");
+          } catch (e) {
+            console.error("Erreur localStorage:", e);
+          }
           
-          // Charger les données utilisateur de manière asynchrone
-          setTimeout(async () => {
+          // Charger les données utilisateur avec un délai
+          initTimeout = setTimeout(async () => {
             try {
               if (isMounted) {
                 const userData = await authService.getCurrentUser();
@@ -103,43 +132,56 @@ export const useAuth = () => {
                 setLoading(false);
               }
             }
-          }, 500);
+          }, 800);
         } else if (isMounted) {
           console.log("Aucune session trouvée au démarrage");
           // En mode développement, on force l'authentification
           if (devMode) {
             setIsAuthenticated(true);
-            localStorage.setItem("isAuthenticated", "true");
+            try {
+              localStorage.setItem("isAuthenticated", "true");
+            } catch (e) {
+              console.error("Erreur localStorage:", e);
+            }
           } else {
             setIsAuthenticated(false);
-            localStorage.removeItem("isAuthenticated");
+            try {
+              localStorage.removeItem("isAuthenticated");
+            } catch (e) {
+              console.error("Erreur localStorage:", e);
+            }
           }
           setAuthInitialized(true);
-          setTimeout(() => {
+          initTimeout = setTimeout(() => {
             if (isMounted) {
               setLoading(false);
             }
-          }, 500);
+          }, 800);
         }
       } catch (error) {
         console.error("Erreur d'authentification:", error);
+        setAuthError(error as Error);
         if (isMounted) {
           setIsAuthenticated(false);
-          localStorage.removeItem("isAuthenticated");
+          try {
+            localStorage.removeItem("isAuthenticated");
+          } catch (e) {
+            console.error("Erreur localStorage:", e);
+          }
           setAuthInitialized(true);
-          setTimeout(() => {
+          initTimeout = setTimeout(() => {
             if (isMounted) {
               setLoading(false);
             }
-          }, 500);
+          }, 800);
         }
       }
     };
 
     // Délai pour éviter les problèmes de rendu trop rapide
-    setTimeout(() => {
+    const startupTimeout = setTimeout(() => {
       checkAuthentication();
-    }, 300);
+    }, 500);
     
     // S'abonner aux changements d'authentification globaux
     const { data: { subscription } } = authService.subscribeToAuthChanges(
@@ -149,7 +191,11 @@ export const useAuth = () => {
         if (event === 'SIGNED_IN' && session && isMounted) {
           console.log("useAuth - Connexion détectée");
           setIsAuthenticated(true);
-          localStorage.setItem("isAuthenticated", "true");
+          try {
+            localStorage.setItem("isAuthenticated", "true");
+          } catch (e) {
+            console.error("Erreur localStorage:", e);
+          }
           
           // Utiliser setTimeout pour éviter les deadlocks
           setTimeout(async () => {
@@ -161,14 +207,18 @@ export const useAuth = () => {
             } catch (error) {
               console.error("Erreur lors de la récupération des données utilisateur:", error);
             }
-          }, 0);
+          }, 50);
         } else if (event === 'SIGNED_OUT' && isMounted) {
           console.log("useAuth - Déconnexion détectée");
           setUser(null);
           setIsAuthenticated(false);
-          localStorage.removeItem("isAuthenticated");
-          localStorage.removeItem("userRole");
-          localStorage.removeItem("accessLevel");
+          try {
+            localStorage.removeItem("isAuthenticated");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("accessLevel");
+          } catch (e) {
+            console.error("Erreur localStorage:", e);
+          }
         }
       }
     );
@@ -176,6 +226,8 @@ export const useAuth = () => {
     return () => {
       console.log("Nettoyage du hook useAuth");
       isMounted = false;
+      clearTimeout(startupTimeout);
+      if (initTimeout) clearTimeout(initTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -185,6 +237,7 @@ export const useAuth = () => {
     loading,
     user,
     authInitialized,
+    authError,
     handleLogin,
     handleLogout
   };

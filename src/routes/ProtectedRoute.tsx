@@ -20,6 +20,7 @@ const ProtectedRoute = ({
   const { hasAccess, loading: permissionsLoading, isAdmin } = useRolePermissions();
   const [isChecking, setIsChecking] = useState(true);
   const [redirectAttempt, setRedirectAttempt] = useState(0);
+  const [accessDenied, setAccessDenied] = useState(false);
   
   // Effet pour vérifier l'authentification avec un délai pour éviter les boucles
   useEffect(() => {
@@ -27,17 +28,30 @@ const ProtectedRoute = ({
     const timer = setTimeout(() => {
       setIsChecking(false);
       console.log("ProtectedRoute - Fin de la vérification, authentifié:", isAuthenticated);
-    }, 600);
+    }, 800);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated]);
   
   // Limite le nombre de redirections pour éviter les boucles infinies
   useEffect(() => {
-    if (!isAuthenticated && !isChecking && redirectAttempt < 2) {
+    if (!isAuthenticated && !isChecking && redirectAttempt < 1) {
       setRedirectAttempt(prev => prev + 1);
     }
-  }, [isAuthenticated, isChecking]);
+  }, [isAuthenticated, isChecking, redirectAttempt]);
+
+  // Effet pour vérifier l'accès à la route actuelle
+  useEffect(() => {
+    if (isAuthenticated && !isAdmin && !permissionsLoading) {
+      try {
+        const hasRouteAccess = hasAccess(location.pathname);
+        setAccessDenied(!hasRouteAccess);
+      } catch (error) {
+        console.error("Erreur lors de la vérification d'accès:", error);
+        setAccessDenied(false); // En cas d'erreur, par défaut on n'empêche pas l'accès
+      }
+    }
+  }, [isAuthenticated, isAdmin, permissionsLoading, location.pathname, hasAccess]);
   
   // Pendant la vérification, afficher un écran de chargement
   if (isChecking) {
@@ -45,7 +59,7 @@ const ProtectedRoute = ({
   }
   
   // Si l'utilisateur n'est pas authentifié, rediriger vers la page de login
-  if (!isAuthenticated && redirectAttempt < 2) {
+  if (!isAuthenticated && redirectAttempt < 1) {
     console.log("ProtectedRoute - Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -60,9 +74,8 @@ const ProtectedRoute = ({
   }
   
   try {
-    // Vérifier si l'utilisateur a accès à cette route
-    // Les utilisateurs ajoutés via Supabase auth sont automatiquement considérés comme administrateurs
-    if (!isAdmin && !hasAccess(location.pathname)) {
+    // Si l'accès est refusé, rediriger vers le tableau de bord
+    if (accessDenied) {
       console.log("ProtectedRoute - Accès refusé à", location.pathname);
       return <Navigate to="/dashboard" replace />;
     }

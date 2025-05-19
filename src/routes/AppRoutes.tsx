@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginForm from "@/components/auth/LoginForm";
@@ -14,7 +13,7 @@ import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import Clients from "@/pages/Clients";
 import Index from "@/pages/Index";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import LoadingScreen from "@/components/layout/LoadingScreen";
 
 interface AppRoutesProps {
@@ -27,9 +26,27 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [appReady, setAppReady] = useState(false);
   const [routeInitialized, setRouteInitialized] = useState(false);
+  const initAttemptRef = useRef(0);
   
-  // Ajouter un délai de chargement plus long pour stabiliser l'état d'authentification
+  // Ajouter un délai de chargement plus robuste pour stabiliser l'état d'authentification
   useEffect(() => {
+    // Éviter de réinitialiser si déjà initialisé
+    if (routeInitialized && !isLoading && appReady) {
+      return;
+    }
+    
+    console.log("AppRoutes - Initialisation, tentative:", initAttemptRef.current);
+    initAttemptRef.current += 1;
+    
+    // Limiter les tentatives d'initialisation pour éviter les boucles
+    if (initAttemptRef.current > 3) {
+      console.log("AppRoutes - Trop de tentatives d'initialisation, on force l'état prêt");
+      setIsLoading(false);
+      setAppReady(true);
+      setRouteInitialized(true);
+      return;
+    }
+    
     const timer = setTimeout(() => {
       setIsLoading(false);
       
@@ -41,12 +58,12 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         // Délai pour marquer les routes comme initialisées
         setTimeout(() => {
           setRouteInitialized(true);
-        }, 300);
-      }, 300);
-    }, 800);
+        }, 500);
+      }, 500);
+    }, 1000);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, routeInitialized, isLoading, appReady]);
   
   // Afficher un écran de chargement initial pour éviter les flashs
   if (isLoading || !appReady) {
@@ -55,7 +72,7 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
 
   return (
     <Routes>
-      {/* Route de login */}
+      {/* Route de login avec protection anti-boucle */}
       <Route 
         path="/login" 
         element={
