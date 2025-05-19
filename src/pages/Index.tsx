@@ -12,10 +12,17 @@ const Index = ({
   onAuthChange: (value: boolean) => void;
 }) => {
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   
   useEffect(() => {
     setMounted(true);
+    
+    // Timing pour éviter les boucles de rendu trop rapides
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
     console.log("Index composant monté, isAuthenticated:", isAuthenticated);
     
     // Gestion du thème au chargement
@@ -27,22 +34,33 @@ const Index = ({
     } else if (isDark) {
       document.documentElement.classList.add("dark");
     }
-  }, [isAuthenticated]);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
     onAuthChange(true);
   };
   
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return <LoadingScreen />;
   }
   
-  // Si l'utilisateur est authentifié et qu'il est sur la route racine, rediriger vers le dashboard
-  // On vérifie le pathname pour éviter une boucle de redirection
-  if (isAuthenticated && location.pathname === "/") {
-    console.log("Index - User authentifié, redirection vers /dashboard");
-    return <Navigate to="/dashboard" replace />;
+  // Vérification de sécurité pour éviter les redirections en boucle
+  // Si l'utilisateur semble authentifié mais a une erreur de session
+  // On le garde sur la page d'accueil pour lui permettre de se reconnecter
+  try {
+    // Si l'utilisateur est authentifié et qu'il est sur la route racine, rediriger vers le dashboard
+    // On vérifie le pathname pour éviter une boucle de redirection
+    if (isAuthenticated && location.pathname === "/" && !document.location.href.includes("error=session")) {
+      console.log("Index - User authentifié, redirection vers /dashboard");
+      return <Navigate to="/dashboard" replace />;
+    }
+  } catch (error) {
+    console.error("Erreur lors de la redirection:", error);
+    // En cas d'erreur, on reste sur la page de login
+    onAuthChange(false);
   }
   
   // Sinon, afficher le formulaire de login

@@ -13,6 +13,8 @@ import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import Clients from "@/pages/Clients";
 import Index from "@/pages/Index";
+import { useState, useEffect } from "react";
+import LoadingScreen from "@/components/layout/LoadingScreen";
 
 interface AppRoutesProps {
   isAuthenticated: boolean;
@@ -21,6 +23,22 @@ interface AppRoutesProps {
 }
 
 const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Ajouter un délai de chargement pour éviter les rendus trop rapides
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Afficher un écran de chargement initial pour éviter les flashs
+  if (isLoading) {
+    return <LoadingScreen message="Chargement des routes..." />;
+  }
+
   return (
     <Routes>
       {/* Route de login */}
