@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 // Définition des breakpoints en concordance avec Tailwind
 const BREAKPOINTS = {
@@ -14,7 +14,6 @@ const BREAKPOINTS = {
  * Hook pour détecter si l'écran est de taille mobile
  */
 export function useIsMobile() {
-  // Utiliser useState sans préfixe React
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {

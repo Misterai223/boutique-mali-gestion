@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { initializeApp } from "./utils/initApp";
 import { useAuth } from "./hooks/useAuth";
@@ -10,10 +10,16 @@ import { toast } from "sonner";
 
 function App() {
   const { isAuthenticated, loading, authInitialized, handleLogin, handleLogout } = useAuth();
+  const [appLoading, setAppLoading] = useState(true);
 
   useEffect(() => {
     // Initialiser l'application
     initializeApp();
+    
+    // Délai pour s'assurer que l'application est stable
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 800);
     
     // Enregistrer le service worker si disponible
     if ('serviceWorker' in navigator) {
@@ -46,10 +52,12 @@ function App() {
           });
       });
     }
+    
+    return () => clearTimeout(timer);
   }, []);
 
-  // Attendre que l'authentification soit initialisée avant de rendre l'application
-  if (loading || !authInitialized) {
+  // Attendre que l'authentification soit initialisée et que l'app ait fini de charger
+  if (loading || !authInitialized || appLoading) {
     return <LoadingScreen message="Initialisation de l'application..." />;
   }
 

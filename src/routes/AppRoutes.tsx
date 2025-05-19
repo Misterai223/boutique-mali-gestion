@@ -26,6 +26,7 @@ interface AppRoutesProps {
 const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [appReady, setAppReady] = useState(false);
+  const [routeInitialized, setRouteInitialized] = useState(false);
   
   // Ajouter un délai de chargement plus long pour stabiliser l'état d'authentification
   useEffect(() => {
@@ -36,8 +37,13 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
       setTimeout(() => {
         setAppReady(true);
         console.log("Application prête, état d'authentification:", isAuthenticated);
-      }, 200);
-    }, 500);
+        
+        // Délai pour marquer les routes comme initialisées
+        setTimeout(() => {
+          setRouteInitialized(true);
+        }, 300);
+      }, 300);
+    }, 800);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated]);
@@ -53,7 +59,7 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
       <Route 
         path="/login" 
         element={
-          isAuthenticated ? 
+          isAuthenticated && routeInitialized ? 
             <Navigate to="/dashboard" replace /> : 
             <LoginForm onLogin={onLogin} />
         } 

@@ -14,6 +14,7 @@ const Index = ({
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasChecked, setHasChecked] = useState(false);
+  const [redirectAttempts, setRedirectAttempts] = useState(0);
   
   useEffect(() => {
     setMounted(true);
@@ -23,7 +24,7 @@ const Index = ({
       setIsLoading(false);
       setHasChecked(true);
       console.log("Index - Chargement terminé, authentifié:", isAuthenticated);
-    }, 500);
+    }, 800);
     
     // Gestion du thème au chargement
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -38,6 +39,13 @@ const Index = ({
     return () => clearTimeout(timer);
   }, []);
 
+  // Effet pour limiter le nombre de redirections
+  useEffect(() => {
+    if (hasChecked && isAuthenticated && redirectAttempts < 3) {
+      setRedirectAttempts(prev => prev + 1);
+    }
+  }, [hasChecked, isAuthenticated]);
+
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
     onAuthChange(true);
@@ -45,22 +53,26 @@ const Index = ({
   
   // Afficher le loading screen pendant le chargement initial
   if (!mounted || isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Initialisation de la page d'accueil..." />;
   }
   
   // Une fois les vérifications terminées, rediriger en fonction de l'état d'authentification
   if (hasChecked) {
-    if (isAuthenticated) {
+    if (isAuthenticated && redirectAttempts < 3) {
       console.log("Index - Utilisateur authentifié, redirection vers /dashboard");
       return <Navigate to="/dashboard" replace />;
-    } else {
+    } else if (!isAuthenticated) {
       console.log("Index - Utilisateur non authentifié, affichage du login");
+      return <LoginForm onLogin={handleLogin} />;
+    } else {
+      // Si trop de tentatives de redirection, montrer le formulaire de login
+      console.log("Index - Trop de tentatives de redirection, affichage du login");
       return <LoginForm onLogin={handleLogin} />;
     }
   }
   
   // Fallback - ne devrait jamais être atteint
-  return <LoadingScreen />;
+  return <LoadingScreen message="Vérification de l'authentification..." />;
 };
 
 export default Index;

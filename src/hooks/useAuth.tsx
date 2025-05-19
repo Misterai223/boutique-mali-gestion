@@ -5,9 +5,7 @@ import { toast } from "sonner";
 
 export const useAuth = () => {
   // État d'authentification basé sur le localStorage avec une valeur par défaut
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem("isAuthenticated") === "true"
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -60,6 +58,9 @@ export const useAuth = () => {
     const checkAuthentication = async () => {
       try {
         console.log("Vérification de l'authentification au démarrage");
+        // Vérifier d'abord le localStorage
+        const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated") === "true";
+        
         // Pour le développement, considérer toujours l'utilisateur comme authentifié
         const devMode = true; // Force en mode développement pour tester
         if (devMode) {
@@ -67,8 +68,14 @@ export const useAuth = () => {
           if (isMounted) {
             setIsAuthenticated(true);
             localStorage.setItem("isAuthenticated", "true");
-            setLoading(false);
             setAuthInitialized(true);
+            
+            // Délai pour assurer une meilleure stabilité
+            setTimeout(() => {
+              if (isMounted) {
+                setLoading(false);
+              }
+            }, 500);
           }
           return;
         }
@@ -93,9 +100,10 @@ export const useAuth = () => {
             } finally {
               if (isMounted) {
                 setAuthInitialized(true);
+                setLoading(false);
               }
             }
-          }, 0);
+          }, 500);
         } else if (isMounted) {
           console.log("Aucune session trouvée au démarrage");
           // En mode développement, on force l'authentification
@@ -107,6 +115,11 @@ export const useAuth = () => {
             localStorage.removeItem("isAuthenticated");
           }
           setAuthInitialized(true);
+          setTimeout(() => {
+            if (isMounted) {
+              setLoading(false);
+            }
+          }, 500);
         }
       } catch (error) {
         console.error("Erreur d'authentification:", error);
@@ -114,20 +127,19 @@ export const useAuth = () => {
           setIsAuthenticated(false);
           localStorage.removeItem("isAuthenticated");
           setAuthInitialized(true);
-        }
-      } finally {
-        if (isMounted) {
-          // Important pour éviter les problèmes de rendu
           setTimeout(() => {
             if (isMounted) {
               setLoading(false);
             }
-          }, 300);
+          }, 500);
         }
       }
     };
 
-    checkAuthentication();
+    // Délai pour éviter les problèmes de rendu trop rapide
+    setTimeout(() => {
+      checkAuthentication();
+    }, 300);
     
     // S'abonner aux changements d'authentification globaux
     const { data: { subscription } } = authService.subscribeToAuthChanges(

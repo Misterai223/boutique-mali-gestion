@@ -19,16 +19,25 @@ const ProtectedRoute = ({
   const location = useLocation();
   const { hasAccess, loading: permissionsLoading, isAdmin } = useRolePermissions();
   const [isChecking, setIsChecking] = useState(true);
+  const [redirectAttempt, setRedirectAttempt] = useState(0);
   
   // Effet pour vérifier l'authentification avec un délai pour éviter les boucles
   useEffect(() => {
     // Court délai pour s'assurer que les états sont stables
     const timer = setTimeout(() => {
       setIsChecking(false);
-    }, 400);
+      console.log("ProtectedRoute - Fin de la vérification, authentifié:", isAuthenticated);
+    }, 600);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated]);
+  
+  // Limite le nombre de redirections pour éviter les boucles infinies
+  useEffect(() => {
+    if (!isAuthenticated && !isChecking && redirectAttempt < 2) {
+      setRedirectAttempt(prev => prev + 1);
+    }
+  }, [isAuthenticated, isChecking]);
   
   // Pendant la vérification, afficher un écran de chargement
   if (isChecking) {
@@ -36,7 +45,7 @@ const ProtectedRoute = ({
   }
   
   // Si l'utilisateur n'est pas authentifié, rediriger vers la page de login
-  if (!isAuthenticated) {
+  if (!isAuthenticated && redirectAttempt < 2) {
     console.log("ProtectedRoute - Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -45,9 +54,7 @@ const ProtectedRoute = ({
   if (permissionsLoading) {
     return (
       <DashboardLayout onLogout={onLogout}>
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
+        <LoadingScreen message="Chargement des permissions..." />
       </DashboardLayout>
     );
   }
