@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 import { toast } from "sonner";
 
 function App() {
-  const { isAuthenticated, loading, handleLogin, handleLogout } = useAuth();
+  const { isAuthenticated, loading, authInitialized, handleLogin, handleLogout } = useAuth();
 
   useEffect(() => {
     // Initialiser l'application
@@ -48,8 +48,9 @@ function App() {
     }
   }, []);
 
-  if (loading) {
-    return <LoadingScreen />;
+  // Attendre que l'authentification soit initialisée avant de rendre l'application
+  if (loading || !authInitialized) {
+    return <LoadingScreen message="Initialisation de l'application..." />;
   }
 
   return (

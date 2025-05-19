@@ -10,6 +10,7 @@ export const useAuth = () => {
   );
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
   
   // Fonction handleLogin mémorisée pour éviter les recréations inutiles
   const handleLogin = useCallback(() => {
@@ -67,6 +68,7 @@ export const useAuth = () => {
             setIsAuthenticated(true);
             localStorage.setItem("isAuthenticated", "true");
             setLoading(false);
+            setAuthInitialized(true);
           }
           return;
         }
@@ -88,6 +90,10 @@ export const useAuth = () => {
               }
             } catch (error) {
               console.error("Erreur lors de la récupération des données utilisateur:", error);
+            } finally {
+              if (isMounted) {
+                setAuthInitialized(true);
+              }
             }
           }, 0);
         } else if (isMounted) {
@@ -100,16 +106,23 @@ export const useAuth = () => {
             setIsAuthenticated(false);
             localStorage.removeItem("isAuthenticated");
           }
+          setAuthInitialized(true);
         }
       } catch (error) {
         console.error("Erreur d'authentification:", error);
         if (isMounted) {
           setIsAuthenticated(false);
           localStorage.removeItem("isAuthenticated");
+          setAuthInitialized(true);
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          // Important pour éviter les problèmes de rendu
+          setTimeout(() => {
+            if (isMounted) {
+              setLoading(false);
+            }
+          }, 300);
         }
       }
     };
@@ -159,6 +172,7 @@ export const useAuth = () => {
     isAuthenticated,
     loading,
     user,
+    authInitialized,
     handleLogin,
     handleLogout
   };

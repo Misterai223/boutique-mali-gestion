@@ -1,5 +1,5 @@
 
-import React from "react";
+import { useState, useEffect } from "react";
 
 // Définition des breakpoints en concordance avec Tailwind
 const BREAKPOINTS = {
@@ -14,10 +14,10 @@ const BREAKPOINTS = {
  * Hook pour détecter si l'écran est de taille mobile
  */
 export function useIsMobile() {
-  // S'assurer que l'on utilise bien React.useState
-  const [isMobile, setIsMobile] = React.useState(false);
+  // Utiliser useState sans préfixe React
+  const [isMobile, setIsMobile] = useState(false);
   
-  React.useEffect(() => {
+  useEffect(() => {
     // Vérifier si window est défini (pour compatibilité SSR)
     if (typeof window === 'undefined') return;
     
@@ -46,9 +46,9 @@ export function useIsMobile() {
  */
 export function useBreakpoint() {
   // Valeur par défaut pour éviter les erreurs en SSR
-  const [breakpoint, setBreakpoint] = React.useState('md');
+  const [breakpoint, setBreakpoint] = useState('md');
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const checkBreakpoint = () => {
@@ -82,12 +82,12 @@ export function useBreakpoint() {
  */
 export function useWindowSize() {
   // Valeurs par défaut pour éviter les erreurs en SSR
-  const [windowSize, setWindowSize] = React.useState({
+  const [windowSize, setWindowSize] = useState({
     width: 0,
     height: 0,
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const handleResize = () => {

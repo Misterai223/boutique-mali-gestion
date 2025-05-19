@@ -18,44 +18,30 @@ const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const location = useLocation();
   const { hasAccess, loading: permissionsLoading, isAdmin } = useRolePermissions();
-  const [hasChecked, setHasChecked] = useState(false);
-  const [redirectToLogin, setRedirectToLogin] = useState(false);
-  const [checkingCycle, setCheckingCycle] = useState(0);
+  const [isChecking, setIsChecking] = useState(true);
   
-  // Effet avec protection contre les boucles infinies
+  // Effet pour vérifier l'authentification avec un délai pour éviter les boucles
   useEffect(() => {
-    // Nombre maximum de cycles de vérification pour éviter les boucles infinies
-    if (checkingCycle > 3) {
-      console.log("ProtectedRoute - Trop de cycles de vérification, blocage de sécurité activé");
-      setHasChecked(true);
-      return;
-    }
-    
-    // Utiliser un délai court pour éviter les problèmes de rendu trop rapides
+    // Court délai pour s'assurer que les états sont stables
     const timer = setTimeout(() => {
-      if (!isAuthenticated) {
-        console.log("ProtectedRoute - User non authentifié, préparation redirection");
-        setRedirectToLogin(true);
-      }
-      setHasChecked(true);
-      setCheckingCycle(prev => prev + 1);
-    }, 100);
+      setIsChecking(false);
+    }, 400);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated, checkingCycle]);
+  }, [isAuthenticated]);
   
-  // Afficher un écran de chargement pendant la vérification initiale
-  if (!hasChecked) {
-    return <LoadingScreen />;
+  // Pendant la vérification, afficher un écran de chargement
+  if (isChecking) {
+    return <LoadingScreen message="Vérification des accès..." />;
   }
   
   // Si l'utilisateur n'est pas authentifié, rediriger vers la page de login
-  if (redirectToLogin) {
-    console.log("ProtectedRoute - User non authentifié, redirection vers /login");
+  if (!isAuthenticated) {
+    console.log("ProtectedRoute - Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // Si les permissions sont en cours de chargement, afficher un indicateur de chargement
+  // Si les permissions sont en cours de chargement, afficher un loading dans le layout
   if (permissionsLoading) {
     return (
       <DashboardLayout onLogout={onLogout}>
@@ -69,10 +55,9 @@ const ProtectedRoute = ({
   try {
     // Vérifier si l'utilisateur a accès à cette route
     // Les utilisateurs ajoutés via Supabase auth sont automatiquement considérés comme administrateurs
-    // Toujours autoriser l'accès en mode développement
     if (!isAdmin && !hasAccess(location.pathname)) {
       console.log("ProtectedRoute - Accès refusé à", location.pathname);
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/dashboard" replace />;
     }
 
     // L'utilisateur est authentifié et a accès à la route

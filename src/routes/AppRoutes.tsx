@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginForm from "@/components/auth/LoginForm";
@@ -24,19 +25,26 @@ interface AppRoutesProps {
 
 const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   
-  // Ajouter un délai de chargement plus court pour éviter les problèmes de rendu
+  // Ajouter un délai de chargement plus long pour stabiliser l'état d'authentification
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 100);
+      
+      // Court délai supplémentaire pour stabiliser l'application
+      setTimeout(() => {
+        setAppReady(true);
+        console.log("Application prête, état d'authentification:", isAuthenticated);
+      }, 200);
+    }, 500);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAuthenticated]);
   
   // Afficher un écran de chargement initial pour éviter les flashs
-  if (isLoading) {
-    return <LoadingScreen />;
+  if (isLoading || !appReady) {
+    return <LoadingScreen message="Initialisation de l'application..." />;
   }
 
   return (
@@ -51,7 +59,7 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         } 
       />
       
-      {/* Route d'accueil - utilise le composant Index avec blocage de redirection en boucle */}
+      {/* Route d'accueil avec stabilisation */}
       <Route 
         path="/" 
         element={
