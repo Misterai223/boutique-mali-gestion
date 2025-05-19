@@ -14,24 +14,26 @@ const DashboardLayout = ({
   children: React.ReactNode;
   onLogout: () => void;
 }) => {
-  // Détecter mobile avec fallback
-  const isMobileDetected = useIsMobile();
-  
-  // État pour le statut mobile avec valeur par défaut sécurisée
+  // Initialiser les états avec des valeurs par défaut sûres
   const [isMobileView, setIsMobileView] = useState(false);
-  
-  // État du sidebar avec valeur par défaut basé sur mobile
-  // Par défaut, sidebar fermée sur mobile, ouverte sur desktop
   const [collapsed, setCollapsed] = useState(false);
+  
+  // Utiliser le hook de détection mobile
+  // S'il y a une erreur, le composant continuera de fonctionner
+  const isMobileDetected = useIsMobile();
   
   // Effet pour synchroniser l'état mobile et ajuster la sidebar
   useEffect(() => {
-    // Mise à jour sécurisée de l'état mobile
-    setIsMobileView(isMobileDetected);
-    
-    // Fermer automatiquement la sidebar sur mobile au premier chargement
-    if (isMobileDetected && !collapsed) {
-      setCollapsed(true);
+    try {
+      // Mise à jour sécurisée de l'état mobile
+      setIsMobileView(isMobileDetected);
+      
+      // Fermer automatiquement la sidebar sur mobile au premier chargement
+      if (isMobileDetected && !collapsed) {
+        setCollapsed(true);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la synchronisation de l'état mobile:", error);
     }
   }, [isMobileDetected]);
   
