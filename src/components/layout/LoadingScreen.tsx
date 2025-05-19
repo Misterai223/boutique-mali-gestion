@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React from "react";
 
-const LoadingScreen: React.FC = () => {
+// Le composant LoadingScreen ne prend pas de props "message", donc nous devons l'adapter
+const LoadingScreen = () => {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-background">
+    <div className="flex items-center justify-center h-screen w-full bg-background">
       <div className="flex flex-col items-center space-y-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        <p className="text-lg font-medium text-foreground">Chargement...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="text-lg font-medium text-muted-foreground">Chargement...</div>
       </div>
     </div>
   );

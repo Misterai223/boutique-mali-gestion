@@ -25,18 +25,18 @@ interface AppRoutesProps {
 const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
   const [isLoading, setIsLoading] = useState(true);
   
-  // Ajouter un délai de chargement pour éviter les rendus trop rapides
+  // Ajouter un délai de chargement plus court pour éviter les problèmes de rendu
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300);
+    }, 100);
     
     return () => clearTimeout(timer);
   }, []);
   
   // Afficher un écran de chargement initial pour éviter les flashs
   if (isLoading) {
-    return <LoadingScreen message="Chargement des routes..." />;
+    return <LoadingScreen />;
   }
 
   return (
@@ -51,7 +51,7 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         } 
       />
       
-      {/* Route d'accueil - utilise le composant Index */}
+      {/* Route d'accueil - utilise le composant Index avec blocage de redirection en boucle */}
       <Route 
         path="/" 
         element={

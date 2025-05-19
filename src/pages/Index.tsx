@@ -13,6 +13,7 @@ const Index = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [redirectAttempts, setRedirectAttempts] = useState(0);
   const location = useLocation();
   
   useEffect(() => {
@@ -21,7 +22,7 @@ const Index = ({
     // Timing pour éviter les boucles de rendu trop rapides
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300);
+    }, 200);
     
     console.log("Index composant monté, isAuthenticated:", isAuthenticated);
     
@@ -38,6 +39,13 @@ const Index = ({
     return () => clearTimeout(timer);
   }, []);
   
+  // Limiter le nombre de tentatives de redirection pour éviter les boucles
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setRedirectAttempts(prev => prev + 1);
+    }
+  }, [isLoading, isAuthenticated]);
+
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
     onAuthChange(true);
@@ -47,20 +55,28 @@ const Index = ({
     return <LoadingScreen />;
   }
   
+  // Protection contre les boucles infinies
+  if (redirectAttempts > 5) {
+    console.log("Index - Trop de tentatives de redirection, affichage du formulaire de login");
+    localStorage.removeItem("isAuthenticated");
+    onAuthChange(false);
+    return <LoginForm onLogin={handleLogin} />;
+  }
+  
   // Vérification de sécurité pour éviter les redirections en boucle
-  // Si l'utilisateur semble authentifié mais a une erreur de session
-  // On le garde sur la page d'accueil pour lui permettre de se reconnecter
   try {
-    // Si l'utilisateur est authentifié et qu'il est sur la route racine, rediriger vers le dashboard
-    // On vérifie le pathname pour éviter une boucle de redirection
-    if (isAuthenticated && location.pathname === "/" && !document.location.href.includes("error=session")) {
+    // Vérifier si la redirection est possible et nécessaire
+    if (isAuthenticated && location.pathname === "/" && 
+        !document.location.href.includes("error=session") && 
+        !document.location.href.includes("error=redirect")) {
+      
       console.log("Index - User authentifié, redirection vers /dashboard");
       return <Navigate to="/dashboard" replace />;
     }
   } catch (error) {
     console.error("Erreur lors de la redirection:", error);
-    // En cas d'erreur, on reste sur la page de login
-    onAuthChange(false);
+    // Ajouter un paramètre pour éviter les boucles infinies
+    return <Navigate to="/?error=redirect" replace />;
   }
   
   // Sinon, afficher le formulaire de login

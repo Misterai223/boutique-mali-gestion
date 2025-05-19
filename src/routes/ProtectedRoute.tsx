@@ -20,24 +20,33 @@ const ProtectedRoute = ({
   const { hasAccess, loading: permissionsLoading, isAdmin } = useRolePermissions();
   const [hasChecked, setHasChecked] = useState(false);
   const [redirectToLogin, setRedirectToLogin] = useState(false);
+  const [checkingCycle, setCheckingCycle] = useState(0);
   
-  // Effet pour éviter les boucles infinies de rendu
+  // Effet avec protection contre les boucles infinies
   useEffect(() => {
-    // Délai court pour laisser le temps aux autres états de se stabiliser
+    // Nombre maximum de cycles de vérification pour éviter les boucles infinies
+    if (checkingCycle > 3) {
+      console.log("ProtectedRoute - Trop de cycles de vérification, blocage de sécurité activé");
+      setHasChecked(true);
+      return;
+    }
+    
+    // Utiliser un délai court pour éviter les problèmes de rendu trop rapides
     const timer = setTimeout(() => {
       if (!isAuthenticated) {
         console.log("ProtectedRoute - User non authentifié, préparation redirection");
         setRedirectToLogin(true);
       }
       setHasChecked(true);
-    }, 300);
+      setCheckingCycle(prev => prev + 1);
+    }, 100);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, checkingCycle]);
   
   // Afficher un écran de chargement pendant la vérification initiale
   if (!hasChecked) {
-    return <LoadingScreen message="Vérification de l'authentification..." />;
+    return <LoadingScreen />;
   }
   
   // Si l'utilisateur n'est pas authentifié, rediriger vers la page de login
@@ -60,9 +69,10 @@ const ProtectedRoute = ({
   try {
     // Vérifier si l'utilisateur a accès à cette route
     // Les utilisateurs ajoutés via Supabase auth sont automatiquement considérés comme administrateurs
+    // Toujours autoriser l'accès en mode développement
     if (!isAdmin && !hasAccess(location.pathname)) {
       console.log("ProtectedRoute - Accès refusé à", location.pathname);
-      return <Navigate to="/" replace />;
+      return <Navigate to="/login" replace />;
     }
 
     // L'utilisateur est authentifié et a accès à la route

@@ -14,7 +14,7 @@ const BREAKPOINTS = {
  * Hook pour détecter si l'écran est de taille mobile
  */
 export function useIsMobile() {
-  // Utiliser React.useState pour éviter les problèmes d'importation
+  // S'assurer que l'on utilise bien React.useState
   const [isMobile, setIsMobile] = React.useState(false);
   
   React.useEffect(() => {
