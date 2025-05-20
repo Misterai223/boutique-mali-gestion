@@ -13,7 +13,6 @@ import Reports from "@/pages/Reports";
 import MediaLibrary from "@/pages/MediaLibrary";
 import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
-import Index from "@/pages/Index";
 
 interface AppRoutesProps {
   isAuthenticated: boolean;

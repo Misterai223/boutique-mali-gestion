@@ -1,10 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
-import { initializeApp } from "./utils/initApp";
 import { useAuth } from "./hooks/useAuth";
 import AppRoutes from "./routes/AppRoutes";
 import LoadingScreen from "./components/layout/LoadingScreen";
+import { initializeApp } from "./utils/initApp";
 
 function App() {
   const { isAuthenticated, loading, handleLogin, handleLogout } = useAuth();
