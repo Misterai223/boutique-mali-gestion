@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom"; 
 import LoginForm from "@/components/auth/LoginForm";
 import LoadingScreen from "@/components/layout/LoadingScreen";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = ({ 
   isAuthenticated, 
@@ -16,7 +17,33 @@ const Index = ({
   const [hasChecked, setHasChecked] = useState(false);
   const [redirectAttempts, setRedirectAttempts] = useState(0);
   const [loginDisplayed, setLoginDisplayed] = useState(false);
+  const [sessionVerified, setSessionVerified] = useState(false);
+  const navigate = useNavigate();
   
+  // Vérifier la session Supabase au montage pour éviter les redirections incorrectes
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const hasSession = !!data.session;
+        console.log("Index - Vérification de session Supabase:", hasSession ? "Active" : "Inactive");
+        
+        if (isAuthenticated !== hasSession) {
+          console.log("Index - Incohérence détectée entre l'état local et la session Supabase");
+          // Synchroniser l'état d'authentification avec la session Supabase
+          onAuthChange(hasSession);
+        }
+        
+        setSessionVerified(true);
+      } catch (error) {
+        console.error("Index - Erreur lors de la vérification de session:", error);
+        setSessionVerified(true); // Continuer malgré l'erreur
+      }
+    };
+    
+    checkSession();
+  }, [isAuthenticated, onAuthChange]);
+
   useEffect(() => {
     setMounted(true);
     console.log("Index composant monté, isAuthenticated:", isAuthenticated);
@@ -47,12 +74,22 @@ const Index = ({
 
   // Effet pour limiter le nombre de redirections et éviter les boucles
   useEffect(() => {
+    if (!sessionVerified) return; // Attendre la vérification de session
+    
     if (hasChecked && isAuthenticated && redirectAttempts < 2) {
+      console.log("Index - Navigation programmée vers /dashboard");
       setRedirectAttempts(prev => prev + 1);
+      
+      // Utiliser navigate au lieu de redirect pour éviter les problèmes
+      const redirectTimer = setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100);
+      
+      return () => clearTimeout(redirectTimer);
     } else if (hasChecked && !isAuthenticated && !loginDisplayed) {
       setLoginDisplayed(true);
     }
-  }, [hasChecked, isAuthenticated, redirectAttempts, loginDisplayed]);
+  }, [hasChecked, isAuthenticated, redirectAttempts, loginDisplayed, navigate, sessionVerified]);
 
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
@@ -60,7 +97,7 @@ const Index = ({
   };
   
   // Afficher le loading screen pendant le chargement initial
-  if (!mounted || isLoading) {
+  if (!mounted || isLoading || !sessionVerified) {
     return <LoadingScreen message="Initialisation de la page d'accueil..." />;
   }
   

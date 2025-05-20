@@ -7,11 +7,39 @@ import AppRoutes from "./routes/AppRoutes";
 import LoadingScreen from "./components/layout/LoadingScreen";
 import { Toaster } from "sonner";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 function App() {
   const { isAuthenticated, loading, authInitialized, authError, handleLogin, handleLogout } = useAuth();
   const [appLoading, setAppLoading] = useState(true);
   const [initComplete, setInitComplete] = useState(false);
+  const [sessionVerified, setSessionVerified] = useState(false);
+
+  // Vérification supplémentaire de la cohérence entre état local et session Supabase
+  useEffect(() => {
+    const verifyAuthState = async () => {
+      try {
+        console.log("App - Vérification de la cohérence d'authentification");
+        const { data } = await supabase.auth.getSession();
+        const hasSession = !!data.session;
+        
+        // Détecter et traiter les incohérences
+        if (isAuthenticated !== hasSession && authInitialized) {
+          console.log(`App - Incohérence détectée - Local: ${isAuthenticated}, Supabase: ${hasSession}`);
+          // Ne pas déclencher d'effet secondaire dans cette vérification initiale
+        }
+        
+        setSessionVerified(true);
+      } catch (error) {
+        console.error("App - Erreur lors de la vérification de session:", error);
+        setSessionVerified(true); // Continuer malgré l'erreur
+      }
+    };
+    
+    if (authInitialized) {
+      verifyAuthState();
+    }
+  }, [isAuthenticated, authInitialized]);
 
   useEffect(() => {
     console.log("App - Initialisation démarrée");
@@ -85,13 +113,15 @@ function App() {
   }, [authError]);
 
   // Attendre que l'authentification soit initialisée et que l'app ait fini de charger
-  if (loading || !authInitialized || appLoading || !initComplete) {
+  if (loading || !authInitialized || appLoading || !initComplete || !sessionVerified) {
     const message = !authInitialized 
       ? "Vérification de l'authentification..." 
-      : appLoading 
-        ? "Initialisation de l'application..." 
-        : "Finalisation du chargement...";
-        
+      : !sessionVerified
+        ? "Synchronisation de la session..."
+        : appLoading 
+          ? "Initialisation de l'application..." 
+          : "Finalisation du chargement...";
+          
     return <LoadingScreen message={message} />;
   }
 

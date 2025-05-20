@@ -2,18 +2,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = () => {
   // État d'authentification géré de manière plus robuste
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Récupérer l'état initial depuis localStorage de manière sécurisée
-    try {
-      return localStorage.getItem("isAuthenticated") === "true";
-    } catch (e) {
-      console.error("Erreur lors de la lecture du localStorage:", e);
-      return false;
-    }
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Initialiser à false par défaut
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -79,23 +72,41 @@ export const useAuth = () => {
     const checkAuthentication = async () => {
       try {
         console.log("Vérification de l'authentification au démarrage");
-        // Vérifier le localStorage avec gestion d'erreurs
-        const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated") === "true";
         
-        // Pour le développement, considérer toujours l'utilisateur comme authentifié
+        // **MODIFICATION IMPORTANTE**: Vérifier d'abord la session Supabase
+        const { data: sessionData } = await supabase.auth.getSession();
+        const hasActiveSession = !!sessionData.session;
+        console.log("Session Supabase active:", hasActiveSession);
+        
+        // Mode développement avec vérification pour éviter la boucle
         const devMode = true; // Force en mode développement pour tester
         if (devMode) {
-          console.log("Mode développement activé, authentification automatique");
-          if (isMounted) {
-            setIsAuthenticated(true);
-            try {
-              localStorage.setItem("isAuthenticated", "true");
-            } catch (e) {
-              console.error("Erreur lors de l'écriture dans localStorage:", e);
+          console.log("Mode développement activé");
+          // **MODIFICATION**: En dev mode, on respecte quand même la session réelle
+          if (hasActiveSession) {
+            console.log("Session active détectée, authentification automatique");
+            if (isMounted) {
+              setIsAuthenticated(true);
+              try {
+                localStorage.setItem("isAuthenticated", "true");
+              } catch (e) {
+                console.error("Erreur localStorage:", e);
+              }
             }
+          } else {
+            console.log("Pas de session active, redirection vers login");
+            if (isMounted) {
+              setIsAuthenticated(false);
+              try {
+                localStorage.removeItem("isAuthenticated");
+              } catch (e) {
+                console.error("Erreur localStorage:", e);
+              }
+            }
+          }
+          
+          if (isMounted) {
             setAuthInitialized(true);
-            
-            // Délai pour assurer une meilleure stabilité
             initTimeout = setTimeout(() => {
               if (isMounted) {
                 setLoading(false);
@@ -135,8 +146,8 @@ export const useAuth = () => {
           }, 800);
         } else if (isMounted) {
           console.log("Aucune session trouvée au démarrage");
-          // En mode développement, on force l'authentification
-          if (devMode) {
+          // En mode développement, on force l'authentification uniquement s'il y a une session
+          if (devMode && hasActiveSession) {
             setIsAuthenticated(true);
             try {
               localStorage.setItem("isAuthenticated", "true");

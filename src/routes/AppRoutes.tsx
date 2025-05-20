@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginForm from "@/components/auth/LoginForm";
@@ -15,6 +16,7 @@ import Clients from "@/pages/Clients";
 import Index from "@/pages/Index";
 import { useState, useEffect, useRef } from "react";
 import LoadingScreen from "@/components/layout/LoadingScreen";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AppRoutesProps {
   isAuthenticated: boolean;
@@ -26,10 +28,32 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [appReady, setAppReady] = useState(false);
   const [routeInitialized, setRouteInitialized] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const initAttemptRef = useRef(0);
+  
+  // Vérification préalable de la session Supabase pour synchroniser l'authentification
+  useEffect(() => {
+    const verifySupabaseSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const hasSession = !!data.session;
+        console.log("AppRoutes - État session Supabase:", hasSession ? "Active" : "Inactive");
+        console.log("AppRoutes - État local isAuthenticated:", isAuthenticated);
+        
+        setSessionChecked(true);
+      } catch (error) {
+        console.error("AppRoutes - Erreur lors de la vérification de session Supabase:", error);
+        setSessionChecked(true); // Continuer malgré l'erreur
+      }
+    };
+    
+    verifySupabaseSession();
+  }, [isAuthenticated]);
   
   // Ajouter un délai de chargement plus robuste pour stabiliser l'état d'authentification
   useEffect(() => {
+    if (!sessionChecked) return; // Attendre la vérification de session
+    
     // Éviter de réinitialiser si déjà initialisé
     if (routeInitialized && !isLoading && appReady) {
       return;
@@ -63,10 +87,10 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated, routeInitialized, isLoading, appReady]);
+  }, [isAuthenticated, routeInitialized, isLoading, appReady, sessionChecked]);
   
   // Afficher un écran de chargement initial pour éviter les flashs
-  if (isLoading || !appReady) {
+  if (isLoading || !appReady || !sessionChecked) {
     return <LoadingScreen message="Initialisation de l'application..." />;
   }
 
