@@ -1,255 +1,161 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { authService } from "@/services/authService";
-import { toast } from "sonner";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Session } from "@supabase/supabase-js";
 
 export const useAuth = () => {
-  // État d'authentification géré de manière plus robuste
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Initialiser à false par défaut
+  // État pour suivre l'authentification
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [authError, setAuthError] = useState<Error | null>(null);
   
-  // Fonction handleLogin mémorisée et améliorée
-  const handleLogin = useCallback(() => {
+  // Référence pour suivre si le composant est monté
+  const isMounted = useRef(true);
+  
+  // Fonction pour gérer la connexion
+  const handleLogin = useCallback((newSession: Session) => {
+    if (!isMounted.current) return;
+    
     try {
-      console.log("handleLogin appelé, mise à jour de l'état");
+      console.log("Session utilisateur détectée, mise à jour de l'état");
+      setSession(newSession);
       setIsAuthenticated(true);
-      localStorage.setItem("isAuthenticated", "true");
-      toast.success("Connexion réussie");
       
-      // Charger les données utilisateur avec un délai minimal mais en dehors du flow principal
-      setTimeout(async () => {
-        try {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
-        } catch (error) {
-          console.error("Erreur lors de la récupération des données utilisateur:", error);
-          // Ne pas modifier l'état d'authentification en cas d'erreur ici
-        }
-      }, 50);
+      // Stocker l'état d'authentification (optionnel, car Supabase gère déjà la session)
+      localStorage.setItem("isAuthenticated", "true");
+      
+      toast.success("Connexion réussie");
     } catch (error) {
-      console.error("Erreur dans handleLogin:", error);
-      // En cas d'erreur grave, on maintient quand même l'authentification en mode développement
-      if (process.env.NODE_ENV !== 'development') {
+      console.error("Erreur lors de la connexion:", error);
+      setAuthError(error as Error);
+    }
+  }, []);
+  
+  // Fonction pour gérer la déconnexion
+  const handleLogout = useCallback(async () => {
+    try {
+      console.log("Déconnexion initiée");
+      
+      // Déconnexion Supabase
+      await supabase.auth.signOut();
+      
+      // Nettoyer l'état local
+      if (isMounted.current) {
+        setSession(null);
         setIsAuthenticated(false);
+        
+        // Nettoyer localStorage
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("accessLevel");
+        
+        toast.success("Déconnexion réussie");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      // En cas d'erreur, forcer quand même la déconnexion locale
+      if (isMounted.current) {
+        setSession(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem("isAuthenticated");
       }
     }
   }, []);
   
-  // Fonction handleLogout améliorée avec gestion d'erreurs
-  const handleLogout = useCallback(async () => {
-    console.log("Déconnexion initiée");
-    try {
-      // Nettoyer localStorage d'abord pour éviter des problèmes de synchronisation
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("accessLevel");
-      
-      // Ensuite mettre à jour l'état pour éviter des rendus superflus
-      setUser(null);
-      setIsAuthenticated(false);
-      
-      // Puis informer l'utilisateur et appeler le service d'authentification
-      toast.success("Déconnexion réussie");
-      await authService.logout();
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-      // Toujours considérer l'utilisateur déconnecté même en cas d'erreur
-      setUser(null);
-      setIsAuthenticated(false);
-    }
-  }, []);
-  
-  // Effet pour vérifier la session au montage avec une logique améliorée
+  // Initialisation et vérification de la session
   useEffect(() => {
-    console.log("Hook useAuth initialisé");
-    let isMounted = true; // Protection contre les mises à jour après démontage
-    let initTimeout: ReturnType<typeof setTimeout>;
+    console.log("Initialisation du hook useAuth");
     
-    const checkAuthentication = async () => {
+    const initAuth = async () => {
       try {
-        console.log("Vérification de l'authentification au démarrage");
+        // Récupérer la session actuelle
+        const { data, error } = await supabase.auth.getSession();
         
-        // **MODIFICATION IMPORTANTE**: Vérifier d'abord la session Supabase
-        const { data: sessionData } = await supabase.auth.getSession();
-        const hasActiveSession = !!sessionData.session;
-        console.log("Session Supabase active:", hasActiveSession);
-        
-        // Mode développement avec vérification pour éviter la boucle
-        const devMode = true; // Force en mode développement pour tester
-        if (devMode) {
-          console.log("Mode développement activé");
-          // **MODIFICATION**: En dev mode, on respecte quand même la session réelle
-          if (hasActiveSession) {
-            console.log("Session active détectée, authentification automatique");
-            if (isMounted) {
-              setIsAuthenticated(true);
-              try {
-                localStorage.setItem("isAuthenticated", "true");
-              } catch (e) {
-                console.error("Erreur localStorage:", e);
-              }
-            }
-          } else {
-            console.log("Pas de session active, redirection vers login");
-            if (isMounted) {
-              setIsAuthenticated(false);
-              try {
-                localStorage.removeItem("isAuthenticated");
-              } catch (e) {
-                console.error("Erreur localStorage:", e);
-              }
-            }
-          }
-          
-          if (isMounted) {
-            setAuthInitialized(true);
-            initTimeout = setTimeout(() => {
-              if (isMounted) {
-                setLoading(false);
-              }
-            }, 800);
-          }
-          return;
+        if (error) {
+          throw error;
         }
         
-        // Vérification normale de l'authentification (pour la production)
-        const session = await authService.getSession();
-        
-        if (session && isMounted) {
-          console.log("Session trouvée au démarrage, authentification");
-          setIsAuthenticated(true);
-          try {
-            localStorage.setItem("isAuthenticated", "true");
-          } catch (e) {
-            console.error("Erreur localStorage:", e);
-          }
-          
-          // Charger les données utilisateur avec un délai
-          initTimeout = setTimeout(async () => {
-            try {
-              if (isMounted) {
-                const userData = await authService.getCurrentUser();
-                setUser(userData);
-              }
-            } catch (error) {
-              console.error("Erreur lors de la récupération des données utilisateur:", error);
-            } finally {
-              if (isMounted) {
-                setAuthInitialized(true);
-                setLoading(false);
-              }
-            }
-          }, 800);
-        } else if (isMounted) {
-          console.log("Aucune session trouvée au démarrage");
-          // En mode développement, on force l'authentification uniquement s'il y a une session
-          if (devMode && hasActiveSession) {
+        if (data.session) {
+          console.log("Session active trouvée");
+          if (isMounted.current) {
+            setSession(data.session);
             setIsAuthenticated(true);
-            try {
-              localStorage.setItem("isAuthenticated", "true");
-            } catch (e) {
-              console.error("Erreur localStorage:", e);
-            }
-          } else {
-            setIsAuthenticated(false);
-            try {
-              localStorage.removeItem("isAuthenticated");
-            } catch (e) {
-              console.error("Erreur localStorage:", e);
-            }
           }
-          setAuthInitialized(true);
-          initTimeout = setTimeout(() => {
-            if (isMounted) {
-              setLoading(false);
-            }
-          }, 800);
+        } else {
+          console.log("Aucune session active");
+          if (isMounted.current) {
+            setIsAuthenticated(false);
+            // Nettoyer localStorage en cas d'incohérence
+            localStorage.removeItem("isAuthenticated");
+          }
         }
       } catch (error) {
-        console.error("Erreur d'authentification:", error);
-        setAuthError(error as Error);
-        if (isMounted) {
+        console.error("Erreur lors de l'initialisation de l'authentification:", error);
+        if (isMounted.current) {
+          setAuthError(error as Error);
           setIsAuthenticated(false);
-          try {
-            localStorage.removeItem("isAuthenticated");
-          } catch (e) {
-            console.error("Erreur localStorage:", e);
-          }
+          localStorage.removeItem("isAuthenticated");
+        }
+      } finally {
+        if (isMounted.current) {
           setAuthInitialized(true);
-          initTimeout = setTimeout(() => {
-            if (isMounted) {
-              setLoading(false);
-            }
-          }, 800);
+          setLoading(false);
         }
       }
     };
-
-    // Délai pour éviter les problèmes de rendu trop rapide
-    const startupTimeout = setTimeout(() => {
-      checkAuthentication();
-    }, 500);
     
-    // S'abonner aux changements d'authentification globaux
-    const { data: { subscription } } = authService.subscribeToAuthChanges(
-      (event, session) => {
-        console.log("useAuth - Événement d'authentification:", event);
+    // S'abonner aux changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        console.log("Événement d'authentification:", event);
         
-        if (event === 'SIGNED_IN' && session && isMounted) {
-          console.log("useAuth - Connexion détectée");
-          setIsAuthenticated(true);
-          try {
+        if (event === "SIGNED_IN" && newSession) {
+          console.log("Utilisateur connecté");
+          if (isMounted.current) {
+            setSession(newSession);
+            setIsAuthenticated(true);
             localStorage.setItem("isAuthenticated", "true");
-          } catch (e) {
-            console.error("Erreur localStorage:", e);
           }
-          
-          // Utiliser setTimeout pour éviter les deadlocks
-          setTimeout(async () => {
-            try {
-              if (isMounted) {
-                const userData = await authService.getCurrentUser();
-                setUser(userData);
-              }
-            } catch (error) {
-              console.error("Erreur lors de la récupération des données utilisateur:", error);
-            }
-          }, 50);
-        } else if (event === 'SIGNED_OUT' && isMounted) {
-          console.log("useAuth - Déconnexion détectée");
-          setUser(null);
-          setIsAuthenticated(false);
-          try {
+        } else if (event === "SIGNED_OUT") {
+          console.log("Utilisateur déconnecté");
+          if (isMounted.current) {
+            setSession(null);
+            setIsAuthenticated(false);
             localStorage.removeItem("isAuthenticated");
             localStorage.removeItem("userRole");
             localStorage.removeItem("accessLevel");
-          } catch (e) {
-            console.error("Erreur localStorage:", e);
+          }
+        } else if (event === "TOKEN_REFRESHED" && newSession) {
+          console.log("Token rafraîchi");
+          if (isMounted.current) {
+            setSession(newSession);
           }
         }
       }
     );
     
+    // Initialiser l'authentification
+    initAuth();
+    
+    // Nettoyage lors du démontage
     return () => {
-      console.log("Nettoyage du hook useAuth");
-      isMounted = false;
-      clearTimeout(startupTimeout);
-      if (initTimeout) clearTimeout(initTimeout);
+      isMounted.current = false;
       subscription.unsubscribe();
     };
   }, []);
   
   return {
     isAuthenticated,
+    session,
     loading,
-    user,
     authInitialized,
     authError,
     handleLogin,
     handleLogout
   };
 };
+
+export default useAuth;

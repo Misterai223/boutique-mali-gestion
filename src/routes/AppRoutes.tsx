@@ -1,5 +1,6 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Session } from "@supabase/supabase-js";
 import ProtectedRoute from "./ProtectedRoute";
 import LoginForm from "@/components/auth/LoginForm";
 import Dashboard from "@/pages/Dashboard";
@@ -14,106 +15,53 @@ import Users from "@/pages/Users";
 import Settings from "@/pages/Settings";
 import Clients from "@/pages/Clients";
 import Index from "@/pages/Index";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import LoadingScreen from "@/components/layout/LoadingScreen";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AppRoutesProps {
   isAuthenticated: boolean;
-  onLogin: () => void;
+  onLogin: (session: Session) => void;
   onLogout: () => void;
+  session: Session | null;
 }
 
-const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [appReady, setAppReady] = useState(false);
-  const [routeInitialized, setRouteInitialized] = useState(false);
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const initAttemptRef = useRef(0);
+const AppRoutes = ({ isAuthenticated, onLogin, onLogout, session }: AppRoutesProps) => {
+  const [isReady, setIsReady] = useState(false);
   
-  // Vérification préalable de la session Supabase pour synchroniser l'authentification
+  // Ajouter un délai minimal pour s'assurer que tous les états sont stabilisés
   useEffect(() => {
-    const verifySupabaseSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        const hasSession = !!data.session;
-        console.log("AppRoutes - État session Supabase:", hasSession ? "Active" : "Inactive");
-        console.log("AppRoutes - État local isAuthenticated:", isAuthenticated);
-        
-        setSessionChecked(true);
-      } catch (error) {
-        console.error("AppRoutes - Erreur lors de la vérification de session Supabase:", error);
-        setSessionChecked(true); // Continuer malgré l'erreur
-      }
-    };
-    
-    verifySupabaseSession();
-  }, [isAuthenticated]);
-  
-  // Ajouter un délai de chargement plus robuste pour stabiliser l'état d'authentification
-  useEffect(() => {
-    if (!sessionChecked) return; // Attendre la vérification de session
-    
-    // Éviter de réinitialiser si déjà initialisé
-    if (routeInitialized && !isLoading && appReady) {
-      return;
-    }
-    
-    console.log("AppRoutes - Initialisation, tentative:", initAttemptRef.current);
-    initAttemptRef.current += 1;
-    
-    // Limiter les tentatives d'initialisation pour éviter les boucles
-    if (initAttemptRef.current > 3) {
-      console.log("AppRoutes - Trop de tentatives d'initialisation, on force l'état prêt");
-      setIsLoading(false);
-      setAppReady(true);
-      setRouteInitialized(true);
-      return;
-    }
-    
     const timer = setTimeout(() => {
-      setIsLoading(false);
-      
-      // Court délai supplémentaire pour stabiliser l'application
-      setTimeout(() => {
-        setAppReady(true);
-        console.log("Application prête, état d'authentification:", isAuthenticated);
-        
-        // Délai pour marquer les routes comme initialisées
-        setTimeout(() => {
-          setRouteInitialized(true);
-        }, 500);
-      }, 500);
-    }, 1000);
+      setIsReady(true);
+    }, 300);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated, routeInitialized, isLoading, appReady, sessionChecked]);
+  }, []);
   
-  // Afficher un écran de chargement initial pour éviter les flashs
-  if (isLoading || !appReady || !sessionChecked) {
-    return <LoadingScreen message="Initialisation de l'application..." />;
+  // Afficher un écran de chargement pendant la stabilisation des états
+  if (!isReady) {
+    return <LoadingScreen message="Préparation des routes..." />;
   }
 
   return (
     <Routes>
-      {/* Route de login avec protection anti-boucle */}
-      <Route 
-        path="/login" 
-        element={
-          isAuthenticated && routeInitialized ? 
-            <Navigate to="/dashboard" replace /> : 
-            <LoginForm onLogin={onLogin} />
-        } 
-      />
-      
-      {/* Route d'accueil avec stabilisation */}
+      {/* Route d'accueil avec gestion de la redirection */}
       <Route 
         path="/" 
         element={
           <Index 
             isAuthenticated={isAuthenticated} 
-            onAuthChange={(value) => value ? onLogin() : onLogout()} 
+            onAuthChange={(value) => value && session ? onLogin(session) : onLogout()} 
           />
+        } 
+      />
+      
+      {/* Route de login avec protection anti-boucle */}
+      <Route 
+        path="/login" 
+        element={
+          isAuthenticated ? 
+            <Navigate to="/dashboard" replace /> : 
+            <LoginForm onLogin={() => session && onLogin(session)} />
         } 
       />
 

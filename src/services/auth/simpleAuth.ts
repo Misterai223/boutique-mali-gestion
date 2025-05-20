@@ -33,31 +33,18 @@ export async function simpleLogin(email: string, password: string) {
     // On successful session establishment
     if (data.session) {
       console.log("Authentification réussie");
-      localStorage.setItem("isAuthenticated", "true");
       
-      // Retrieve user profile data
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, access_level')
-          .eq('id', data.user.id)
-          .maybeSingle();
-        
-        if (profileData) {
-          localStorage.setItem("userRole", profileData.role);
-          localStorage.setItem("accessLevel", profileData.access_level.toString());
-          console.log("Profil utilisateur chargé:", profileData);
-        } else {
-          console.warn("Aucun profil trouvé ou erreur:", profileError);
-          // Default values if no profile exists
-          localStorage.setItem("userRole", "user");
-          localStorage.setItem("accessLevel", "1");
-        }
-      } catch (profileError) {
-        console.warn("Erreur lors de la récupération du profil:", profileError);
-        // Default values in case of error
-        localStorage.setItem("userRole", "user");
-        localStorage.setItem("accessLevel", "1");
+      // Récupérer les données de profil utilisateur
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role, access_level')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      
+      if (profileData) {
+        localStorage.setItem("userRole", profileData.role);
+        localStorage.setItem("accessLevel", profileData.access_level.toString());
+        console.log("Profil utilisateur chargé:", profileData);
       }
     }
     

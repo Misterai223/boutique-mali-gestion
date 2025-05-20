@@ -77,28 +77,34 @@ export type Database = {
       profiles: {
         Row: {
           access_level: number
+          auth_provider: string | null
           avatar_url: string | null
           created_at: string
           full_name: string | null
           id: string
+          last_sign_in: string | null
           role: string
           updated_at: string
         }
         Insert: {
           access_level?: number
+          auth_provider?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          last_sign_in?: string | null
           role?: string
           updated_at?: string
         }
         Update: {
           access_level?: number
+          auth_provider?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          last_sign_in?: string | null
           role?: string
           updated_at?: string
         }

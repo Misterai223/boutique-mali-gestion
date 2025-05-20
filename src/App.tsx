@@ -10,98 +10,58 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 function App() {
-  const { isAuthenticated, loading, authInitialized, authError, handleLogin, handleLogout } = useAuth();
+  const { isAuthenticated, loading, authInitialized, authError, session, handleLogin, handleLogout } = useAuth();
   const [appLoading, setAppLoading] = useState(true);
-  const [initComplete, setInitComplete] = useState(false);
-  const [sessionVerified, setSessionVerified] = useState(false);
-
-  // Vérification supplémentaire de la cohérence entre état local et session Supabase
+  
+  // Initialiser l'application
   useEffect(() => {
-    const verifyAuthState = async () => {
+    const initialize = async () => {
       try {
-        console.log("App - Vérification de la cohérence d'authentification");
-        const { data } = await supabase.auth.getSession();
-        const hasSession = !!data.session;
+        // Initialiser l'application
+        initializeApp();
         
-        // Détecter et traiter les incohérences
-        if (isAuthenticated !== hasSession && authInitialized) {
-          console.log(`App - Incohérence détectée - Local: ${isAuthenticated}, Supabase: ${hasSession}`);
-          // Ne pas déclencher d'effet secondaire dans cette vérification initiale
-        }
-        
-        setSessionVerified(true);
-      } catch (error) {
-        console.error("App - Erreur lors de la vérification de session:", error);
-        setSessionVerified(true); // Continuer malgré l'erreur
-      }
-    };
-    
-    if (authInitialized) {
-      verifyAuthState();
-    }
-  }, [isAuthenticated, authInitialized]);
-
-  useEffect(() => {
-    console.log("App - Initialisation démarrée");
-    let appInitTimer: ReturnType<typeof setTimeout>;
-    
-    try {
-      // Initialiser l'application
-      initializeApp();
-      
-      // Délai pour s'assurer que l'application est stable
-      appInitTimer = setTimeout(() => {
-        setAppLoading(false);
-        console.log("App - Chargement initial terminé");
-        
-        // Un délai supplémentaire pour s'assurer que tout est bien stabilisé
+        // Délai pour s'assurer que l'initialisation est terminée
         setTimeout(() => {
-          setInitComplete(true);
-          console.log("App - Initialisation complète");
-        }, 300);
-      }, 1000);
-      
-      // Enregistrer le service worker si disponible
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-              console.log('Service Worker enregistré avec succès:', registration.scope);
-              
-              // Vérifier si une mise à jour est disponible
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                console.log('Nouvelle version du Service Worker trouvée!');
+          setAppLoading(false);
+        }, 500);
+        
+        // Enregistrer le service worker si disponible
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then(registration => {
+                console.log('Service Worker enregistré avec succès');
                 
-                if (newWorker) {
-                  newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                      toast.info("Une mise à jour est disponible!", {
-                        action: {
-                          label: "Rafraîchir",
-                          onClick: () => window.location.reload(),
-                        },
-                      });
-                    }
-                  });
-                }
+                // Vérifier si une mise à jour est disponible
+                registration.addEventListener('updatefound', () => {
+                  const newWorker = registration.installing;
+                  
+                  if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        toast.info("Une mise à jour est disponible!", {
+                          action: {
+                            label: "Rafraîchir",
+                            onClick: () => window.location.reload(),
+                          },
+                        });
+                      }
+                    });
+                  }
+                });
+              })
+              .catch(error => {
+                console.error('Échec de l\'enregistrement du Service Worker:', error);
               });
-            })
-            .catch(error => {
-              console.error('Échec de l\'enregistrement du Service Worker:', error);
-            });
-        });
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'initialisation de l'application:", error);
+        setAppLoading(false);
       }
-    } catch (error) {
-      console.error("Erreur lors de l'initialisation de l'application:", error);
-      // En cas d'erreur, on termine quand même le chargement
-      setAppLoading(false);
-      setInitComplete(true);
-    }
-    
-    return () => {
-      if (appInitTimer) clearTimeout(appInitTimer);
     };
+    
+    initialize();
   }, []);
 
   // Effet pour signaler les erreurs d'authentification
@@ -112,17 +72,9 @@ function App() {
     }
   }, [authError]);
 
-  // Attendre que l'authentification soit initialisée et que l'app ait fini de charger
-  if (loading || !authInitialized || appLoading || !initComplete || !sessionVerified) {
-    const message = !authInitialized 
-      ? "Vérification de l'authentification..." 
-      : !sessionVerified
-        ? "Synchronisation de la session..."
-        : appLoading 
-          ? "Initialisation de l'application..." 
-          : "Finalisation du chargement...";
-          
-    return <LoadingScreen message={message} />;
+  // Attendre l'initialisation
+  if (loading || !authInitialized || appLoading) {
+    return <LoadingScreen message="Chargement de l'application..." />;
   }
 
   return (
@@ -131,6 +83,7 @@ function App() {
         isAuthenticated={isAuthenticated} 
         onLogin={handleLogin} 
         onLogout={handleLogout} 
+        session={session}
       />
       <Toaster 
         position="top-right" 
@@ -138,7 +91,6 @@ function App() {
         closeButton
         toastOptions={{
           duration: 5000,
-          className: "my-toast-class"
         }}
       />
     </BrowserRouter>
