@@ -7,59 +7,32 @@ import { useToast } from "@/hooks/use-toast";
 export function ShopBranding() {
   const [shopName, setShopName] = useState<string>("");
   const [shopLogo, setShopLogo] = useState<string | null>(null);
-  const [imageError, setImageError] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
     // Load saved shop name and logo
-    const updateLocalData = () => {
-      const savedShopName = localStorage.getItem("shopName");
-      const savedShopLogo = localStorage.getItem("shopLogo");
-      
-      setShopName(savedShopName || "Shop Manager");
-      setShopLogo(savedShopLogo || null);
-      setImageError(false);  // Reset error state when URL changes
-    };
+    const savedShopName = localStorage.getItem("shopName");
+    const savedShopLogo = localStorage.getItem("shopLogo");
     
-    // Initial load
-    updateLocalData();
-    
-    // Setup event listener for localStorage changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "shopName") {
-        setShopName(e.newValue || "Shop Manager");
-      } else if (e.key === "shopLogo") {
-        setShopLogo(e.newValue);
-        setImageError(false);  // Reset error state
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    document.addEventListener('localStorage.updated', updateLocalData);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', updateLocalData);
-    };
+    setShopName(savedShopName || "Shop Manager");
+    setShopLogo(savedShopLogo || null);
   }, []);
-  
-  const handleImageError = () => {
-    setImageError(true);
-    toast({
-      title: "Erreur de chargement du logo",
-      description: "Impossible de charger l'image du logo",
-      variant: "destructive"
-    });
-  };
   
   return (
     <div className="flex items-center gap-2">
-      {shopLogo && !imageError ? (
+      {shopLogo ? (
         <img 
           src={shopLogo} 
           alt="Logo" 
           className="h-8 w-auto object-contain"
-          onError={handleImageError} 
+          onError={() => {
+            toast({
+              title: "Erreur de chargement du logo",
+              description: "Impossible de charger l'image du logo",
+              variant: "destructive"
+            });
+            setShopLogo(null);
+          }} 
         />
       ) : (
         <Building className="h-6 w-6 text-primary" />

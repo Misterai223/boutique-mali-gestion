@@ -16,7 +16,6 @@ export const useThemeEffect = () => {
       primaryColor: settings.primaryColor,
       accentColor: settings.accentColor,
       secondaryColor: settings.secondaryColor,
-      sidebarColor: settings.sidebarColor,
       borderRadius: settings.borderRadius,
       fontFamily: settings.fontFamily,
       darkMode: settings.darkMode
@@ -29,7 +28,6 @@ export const useThemeEffect = () => {
         primaryColor: updatedSettings.primaryColor,
         accentColor: updatedSettings.accentColor,
         secondaryColor: updatedSettings.secondaryColor,
-        sidebarColor: updatedSettings.sidebarColor,
         borderRadius: updatedSettings.borderRadius,
         fontFamily: updatedSettings.fontFamily,
         darkMode: updatedSettings.darkMode
@@ -39,15 +37,7 @@ export const useThemeEffect = () => {
     // Configurer les écouteurs d'événements pour les changements de thème
     document.addEventListener('localStorage.updated', handleThemeChange);
     window.addEventListener('storage', (event) => {
-      if (event.key && [
-        'primaryColor', 
-        'accentColor', 
-        'secondaryColor', 
-        'sidebarColor', 
-        'darkMode', 
-        'borderRadius', 
-        'fontFamily'
-      ].includes(event.key)) {
+      if (event.key && ['primaryColor', 'accentColor', 'secondaryColor', 'darkMode', 'borderRadius', 'fontFamily'].includes(event.key)) {
         handleThemeChange();
       }
     });

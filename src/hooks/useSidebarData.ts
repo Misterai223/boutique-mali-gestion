@@ -9,16 +9,11 @@ export function useSidebarData() {
   
   useEffect(() => {
     // Load saved shop name and logo
-    const updateLocalData = () => {
-      const savedShopName = localStorage.getItem("shopName");
-      const savedShopLogo = localStorage.getItem("shopLogo");
-      
-      setShopName(savedShopName || "Shop Manager");
-      setShopLogo(savedShopLogo || null);
-    };
+    const savedShopName = localStorage.getItem("shopName");
+    const savedShopLogo = localStorage.getItem("shopLogo");
     
-    // Initial load
-    updateLocalData();
+    setShopName(savedShopName || "Shop Manager");
+    setShopLogo(savedShopLogo || null);
     
     // Get current user
     const fetchCurrentUser = async () => {
@@ -44,11 +39,16 @@ export function useSidebarData() {
     window.addEventListener('storage', handleStorageChange);
     
     // Custom event listener for local changes (since storage event only fires in different tabs)
-    document.addEventListener('localStorage.updated', updateLocalData);
+    const updateLocalStorage = () => {
+      setShopName(localStorage.getItem("shopName") || "Shop Manager");
+      setShopLogo(localStorage.getItem("shopLogo") || null);
+    };
+    
+    document.addEventListener('localStorage.updated', updateLocalStorage);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', updateLocalData);
+      document.removeEventListener('localStorage.updated', updateLocalStorage);
     };
   }, []);
 

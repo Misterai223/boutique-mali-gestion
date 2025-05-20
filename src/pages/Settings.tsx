@@ -114,8 +114,6 @@ const Settings = () => {
                   setAccentColor={setters.setAccentColor}
                   secondaryColor={settings.secondaryColor}
                   setSecondaryColor={setters.setSecondaryColor}
-                  sidebarColor={settings.sidebarColor}
-                  setSidebarColor={setters.setSidebarColor}
                   borderRadius={settings.borderRadius}
                   setBorderRadius={setters.setBorderRadius}
                   fontFamily={settings.fontFamily}

@@ -9,8 +9,6 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { applyTheme } from "@/utils/themeApplier";
-import { loadThemeSettings } from "@/utils/themeStorage";
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -40,14 +38,8 @@ export function ThemeToggle() {
     // Mettre à jour localStorage
     localStorage.setItem("darkMode", newTheme === "dark" ? "true" : "false");
     
-    // Charger tous les paramètres de thème actuels
-    const settings = loadThemeSettings();
-    
-    // Appliquer le changement de thème avec tous les paramètres
-    applyTheme({
-      ...settings,
-      darkMode: newTheme === "dark"
-    });
+    // Appliquer le changement de thème
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
     
     // Notifier les autres composants
     const event = new Event('localStorage.updated');
