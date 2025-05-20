@@ -14,7 +14,7 @@ export function useSidebarData() {
       const savedShopLogo = localStorage.getItem("shopLogo");
       
       setShopName(savedShopName || "Shop Manager");
-      setShopLogo(savedShopLogo);
+      setShopLogo(savedShopLogo || null);
     };
     
     // Initial load

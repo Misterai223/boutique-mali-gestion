@@ -11,20 +11,6 @@ interface RoleSelectorProps {
   name: "role";
 }
 
-// Définition des rôles disponibles avec descriptions détaillées
-const roles = [
-  { 
-    value: "admin", 
-    label: "Administrateur", 
-    description: "Accès complet à toutes les fonctionnalités de l'application" 
-  },
-  { 
-    value: "employee", 
-    label: "Employé", 
-    description: "Accès limité aux produits, catégories, employés, finances, médias et clients" 
-  }
-];
-
 const RoleSelector = ({ form, name }: RoleSelectorProps) => {
   return (
     <FormField
@@ -32,9 +18,9 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Rôle *</FormLabel>
+          <FormLabel>Rôle</FormLabel>
           <Select 
-            value={field.value || "employee"} 
+            value={field.value} 
             onValueChange={field.onChange}
           >
             <FormControl>
@@ -43,16 +29,11 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {roles.map((role) => (
-                <SelectItem 
-                  key={role.value} 
-                  value={role.value}
-                  className="flex flex-col items-start py-2"
-                >
-                  <div className="font-medium">{role.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{role.description}</div>
-                </SelectItem>
-              ))}
+              <SelectItem value="admin">Administrateur</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="cashier">Caissier</SelectItem>
+              <SelectItem value="salesperson">Vendeur</SelectItem>
+              <SelectItem value="user">Utilisateur</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />

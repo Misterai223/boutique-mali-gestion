@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
@@ -9,6 +10,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 
 // Schéma de validation pour le changement de mot de passe
 const passwordSchema = z
@@ -39,18 +41,32 @@ const SecuritySettings = () => {
   const onSubmit = async (values: PasswordFormValues) => {
     setIsUpdating(true);
     try {
-      // Utiliser le service authService pour mettre à jour le mot de passe
-      const success = await authService.updatePassword(
-        values.currentPassword, 
-        values.newPassword
-      );
+      // Vérifier le mot de passe actuel en essayant de se connecter
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: (await supabase.auth.getUser()).data.user?.email || '',
+        password: values.currentPassword
+      });
       
-      if (success) {
+      if (signInError) {
+        toast.error("Mot de passe actuel incorrect");
+        setIsUpdating(false);
+        return;
+      }
+      
+      // Mettre à jour le mot de passe
+      const { error } = await supabase.auth.updateUser({
+        password: values.newPassword
+      });
+      
+      if (error) {
+        toast.error(`Erreur: ${error.message}`);
+      } else {
+        toast.success("Mot de passe mis à jour avec succès");
         form.reset();
       }
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du mot de passe:", error);
-      toast.error(`Une erreur est survenue: ${error.message}`);
+      toast.error(`Erreur: ${error.message}`);
     } finally {
       setIsUpdating(false);
     }
@@ -58,11 +74,11 @@ const SecuritySettings = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-md">
-        <CardHeader className="pb-3">
+      <Card>
+        <CardHeader>
           <CardTitle>Sécurité</CardTitle>
           <CardDescription>
-            Gérez vos informations de sécurité et mettez à jour votre mot de passe
+            Gérez vos informations de sécurité ici
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,7 +91,7 @@ const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>Mot de passe actuel</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Entrez votre mot de passe actuel" {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -89,7 +105,7 @@ const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>Nouveau mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Entrez votre nouveau mot de passe" {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,14 +119,14 @@ const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>Confirmer le mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Confirmez votre nouveau mot de passe" {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="mt-2 w-full sm:w-auto" disabled={isUpdating}>
+              <Button type="submit" disabled={isUpdating}>
                 {isUpdating ? "Mise à jour..." : "Mettre à jour le mot de passe"}
               </Button>
             </form>

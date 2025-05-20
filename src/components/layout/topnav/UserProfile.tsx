@@ -17,7 +17,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentUserProfile } from "@/services/users/userProfileService";
 import { Profile } from "@/types/profile";
-import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface UserProfileProps {
   onLogout: () => void;
@@ -27,7 +26,6 @@ export function UserProfile({ onLogout }: UserProfileProps) {
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const { toast } = useToast();
-  const { userRole, isAdmin } = useRolePermissions();
   
   useEffect(() => {
     // Load user profile
@@ -35,7 +33,6 @@ export function UserProfile({ onLogout }: UserProfileProps) {
       setIsProfileLoading(true);
       try {
         const profile = await getCurrentUserProfile();
-        console.log("Profil récupéré dans UserProfile:", profile);
         setUserProfile(profile);
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -56,19 +53,6 @@ export function UserProfile({ onLogout }: UserProfileProps) {
       .join("")
       .toUpperCase()
       .substring(0, 2);
-  };
-  
-  // Détermine le rôle affiché en fonction des droits effectifs
-  const getDisplayRole = () => {
-    if (isAdmin) {
-      return "Administrateur";
-    }
-    
-    if (userProfile?.role === "admin") {
-      return "Administrateur";
-    }
-    
-    return userProfile?.role === "employee" ? "Employé" : userProfile?.role || "Utilisateur";
   };
   
   return (
@@ -103,7 +87,7 @@ export function UserProfile({ onLogout }: UserProfileProps) {
                 {userProfile?.full_name || "Utilisateur"}
               </span>
               <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                {getDisplayRole()}
+                {userProfile?.role || "Connecté"}
               </span>
             </div>
           </Button>

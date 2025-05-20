@@ -1,98 +1,216 @@
-
 import { useEffect, useState } from "react";
-import { BrowserRouter } from "react-router-dom";
-import { initializeApp } from "./utils/initApp";
-import { useAuth } from "./hooks/useAuth";
-import AppRoutes from "./routes/AppRoutes";
-import LoadingScreen from "./components/layout/LoadingScreen";
-import { Toaster } from "sonner";
+import { initializeSupabase } from "./utils/supabaseSetup";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
+import DashboardLayout from "./components/layout/DashboardLayout";
+import LoginForm from "./components/auth/LoginForm";
+import { Employees } from "./pages/Employees";
+import Products from "./pages/Products";
+import Categories from "./pages/Categories";
+import Orders from "./pages/Orders";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
+import Index from "./pages/Index";
+import { authService } from "./services/authService";
+import Finances from "./pages/Finances";
+import Inventory from "./pages/Inventory";
+import Reports from "./pages/Reports";
+import MediaLibrary from "./pages/MediaLibrary";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const { isAuthenticated, loading, authInitialized, authError, session, handleLogin, handleLogout } = useAuth();
-  const [appLoading, setAppLoading] = useState(true);
-  
-  // Initialiser l'application
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        // Initialiser l'application
-        initializeApp();
-        
-        // Délai pour s'assurer que l'initialisation est terminée
-        setTimeout(() => {
-          setAppLoading(false);
-        }, 500);
-        
-        // Enregistrer le service worker si disponible
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-              .then(registration => {
-                console.log('Service Worker enregistré avec succès');
-                
-                // Vérifier si une mise à jour est disponible
-                registration.addEventListener('updatefound', () => {
-                  const newWorker = registration.installing;
-                  
-                  if (newWorker) {
-                    newWorker.addEventListener('statechange', () => {
-                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        toast.info("Une mise à jour est disponible!", {
-                          action: {
-                            label: "Rafraîchir",
-                            onClick: () => window.location.reload(),
-                          },
-                        });
-                      }
-                    });
-                  }
-                });
-              })
-              .catch(error => {
-                console.error('Échec de l\'enregistrement du Service Worker:', error);
-              });
-          });
-        }
-      } catch (error) {
-        console.error("Erreur lors de l'initialisation de l'application:", error);
-        setAppLoading(false);
-      }
-    };
-    
-    initialize();
+    // Initialiser les buckets Supabase
+    try {
+      initializeSupabase();
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation de Supabase:", error);
+    }
   }, []);
 
-  // Effet pour signaler les erreurs d'authentification
   useEffect(() => {
-    if (authError) {
-      console.error("Erreur d'authentification:", authError);
-      toast.error("Problème d'authentification. Essayez de vous reconnecter.");
-    }
-  }, [authError]);
+    const checkAuthentication = async () => {
+      try {
+        const session = await authService.getSession();
+        if (session) {
+          await authService.getCurrentUser(); // Récupère et stocke les infos utilisateur
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Erreur d'authentification:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Attendre l'initialisation
-  if (loading || !authInitialized || appLoading) {
-    return <LoadingScreen message="Chargement de l'application..." />;
+    checkAuthentication();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-lg font-medium text-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <BrowserRouter>
-      <AppRoutes 
-        isAuthenticated={isAuthenticated} 
-        onLogin={handleLogin} 
-        onLogout={handleLogout} 
-        session={session}
-      />
-      <Toaster 
-        position="top-right" 
-        richColors 
-        closeButton
-        toastOptions={{
-          duration: 5000,
-        }}
-      />
+      <Routes>
+        <Route path="/login" element={<LoginForm onLogin={() => setIsAuthenticated(true)} />} />
+        <Route
+          path="/"
+          element={
+            <Index 
+              isAuthenticated={isAuthenticated} 
+              onAuthChange={setIsAuthenticated} 
+            />
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Dashboard />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/employees"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Employees />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Products />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Categories />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Orders />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/inventory"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Inventory />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/finances"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Finances />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Reports />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Users />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <Settings />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/media"
+          element={
+            isAuthenticated ? (
+              <DashboardLayout onLogout={() => setIsAuthenticated(false)}>
+                <MediaLibrary />
+              </DashboardLayout>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }

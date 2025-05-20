@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,9 @@ interface EmployeeFormProps {
 
 const roles = [
   { value: "admin", label: "Administrateur" },
-  { value: "employee", label: "Employé" },
+  { value: "manager", label: "Gérant" },
+  { value: "cashier", label: "Caissier" },
+  { value: "salesperson", label: "Vendeur" },
 ];
 
 const EmployeeForm = ({
@@ -246,7 +249,7 @@ const EmployeeForm = ({
                   Rôle
                 </Label>
                 <Select
-                  value={formData.role || "salesperson"}
+                  value={formData.role}
                   onValueChange={handleRoleChange}
                 >
                   <SelectTrigger id="role" className="col-span-3">

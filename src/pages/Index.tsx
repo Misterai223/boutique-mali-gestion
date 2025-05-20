@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom"; 
+import { Navigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
-import LoadingScreen from "@/components/layout/LoadingScreen";
-import { supabase } from "@/integrations/supabase/client";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import Dashboard from "./Dashboard";
+import { authService } from "@/services/authService";
+import { toast } from "sonner";
 
 const Index = ({ 
   isAuthenticated, 
@@ -12,38 +14,54 @@ const Index = ({
   isAuthenticated: boolean; 
   onAuthChange: (value: boolean) => void;
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [sessionVerified, setSessionVerified] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
   
-  // Vérifier la session Supabase pour s'assurer que l'état local est correct
   useEffect(() => {
+    setMounted(true);
+    
+    // Vérifier la session Supabase au chargement
     const checkSession = async () => {
+      setLoading(true);
       try {
-        const { data } = await supabase.auth.getSession();
-        const hasSession = !!data.session;
-        
-        if (isAuthenticated !== hasSession) {
-          // Synchroniser l'état d'authentification avec la session Supabase
-          console.log("Index - Mise à jour de l'état d'authentification:", hasSession);
-          onAuthChange(hasSession);
+        const session = await authService.getSession();
+        if (session) {
+          // Récupérer les données utilisateur
+          const user = await authService.getCurrentUser();
+          if (user) {
+            onAuthChange(true);
+            toast.success(`Bienvenue sur Shop Manager`);
+          }
         }
-        
-        setSessionVerified(true);
       } catch (error) {
-        console.error("Index - Erreur lors de la vérification de session:", error);
-        setSessionVerified(true); // Continuer malgré l'erreur
+        console.error("Erreur lors de la vérification de session:", error);
       } finally {
-        // Terminer le chargement après un court délai
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
+        setLoading(false);
       }
     };
     
     checkSession();
     
-    // Gestion du thème au chargement
-    try {
+    // S'abonner aux changements d'authentification
+    const { data: { subscription } } = authService.subscribeToAuthChanges((event, session) => {
+      if (session) {
+        onAuthChange(true);
+      } else if (event === 'SIGNED_OUT') {
+        onAuthChange(false);
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("accessLevel");
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [onAuthChange]);
+  
+  // Gérer le thème au chargement initial
+  useEffect(() => {
+    if (mounted) {
+      // Vérifier la préférence système
       const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
       
@@ -52,27 +70,39 @@ const Index = ({
       } else if (isDark) {
         document.documentElement.classList.add("dark");
       }
-    } catch (error) {
-      console.error("Erreur lors de l'application du thème:", error);
     }
-  }, [isAuthenticated, onAuthChange]);
-
-  // Gérer le login
+  }, [mounted]);
+  
   const handleLogin = () => {
     onAuthChange(true);
+    toast.success("Connexion réussie");
   };
   
-  // Afficher le loading screen pendant le chargement initial
-  if (isLoading || !sessionVerified) {
-    return <LoadingScreen message="Chargement..." />;
+  const handleLogout = async () => {
+    await authService.logout();
+    onAuthChange(false);
+  };
+  
+  if (!mounted || loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-lg font-medium text-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
   
-  // Une fois les vérifications terminées, rediriger en fonction de l'état d'authentification
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  } else {
+  if (!isAuthenticated) {
     return <LoginForm onLogin={handleLogin} />;
   }
+  
+  return (
+    <DashboardLayout onLogout={handleLogout}>
+      <Dashboard />
+    </DashboardLayout>
+  );
 };
 
 export default Index;

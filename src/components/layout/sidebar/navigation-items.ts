@@ -3,14 +3,14 @@ import {
   LayoutDashboard, 
   Store, 
   Package, 
+  ShoppingBasket, 
   Users, 
   UserCog, 
   Settings, 
   CreditCard, 
   BarChart3, 
   Tags, 
-  Image,
-  User
+  Image 
 } from "lucide-react";
 
 export interface NavItem {
@@ -41,13 +41,14 @@ export const navItems: NavItem[] = [
     color: "text-pink-500",
   },
   {
-    title: "Clients",
-    icon: User,
-    href: "/clients",
-    color: "text-green-500",
+    title: "Commandes",
+    icon: ShoppingBasket,
+    href: "/orders",
+    color: "text-orange-500",
+    badge: 5,
   },
   {
-    title: "Utilisateurs",
+    title: "Clients",
     icon: Users,
     href: "/users",
     color: "text-emerald-500",

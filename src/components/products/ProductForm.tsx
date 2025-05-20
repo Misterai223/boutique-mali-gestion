@@ -194,7 +194,7 @@ const ProductForm = ({
                         Catégorie*
                       </Label>
                       <Select
-                        value={formData.category || undefined}
+                        value={formData.category}
                         onValueChange={handleCategoryChange}
                       >
                         <SelectTrigger id="category" className="focus-visible:ring-primary/30">

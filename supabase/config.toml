@@ -29,7 +29,6 @@ additional_redirect_urls = ["https://localhost:5173"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_expiry = 604800
-enable_hibp_check = true # Activation de la protection contre les mots de passe compromis
 
 [auth.email]
 enable_signup = true

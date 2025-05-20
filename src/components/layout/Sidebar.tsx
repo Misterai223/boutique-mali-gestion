@@ -4,7 +4,6 @@ import { ShopLogo } from "./sidebar/ShopLogo";
 import { NavMenu } from "./sidebar/NavMenu";
 import { useSidebarData } from "@/hooks/useSidebarData";
 import { useEffect, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   className?: string;
@@ -14,7 +13,6 @@ export function Sidebar({ className }: SidebarProps) {
   const { shopName, shopLogo } = useSidebarData();
   const isCollapsed = className?.includes("w-20") || false;
   const [sidebarColor, setSidebarColor] = useState("");
-  const isMobile = useIsMobile();
   
   useEffect(() => {
     // Récupérer la couleur de la barre latérale du localStorage
@@ -25,7 +23,7 @@ export function Sidebar({ className }: SidebarProps) {
     
     updateSidebarColor();
     
-    // Écouter les changements de couleur
+    // Écouter les changements de couleur de la barre latérale
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "sidebarColor") {
         setSidebarColor(e.newValue || "#1E293B");
@@ -44,20 +42,18 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full border-r transition-all duration-300 sidebar-custom overflow-y-auto overflow-x-hidden",
+        "flex h-full w-full border-r transition-all duration-300 sidebar-custom",
         className
       )}
       style={{ backgroundColor: sidebarColor }}
     >
-      <div className="py-3 sm:py-4 px-2 sm:px-3 flex flex-col h-full w-full">
+      <div className="py-4 px-3 flex flex-col h-full w-full">
         <ShopLogo 
           shopName={shopName}
           shopLogo={shopLogo}
           isCollapsed={isCollapsed}
         />
-        <div className="mt-2 flex-grow overflow-y-auto pb-10">
-          <NavMenu isCollapsed={isCollapsed} />
-        </div>
+        <NavMenu isCollapsed={isCollapsed} />
       </div>
     </aside>
   );

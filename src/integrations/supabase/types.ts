@@ -9,102 +9,31 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      client_purchases: {
-        Row: {
-          client_id: string
-          id: string
-          price: number
-          product_name: string
-          purchase_date: string
-          quantity: number
-        }
-        Insert: {
-          client_id: string
-          id?: string
-          price: number
-          product_name: string
-          purchase_date?: string
-          quantity?: number
-        }
-        Update: {
-          client_id?: string
-          id?: string
-          price?: number
-          product_name?: string
-          purchase_date?: string
-          quantity?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_purchases_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      clients: {
-        Row: {
-          address: string
-          country: string
-          created_at: string
-          email: string | null
-          full_name: string
-          id: string
-          phone: string
-        }
-        Insert: {
-          address: string
-          country: string
-          created_at?: string
-          email?: string | null
-          full_name: string
-          id?: string
-          phone: string
-        }
-        Update: {
-          address?: string
-          country?: string
-          created_at?: string
-          email?: string | null
-          full_name?: string
-          id?: string
-          phone?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           access_level: number
-          auth_provider: string | null
           avatar_url: string | null
           created_at: string
           full_name: string | null
           id: string
-          last_sign_in: string | null
           role: string
           updated_at: string
         }
         Insert: {
           access_level?: number
-          auth_provider?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id: string
-          last_sign_in?: string | null
           role?: string
           updated_at?: string
         }
         Update: {
           access_level?: number
-          auth_provider?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
-          last_sign_in?: string | null
           role?: string
           updated_at?: string
         }

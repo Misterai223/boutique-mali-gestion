@@ -41,9 +41,12 @@ const EmployeeSearchFilter = ({
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Tous les rôles</SelectItem>
+          <SelectItem value={undefined as any}>Tous les rôles</SelectItem>
           <SelectItem value="admin">Administrateur</SelectItem>
-          <SelectItem value="employee">Employé</SelectItem>
+          <SelectItem value="manager">Gérant</SelectItem>
+          <SelectItem value="cashier">Caissier</SelectItem>
+          <SelectItem value="salesperson">Vendeur</SelectItem>
+          <SelectItem value="user">Utilisateur</SelectItem>
         </SelectContent>
       </Select>
     </div>

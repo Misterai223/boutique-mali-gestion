@@ -17,12 +17,8 @@ export function ShopBranding() {
       const savedShopLogo = localStorage.getItem("shopLogo");
       
       setShopName(savedShopName || "Shop Manager");
-      if (savedShopLogo) {
-        setShopLogo(savedShopLogo);
-        setImageError(false);  // Reset error state when URL changes
-      } else {
-        setShopLogo(null);
-      }
+      setShopLogo(savedShopLogo || null);
+      setImageError(false);  // Reset error state when URL changes
     };
     
     // Initial load
@@ -33,26 +29,17 @@ export function ShopBranding() {
       if (e.key === "shopName") {
         setShopName(e.newValue || "Shop Manager");
       } else if (e.key === "shopLogo") {
-        if (e.newValue) {
-          setShopLogo(e.newValue);
-          setImageError(false);  // Reset error state
-        } else {
-          setShopLogo(null);
-        }
+        setShopLogo(e.newValue);
+        setImageError(false);  // Reset error state
       }
     };
     
-    // Setup event listener for custom localStorage update event
-    const handleCustomEvent = () => {
-      updateLocalData();
-    };
-    
     window.addEventListener('storage', handleStorageChange);
-    document.addEventListener('localStorage.updated', handleCustomEvent);
+    document.addEventListener('localStorage.updated', updateLocalData);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', handleCustomEvent);
+      document.removeEventListener('localStorage.updated', updateLocalData);
     };
   }, []);
   
@@ -67,21 +54,17 @@ export function ShopBranding() {
   
   return (
     <div className="flex items-center gap-2">
-      <div className="h-8 w-8 overflow-hidden rounded-md border flex-shrink-0">
-        {shopLogo && !imageError ? (
-          <img 
-            src={shopLogo} 
-            alt="Logo" 
-            className="h-full w-full object-contain"
-            onError={handleImageError} 
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted text-primary">
-            <Building className="h-5 w-5" />
-          </div>
-        )}
-      </div>
-      <Link to="/" className="text-lg font-medium hover:text-primary/80 transition-colors hidden sm:block truncate max-w-[200px]">
+      {shopLogo && !imageError ? (
+        <img 
+          src={shopLogo} 
+          alt="Logo" 
+          className="h-8 w-auto object-contain"
+          onError={handleImageError} 
+        />
+      ) : (
+        <Building className="h-6 w-6 text-primary" />
+      )}
+      <Link to="/" className="text-lg font-medium hover:text-primary/80 transition-colors hidden sm:block">
         {shopName}
       </Link>
     </div>
