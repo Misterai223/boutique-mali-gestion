@@ -8,16 +8,18 @@ export async function initializeSupabase() {
   try {
     console.log("Initialisation de Supabase...");
     
-    // Vérification simple de la connexion à Supabase
-    const { error } = await supabase.from('_health').select('*').limit(1);
+    // Vérification simple de la connexion à Supabase en utilisant la table profiles
+    const { error } = await supabase.from('profiles').select('id').limit(1);
     
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 est l'erreur pour une table non existante, ce qui est normal pour '_health'
-      console.warn("La vérification de santé a échoué:", error);
+    if (error) {
+      console.warn("La vérification de connexion Supabase a échoué:", error);
+      return false;
     } else {
       console.log("Connexion à Supabase établie avec succès");
+      return true;
     }
   } catch (error) {
     console.error("Erreur lors de l'initialisation de Supabase:", error);
+    return false;
   }
 }
