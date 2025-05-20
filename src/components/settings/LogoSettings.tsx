@@ -11,9 +11,7 @@ const LogoSettings = () => {
     isLoading,
     isUploading,
     currentLogo,
-    useCloudinary,
     handleFileChange,
-    handleCloudinaryUploadComplete,
     handleSelectLogo,
     handleDeleteLogo
   } = useLogoManagement();
@@ -30,9 +28,7 @@ const LogoSettings = () => {
         <div className="flex flex-col gap-4">
           <LogoUploader
             isUploading={isUploading}
-            useCloudinary={useCloudinary}
             onFileChange={handleFileChange}
-            onCloudinaryUploadComplete={handleCloudinaryUploadComplete}
             onMediaLibrarySelect={handleSelectLogo}
           />
           

@@ -2,22 +2,18 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Image } from "lucide-react";
-import CloudinaryUpload from "@/components/shared/CloudinaryUpload";
 import ImageSelectorModal from "./ImageSelectorModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface LogoUploaderProps {
   isUploading: boolean;
-  useCloudinary: boolean;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onCloudinaryUploadComplete: (url: string) => void;
   onMediaLibrarySelect: (url: string) => void;
 }
 
 const LogoUploader = ({ 
   isUploading,
-  useCloudinary,
   onFileChange,
-  onCloudinaryUploadComplete,
   onMediaLibrarySelect
 }: LogoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,46 +24,56 @@ const LogoUploader = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2">
-        {useCloudinary ? (
-          <CloudinaryUpload
-            onUploadComplete={onCloudinaryUploadComplete}
-            folder="logos"
-            buttonText="Télécharger un logo"
-            category="logos"
-            accept="image/jpeg,image/png,image/gif,image/svg+xml"
-          />
-        ) : (
-          <>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              variant="outline"
-              className="flex-1 sm:flex-none"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isUploading ? "Téléchargement..." : "Importer un fichier"}
-            </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={onFileChange}
-              accept="image/jpeg,image/png,image/gif,image/svg+xml"
-              className="hidden"
-            />
-          </>
-        )}
+    <div className="flex flex-col gap-3 w-full">
+      <div className="grid grid-cols-2 gap-3 w-full">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                variant="outline"
+                className="w-full flex items-center justify-center"
+                size="icon"
+              >
+                <Upload className="h-5 w-5" />
+                <span className="sr-only">Importer un fichier</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={onFileChange}
+                  accept="image/jpeg,image/png,image/gif,image/svg+xml"
+                  className="hidden"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{isUploading ? "Téléchargement..." : "Importer un fichier"}</p>
+            </TooltipContent>
+          </Tooltip>
 
-        <Button
-          onClick={handleOpenMediaSelector}
-          variant="outline"
-          className="flex-1 sm:flex-none"
-        >
-          <Image className="mr-2 h-4 w-4" />
-          Choisir depuis la médiathèque
-        </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleOpenMediaSelector}
+                variant="outline"
+                className="w-full flex items-center justify-center"
+                size="icon"
+              >
+                <Image className="h-5 w-5" />
+                <span className="sr-only">Choisir depuis la médiathèque</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Choisir depuis la médiathèque</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
+
+      <p className="text-xs text-muted-foreground text-center mt-1">
+        Formats acceptés: JPG, PNG, GIF, SVG
+      </p>
 
       <ImageSelectorModal
         open={isMediaSelectorOpen}

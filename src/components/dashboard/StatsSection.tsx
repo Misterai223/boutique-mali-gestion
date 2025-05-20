@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import StatCard from "@/components/dashboard/StatCard";
 import { DollarSign, Package, Users, BarChart4 } from "lucide-react";
+import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 
 // Animation variants
 const containerVariants = {
@@ -33,12 +34,22 @@ interface StatsSectionProps {
 }
 
 const StatsSection = ({ conversionRate, inView }: StatsSectionProps) => {
+  const breakpoint = useBreakpoint();
+  
+  // Déterminer le nombre de colonnes en fonction de la taille de l'écran
+  const getGridCols = () => {
+    if (breakpoint === 'xs') return 'grid-cols-1 gap-2';
+    if (breakpoint === 'sm') return 'grid-cols-2 gap-3';
+    if (breakpoint === 'md') return 'grid-cols-2 gap-4';
+    return 'grid-cols-4 gap-4';
+  };
+  
   return (
     <motion.div 
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      className={`grid ${getGridCols()}`}
     >
       <motion.div variants={itemVariants}>
         <StatCard

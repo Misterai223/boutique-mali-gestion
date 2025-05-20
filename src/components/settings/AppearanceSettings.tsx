@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PaletteIcon, Paintbrush, Sun, Moon } from "lucide-react";
+import { PaletteIcon, Paintbrush, Sun, Moon, Sidebar } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface AppearanceSettingsProps {
@@ -27,6 +27,8 @@ interface AppearanceSettingsProps {
   setAccentColor: (value: string) => void;
   secondaryColor: string;
   setSecondaryColor: (value: string) => void;
+  sidebarColor: string;
+  setSidebarColor: (value: string) => void;
   borderRadius: string;
   setBorderRadius: (value: string) => void;
   fontFamily: string;
@@ -42,6 +44,8 @@ const AppearanceSettings = ({
   setAccentColor,
   secondaryColor,
   setSecondaryColor,
+  sidebarColor,
+  setSidebarColor,
   borderRadius,
   setBorderRadius,
   fontFamily,
@@ -55,11 +59,33 @@ const AppearanceSettings = ({
   // Mettre à jour la prévisualisation lorsque les couleurs changent
   useEffect(() => {
     setPreviewKey(prev => prev + 1);
-  }, [primaryColor, accentColor, secondaryColor, borderRadius, fontFamily, darkMode]);
+  }, [primaryColor, accentColor, secondaryColor, sidebarColor, borderRadius, fontFamily, darkMode]);
 
   const handleThemeChange = (value: string) => {
     if (toggleDarkMode) {
       toggleDarkMode(value === "dark");
+    }
+  };
+
+  // Tableau des polices disponibles pour la démo
+  const fontFamilies = [
+    { value: "Inter", label: "Inter" },
+    { value: "Roboto", label: "Roboto" },
+    { value: "Poppins", label: "Poppins" },
+    { value: "Open Sans", label: "Open Sans" },
+    { value: "Montserrat", label: "Montserrat" },
+    { value: "Nunito", label: "Nunito" }
+  ];
+
+  // Style pour prévisualiser les polices dans le sélecteur
+  const getFontStyle = (fontName: string) => {
+    switch(fontName) {
+      case "Roboto": return "font-roboto";
+      case "Poppins": return "font-poppins";
+      case "Open Sans": return "font-open-sans";
+      case "Montserrat": return "font-montserrat";
+      case "Nunito": return "font-nunito";
+      default: return "font-sans";
     }
   };
 
@@ -136,6 +162,26 @@ const AppearanceSettings = ({
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sidebar-color" className="flex items-center gap-1.5">
+                  <Sidebar className="h-4 w-4" /> Couleur barre latérale
+                </Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="sidebar-color"
+                    type="color"
+                    value={sidebarColor}
+                    onChange={(e) => setSidebarColor(e.target.value)}
+                    className="w-12 h-10 p-1"
+                  />
+                  <Input
+                    value={sidebarColor}
+                    onChange={(e) => setSidebarColor(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
             </div>
             
             <div className="space-y-4">
@@ -185,12 +231,15 @@ const AppearanceSettings = ({
                     <SelectValue placeholder="Sélectionner une police" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Inter">Inter</SelectItem>
-                    <SelectItem value="Roboto">Roboto</SelectItem>
-                    <SelectItem value="Poppins">Poppins</SelectItem>
-                    <SelectItem value="Open Sans">Open Sans</SelectItem>
-                    <SelectItem value="Montserrat">Montserrat</SelectItem>
-                    <SelectItem value="Nunito">Nunito</SelectItem>
+                    {fontFamilies.map((font) => (
+                      <SelectItem 
+                        key={font.value} 
+                        value={font.value} 
+                        className={getFontStyle(font.value)}
+                      >
+                        {font.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -211,7 +260,8 @@ const AppearanceSettings = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4" key={previewKey}>
-            <div className={`border rounded-lg p-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white'}`}>
+            <div className={`border rounded-lg p-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white'}`}
+                 style={{ fontFamily: getFontStyle(fontFamily).replace('font-', '') }}>
               <h4 className="font-bold">Mode {darkMode ? "sombre" : "clair"}</h4>
               <div className="flex flex-wrap gap-2 mt-2">
                 <div 
@@ -220,6 +270,7 @@ const AppearanceSettings = ({
                     backgroundColor: primaryColor,
                     borderRadius: `${borderRadius}rem`
                   }}
+                  title="Couleur principale"
                 ></div>
                 <div 
                   className="h-8 w-16 rounded shadow-sm" 
@@ -227,6 +278,7 @@ const AppearanceSettings = ({
                     backgroundColor: accentColor,
                     borderRadius: `${borderRadius}rem`
                   }}
+                  title="Couleur d'accent"
                 ></div>
                 <div 
                   className="h-8 w-16 rounded shadow-sm" 
@@ -234,6 +286,15 @@ const AppearanceSettings = ({
                     backgroundColor: secondaryColor,
                     borderRadius: `${borderRadius}rem`
                   }}
+                  title="Couleur secondaire"
+                ></div>
+                <div 
+                  className="h-8 w-16 rounded shadow-sm" 
+                  style={{ 
+                    backgroundColor: sidebarColor,
+                    borderRadius: `${borderRadius}rem`
+                  }}
+                  title="Couleur barre latérale"
                 ></div>
               </div>
               <div className="mt-3 space-y-2">
@@ -241,22 +302,21 @@ const AppearanceSettings = ({
                 <Button size="sm" variant="outline" className="mr-2">Outline</Button>
                 <Button size="sm" variant="secondary" className="mr-2">Secondary</Button>
               </div>
+              <p className={`mt-3 text-sm`}>
+                Texte avec police <strong>{fontFamily}</strong>
+              </p>
             </div>
             
             <div 
               className="border overflow-hidden" 
               style={{ 
                 borderRadius: `${borderRadius}rem`,
-                fontFamily: fontFamily === "Inter" ? "'Inter', sans-serif" : 
-                          fontFamily === "Roboto" ? "'Roboto', sans-serif" :
-                          fontFamily === "Poppins" ? "'Poppins', sans-serif" : 
-                          fontFamily === "Montserrat" ? "'Montserrat', sans-serif" :
-                          fontFamily === "Nunito" ? "'Nunito', sans-serif" :
-                          "'Open Sans', sans-serif"
+                fontFamily: getFontStyle(fontFamily).replace('font-', '')
               }}
             >
-              <div className="p-4 flex justify-between items-center text-white" style={{ backgroundColor: primaryColor }}>
-                <h4 className="font-bold">Exemple d'interface</h4>
+              <div className="p-4 flex justify-between items-center text-white" 
+                   style={{ backgroundColor: sidebarColor }}>
+                <h4 className="font-bold">Barre latérale</h4>
                 <Button size="sm" variant="outline" className="bg-white/20 hover:bg-white/30 text-white border-white/40">
                   Action
                 </Button>
@@ -268,6 +328,9 @@ const AppearanceSettings = ({
                 </div>
                 <div className="mt-2 rounded p-2 text-white" style={{ backgroundColor: accentColor, borderRadius: `${borderRadius}rem` }}>
                   Élément d'accent
+                </div>
+                <div className="mt-2 rounded p-2 text-white" style={{ backgroundColor: primaryColor, borderRadius: `${borderRadius}rem` }}>
+                  Élément principal
                 </div>
               </div>
             </div>

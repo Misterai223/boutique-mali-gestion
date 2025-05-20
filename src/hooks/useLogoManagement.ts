@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { settingsService } from "@/services/settingsService";
-import { cloudinaryService } from "@/services/cloudinaryService";
 import { toast } from "sonner";
 
 export const useLogoManagement = () => {
@@ -9,13 +8,8 @@ export const useLogoManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [currentLogo, setCurrentLogo] = useState<string | null>(null);
-  const [useCloudinary, setUseCloudinary] = useState(false);
 
   useEffect(() => {
-    // Check if Cloudinary is configured
-    const isCloudinaryReady = cloudinaryService.isConfigured();
-    setUseCloudinary(isCloudinaryReady);
-    
     fetchLogos();
     
     // Get the current logo from localStorage
@@ -28,16 +22,8 @@ export const useLogoManagement = () => {
   const fetchLogos = async () => {
     setIsLoading(true);
     try {
-      let urls: string[] = [];
-      
-      if (useCloudinary) {
-        // Use Cloudinary
-        urls = await cloudinaryService.getFilesByFolder('logos');
-      } else {
-        // Fallback to Supabase
-        urls = await settingsService.getLogos();
-      }
-      
+      // Use Supabase
+      const urls = await settingsService.getLogos();
       setLogoUrls(urls);
     } catch (error) {
       console.error("Error retrieving logos:", error);
@@ -67,22 +53,8 @@ export const useLogoManagement = () => {
     
     setIsUploading(true);
     try {
-      let url: string | null = null;
-      
-      if (useCloudinary) {
-        // Use Cloudinary
-        url = await cloudinaryService.uploadFile(file, {
-          folder: 'logos',
-          resourceType: 'image',
-        });
-        
-        if (url) {
-          cloudinaryService.saveUploadedFileUrl('logos', url);
-        }
-      } else {
-        // Fallback to Supabase
-        url = await settingsService.uploadLogo(file);
-      }
+      // Upload using Supabase
+      const url = await settingsService.uploadLogo(file);
       
       if (url) {
         toast.success("Logo téléchargé avec succès");
@@ -98,14 +70,6 @@ export const useLogoManagement = () => {
     }
   };
 
-  const handleCloudinaryUploadComplete = (url: string) => {
-    // Update the logo list
-    const newLogoUrls = [...logoUrls, url];
-    setLogoUrls(newLogoUrls);
-    // Set as current logo
-    handleSelectLogo(url);
-  };
-
   const handleSelectLogo = (url: string) => {
     setCurrentLogo(url);
     localStorage.setItem("shopLogo", url);
@@ -119,21 +83,10 @@ export const useLogoManagement = () => {
 
   const handleDeleteLogo = async (url: string) => {
     try {
-      let success = false;
-      
-      if (useCloudinary && url.includes('cloudinary')) {
-        // Delete on Cloudinary (simulation)
-        success = cloudinaryService.removeFileUrl('logos', url);
-        if (success) {
-          // Update the logo list locally
-          setLogoUrls(logoUrls.filter(logoUrl => logoUrl !== url));
-        }
-      } else {
-        // Fallback to Supabase
-        success = await settingsService.deleteLogoByUrl(url);
-        if (success) {
-          setLogoUrls(logoUrls.filter(logoUrl => logoUrl !== url));
-        }
+      // Delete using Supabase
+      const success = await settingsService.deleteLogoByUrl(url);
+      if (success) {
+        setLogoUrls(logoUrls.filter(logoUrl => logoUrl !== url));
       }
       
       // If the deleted logo is the current logo, reset
@@ -159,9 +112,7 @@ export const useLogoManagement = () => {
     isLoading,
     isUploading,
     currentLogo,
-    useCloudinary,
     handleFileChange,
-    handleCloudinaryUploadComplete,
     handleSelectLogo,
     handleDeleteLogo,
     fetchLogos

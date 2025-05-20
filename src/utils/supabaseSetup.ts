@@ -19,15 +19,21 @@ export async function setupRequiredBuckets() {
     
     // Créer le bucket 'logos' s'il n'existe pas
     if (!logosBucketExists) {
-      const { error: createError } = await supabase.storage.createBucket('logos', {
-        public: true, // Bucket accessible publiquement
-        fileSizeLimit: 5242880, // 5MB en octets
-      });
-      
-      if (createError) {
-        console.error("Erreur lors de la création du bucket 'logos':", createError);
-      } else {
-        console.log("Bucket 'logos' créé avec succès");
+      try {
+        const { error: createError } = await supabase.storage.createBucket('logos', {
+          public: true, // Bucket accessible publiquement
+          fileSizeLimit: 5242880, // 5MB en octets
+        });
+        
+        if (createError) {
+          console.error("Erreur lors de la création du bucket 'logos':", createError);
+        } else {
+          console.log("Bucket 'logos' créé avec succès");
+        }
+      } catch (bucketError) {
+        // Les erreurs de row-level security peuvent survenir si les autorisations ne sont pas correctement configurées
+        console.error("Impossible de créer le bucket (permissions insuffisantes):", bucketError);
+        // Ne pas bloquer l'application pour cette erreur
       }
     }
     
@@ -41,6 +47,11 @@ export async function setupRequiredBuckets() {
  * Cette fonction doit être appelée au démarrage de l'application
  */
 export async function initializeSupabase() {
-  await setupRequiredBuckets();
-  // Vous pouvez ajouter d'autres initialisations ici
+  try {
+    await setupRequiredBuckets();
+    // Vous pouvez ajouter d'autres initialisations ici
+  } catch (error) {
+    console.error("Erreur lors de l'initialisation de Supabase:", error);
+    // Ne pas bloquer l'application pour cette erreur
+  }
 }

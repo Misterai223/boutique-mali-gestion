@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,10 +7,9 @@ import SecuritySettings from "@/components/settings/SecuritySettings";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
 import AccountSettings from "@/components/settings/AccountSettings";
 import LogoSettings from "@/components/settings/LogoSettings";
-import CloudinarySettings from "@/components/settings/CloudinarySettings";
 import { useThemeSettings } from "@/hooks/useThemeSettings";
 import { motion } from "framer-motion";
-import { Settings as SettingsIcon, Palette, Shield, User, Image, Cloud } from "lucide-react";
+import { Settings as SettingsIcon, Palette, Shield, User, Image } from "lucide-react";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -82,10 +80,6 @@ const Settings = () => {
                     <Image className="h-4 w-4" />
                     <span>Logo</span>
                   </TabsTrigger>
-                  <TabsTrigger value="cloudinary" className="flex gap-1.5 items-center data-[state=active]:bg-background">
-                    <Cloud className="h-4 w-4" />
-                    <span>Cloudinary</span>
-                  </TabsTrigger>
                 </TabsList>
               </div>
             </div>
@@ -114,6 +108,8 @@ const Settings = () => {
                   setAccentColor={setters.setAccentColor}
                   secondaryColor={settings.secondaryColor}
                   setSecondaryColor={setters.setSecondaryColor}
+                  sidebarColor={settings.sidebarColor}
+                  setSidebarColor={setters.setSidebarColor}
                   borderRadius={settings.borderRadius}
                   setBorderRadius={setters.setBorderRadius}
                   fontFamily={settings.fontFamily}
@@ -133,10 +129,6 @@ const Settings = () => {
               
               <TabsContent value="logo" className="p-4 md:p-6 mt-0">
                 <LogoSettings />
-              </TabsContent>
-              
-              <TabsContent value="cloudinary" className="p-4 md:p-6 mt-0">
-                <CloudinarySettings />
               </TabsContent>
             </div>
           </Tabs>

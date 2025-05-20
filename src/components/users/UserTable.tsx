@@ -3,6 +3,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Profile } from "@/types/profile";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface UserTableProps {
   profiles: Profile[];
@@ -11,6 +13,8 @@ interface UserTableProps {
 }
 
 const UserTable = ({ profiles, onViewDetails, onEditUser }: UserTableProps) => {
+  const isMobile = useIsMobile();
+  
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-500 hover:bg-red-600';
@@ -21,6 +25,50 @@ const UserTable = ({ profiles, onViewDetails, onEditUser }: UserTableProps) => {
     }
   };
   
+  // Version mobile avec cartes
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {profiles.map((profile) => (
+          <div 
+            key={profile.id} 
+            className="bg-card p-4 rounded-lg shadow-sm border cursor-pointer"
+            onClick={() => onViewDetails(profile)}
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-semibold">{profile.full_name || "Non défini"}</h3>
+                <div className="mt-2 space-y-1">
+                  <Badge className={cn("inline-block mb-1", getRoleBadgeColor(profile.role))}>
+                    {profile.role === 'admin' && 'Administrateur'}
+                    {profile.role === 'manager' && 'Manager'}
+                    {profile.role === 'cashier' && 'Caissier'}
+                    {profile.role === 'salesperson' && 'Vendeur'}
+                    {profile.role === 'user' && 'Utilisateur'}
+                  </Badge>
+                  <div className="text-sm text-muted-foreground">
+                    Niveau d'accès: {profile.access_level}
+                  </div>
+                </div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditUser(profile);
+                }}
+              >
+                Modifier
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Version bureau avec table
   return (
     <div className="rounded-md border">
       <Table>
