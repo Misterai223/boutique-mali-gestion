@@ -11,6 +11,11 @@ export async function simpleLogin(email: string, password: string) {
   try {
     console.log("Tentative de connexion avec email:", email);
     
+    // Nettoyage préventif de tout état d'authentification précédent
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("accessLevel");
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -59,9 +64,15 @@ export async function simpleLogin(email: string, password: string) {
         localStorage.setItem("userRole", "user");
         localStorage.setItem("accessLevel", "1");
       }
+      
+      return { data, error: null };
+    } else {
+      console.error("Session non établie malgré une réponse sans erreur");
+      return { 
+        data: null, 
+        error: new Error("Impossible d'établir la session. Veuillez réessayer.") 
+      };
     }
-    
-    return { data, error: null };
   } catch (error: any) {
     console.error("Exception lors de la connexion:", error);
     return { 

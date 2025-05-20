@@ -28,17 +28,14 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/login" 
         element={
           isAuthenticated ? 
-            <Navigate to="/" replace /> : 
+            <Navigate to="/dashboard" replace /> : 
             <LoginForm onLogin={onLogin} />
         } 
       />
       <Route
         path="/"
         element={
-          <Index 
-            isAuthenticated={isAuthenticated} 
-            onAuthChange={(value) => value ? onLogin() : onLogout()} 
-          />
+          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
         }
       />
       <Route

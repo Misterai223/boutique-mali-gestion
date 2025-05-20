@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 
@@ -13,7 +14,7 @@ export const getProfiles = async (): Promise<Profile[]> => {
 
     if (error) {
       console.error("Erreur dans getProfiles:", error);
-      throw error;
+      return [];
     }
     
     console.log(`${data?.length || 0} profils chargés`);
@@ -38,7 +39,7 @@ export const updateProfile = async (profileData: Partial<Profile>): Promise<bool
 
     if (error) {
       console.error("Erreur lors de la mise à jour du profil:", error);
-      throw error;
+      return false;
     }
     
     console.log("Profil mis à jour avec succès");
@@ -53,9 +54,9 @@ export const updateProfile = async (profileData: Partial<Profile>): Promise<bool
 export const getCurrentUserProfile = async (): Promise<Profile | null> => {
   try {
     console.log("Récupération du profil utilisateur courant");
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const session = await supabase.auth.getSession();
     
-    if (sessionError || !sessionData.session) {
+    if (!session.data.session) {
       console.log("Aucune session active");
       return null;
     }
@@ -63,12 +64,17 @@ export const getCurrentUserProfile = async (): Promise<Profile | null> => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', sessionData.session.user.id)
-      .single();
+      .eq('id', session.data.session.user.id)
+      .maybeSingle();
       
     if (error) {
       console.error("Erreur lors de la récupération du profil:", error);
-      throw error;
+      return null;
+    }
+    
+    if (!data) {
+      console.log("Aucun profil trouvé");
+      return null;
     }
     
     console.log("Profil récupéré:", data);
@@ -92,14 +98,14 @@ export const getAllUsers = async () => {
 
     if (error) {
       console.error("Erreur lors de la récupération des utilisateurs:", error);
-      throw error;
+      return { data: [], error: null };
     }
     
     console.log(`${data?.length || 0} utilisateurs récupérés`);
     return { data, error: null };
   } catch (error) {
     console.error("Exception lors de la récupération des utilisateurs:", error);
-    return { data: null, error };
+    return { data: [], error };
   }
 };
 
@@ -111,23 +117,23 @@ export const getCurrentUser = async () => {
     
     if (sessionError) {
       console.error("Erreur de session:", sessionError);
-      throw sessionError;
+      return { data: null, error: sessionError };
     }
     
     if (!sessionData.session) {
       console.log("Aucune session active");
-      return { data: null, error: new Error("Non authentifié") };
+      return { data: null, error: null };
     }
     
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', sessionData.session.user.id)
-      .maybeSingle(); // Utiliser maybeSingle au lieu de single
+      .maybeSingle();
       
     if (error) {
       console.error("Erreur de récupération du profil:", error);
-      throw error;
+      return { data: null, error };
     }
     
     console.log("Utilisateur récupéré:", data);

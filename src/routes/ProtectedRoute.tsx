@@ -1,6 +1,8 @@
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useEffect } from "react";
+import { authService } from "@/services/authService";
 
 interface ProtectedRouteProps {
   isAuthenticated: boolean;
@@ -13,8 +15,26 @@ const ProtectedRoute = ({
   onLogout, 
   children 
 }: ProtectedRouteProps) => {
+  const location = useLocation();
+  
+  // Effet pour vérifier la validité de la session
+  useEffect(() => {
+    const checkSession = async () => {
+      if (isAuthenticated) {
+        const session = await authService.getSession();
+        if (!session) {
+          console.log("ProtectedRoute - Session invalide détectée, déconnexion");
+          onLogout();
+        }
+      }
+    };
+    
+    checkSession();
+  }, [isAuthenticated, onLogout]);
+  
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    console.log(`ProtectedRoute - Accès refusé à ${location.pathname}`);
+    return <Navigate to="/login" replace />;
   }
 
   return (
