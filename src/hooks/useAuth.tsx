@@ -3,22 +3,24 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export const useAuth = () => {
-  // État d'authentification initialisé à false par défaut
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Initialize authentication state from localStorage, if available
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const storedAuth = localStorage.getItem("isAuthenticated");
+    return storedAuth === "true";
+  });
   const [loading, setLoading] = useState(true);
   
-  // Effet pour initialiser l'état d'authentification au montage du composant
+  // Effect to initialize auth state on component mount
   useEffect(() => {
     console.log("Hook useAuth initialisé");
     
-    // Simulation d'une vérification d'authentification
+    // Just ensure loading state is updated after a brief delay
     setTimeout(() => {
-      setIsAuthenticated(false);
       setLoading(false);
-      console.log("État d'authentification initialisé à false");
-    }, 1000);
+      console.log("État d'authentification initialisé à:", isAuthenticated);
+    }, 500);
     
-  }, []);
+  }, [isAuthenticated]);
   
   const handleLogin = () => {
     console.log("handleLogin appelé, mise à jour de l'état");

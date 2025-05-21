@@ -29,28 +29,27 @@ const Index = ({
     // Simuler un chargement
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1000);
+      
+      // Rediriger vers le dashboard si déjà authentifié
+      if (isAuthenticated) {
+        navigate('/dashboard', { replace: true });
+      }
+    }, 500);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAuthenticated, navigate]);
   
   const handleLogin = () => {
     console.log("Index - handleLogin appelé");
     onAuthChange(true);
-    navigate('/dashboard');
+    navigate('/dashboard', { replace: true });
   };
   
   if (loading) {
     return <LoadingScreen />;
   }
   
-  // Si l'utilisateur est authentifié, rediriger vers dashboard
-  if (isAuthenticated) {
-    navigate('/dashboard');
-    return <LoadingScreen />;
-  }
-  
-  // Sinon, afficher le formulaire de login
+  // Afficher le formulaire de login si non authentifié
   return <LoginForm onLogin={handleLogin} />;
 };
 

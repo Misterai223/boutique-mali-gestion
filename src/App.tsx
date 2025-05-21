@@ -15,10 +15,11 @@ function App() {
     const initialize = async () => {
       await initializeApp();
       setAppInitialized(true);
+      console.log("App initialized, authentication state:", isAuthenticated);
     };
     
     initialize();
-  }, []);
+  }, [isAuthenticated]);
 
   if (loading || !appInitialized) {
     return <LoadingScreen />;
