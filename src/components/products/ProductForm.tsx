@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea"; 
 import { Product } from "@/types/product";
 import { toast } from "sonner";
 import { 
@@ -25,7 +26,8 @@ import { Separator } from "@/components/ui/separator";
 import CloudinaryProductImageUpload from "./CloudinaryProductImageUpload";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Save, X } from "lucide-react";
+import { Package, Save, X, Upload, Image } from "lucide-react";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProductFormProps {
   open: boolean;
@@ -61,10 +63,18 @@ const ProductForm = ({
     imageUrl: "",
   });
 
+  const [activeTab, setActiveTab] = useState<string>("details");
+
   // Reset form data when initialData changes or dialog opens
   useEffect(() => {
     if (initialData) {
       setFormData({...initialData});
+      // Si l'image existe, afficher l'onglet image directement
+      if (initialData.imageUrl) {
+        setActiveTab("image");
+      } else {
+        setActiveTab("details");
+      }
     } else if (open) {
       setFormData({
         id: Date.now().toString(),
@@ -76,6 +86,7 @@ const ProductForm = ({
         description: "",
         imageUrl: "",
       });
+      setActiveTab("details");
     }
   }, [initialData, open]);
 
@@ -152,140 +163,159 @@ const ProductForm = ({
                 </DialogDescription>
               </DialogHeader>
               
-              <ScrollArea className="max-h-[calc(90vh-180px)]">
-                <div className="p-6 space-y-6">
-                  {/* Image du produit */}
-                  <div className="space-y-2">
-                    <Label htmlFor="imageUrl" className="text-sm font-medium">
-                      Image du produit
-                    </Label>
-                    <CloudinaryProductImageUpload
-                      initialImageUrl={formData.imageUrl}
-                      onImageChange={handleImageChange}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Informations de base */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Informations de base
-                    </h3>
-                    
-                    {/* Product Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium">
-                        Nom du produit*
-                      </Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Category */}
-                    <div className="space-y-2">
-                      <Label htmlFor="category" className="text-sm font-medium">
-                        Catégorie*
-                      </Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={handleCategoryChange}
-                      >
-                        <SelectTrigger id="category" className="focus-visible:ring-primary/30">
-                          <SelectValue placeholder="Sélectionner une catégorie" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* Description */}
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium">
-                        Description
-                      </Label>
-                      <Input
-                        id="description"
-                        name="description"
-                        value={formData.description || ''}
-                        onChange={handleChange}
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Prix et stock */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Prix et inventaire
-                    </h3>
-                    
-                    {/* Price */}
-                    <div className="space-y-2">
-                      <Label htmlFor="price" className="text-sm font-medium">
-                        Prix (XOF)*
-                      </Label>
-                      <Input
-                        id="price"
-                        name="price"
-                        type="number"
-                        value={formData.price}
-                        onChange={handleChange}
-                        min={0}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Stock Quantity */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="px-6 pt-4 border-b">
+                  <TabsList className="w-full grid grid-cols-2">
+                    <TabsTrigger value="details" className="flex gap-2 items-center">
+                      <Package className="w-4 h-4" />
+                      Détails
+                    </TabsTrigger>
+                    <TabsTrigger value="image" className="flex gap-2 items-center">
+                      <Image className="w-4 h-4" />
+                      Image
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                <ScrollArea className="max-h-[calc(90vh-240px)]">
+                  <TabsContent value="details" className="p-6 space-y-6 mt-0">
+                    {/* Informations de base */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Informations de base
+                      </h3>
+                      
+                      {/* Product Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="stockQuantity" className="text-sm font-medium">
-                          Quantité en stock
+                        <Label htmlFor="name" className="text-sm font-medium">
+                          Nom du produit*
                         </Label>
                         <Input
-                          id="stockQuantity"
-                          name="stockQuantity"
-                          type="number"
-                          value={formData.stockQuantity}
+                          id="name"
+                          name="name"
+                          value={formData.name}
                           onChange={handleChange}
-                          min={0}
+                          required
                           className="focus-visible:ring-primary/30"
                         />
                       </div>
                       
-                      {/* Threshold */}
+                      {/* Category */}
                       <div className="space-y-2">
-                        <Label htmlFor="threshold" className="text-sm font-medium">
-                          Seuil d'alerte
+                        <Label htmlFor="category" className="text-sm font-medium">
+                          Catégorie*
                         </Label>
-                        <Input
-                          id="threshold"
-                          name="threshold"
-                          type="number"
-                          value={formData.threshold}
+                        <Select
+                          value={formData.category}
+                          onValueChange={handleCategoryChange}
+                        >
+                          <SelectTrigger id="category" className="focus-visible:ring-primary/30">
+                            <SelectValue placeholder="Sélectionner une catégorie" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Description */}
+                      <div className="space-y-2">
+                        <Label htmlFor="description" className="text-sm font-medium">
+                          Description
+                        </Label>
+                        <Textarea
+                          id="description"
+                          name="description"
+                          value={formData.description || ''}
                           onChange={handleChange}
-                          min={1}
-                          className="focus-visible:ring-primary/30"
+                          className="focus-visible:ring-primary/30 resize-none min-h-[100px]"
+                          placeholder="Description détaillée du produit (facultatif)"
                         />
                       </div>
                     </div>
-                  </div>
-                </div>
-              </ScrollArea>
+                    
+                    <Separator />
+                    
+                    {/* Prix et stock */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Prix et inventaire
+                      </h3>
+                      
+                      {/* Price */}
+                      <div className="space-y-2">
+                        <Label htmlFor="price" className="text-sm font-medium">
+                          Prix (XOF)*
+                        </Label>
+                        <Input
+                          id="price"
+                          name="price"
+                          type="number"
+                          value={formData.price}
+                          onChange={handleChange}
+                          min={0}
+                          required
+                          className="focus-visible:ring-primary/30"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Stock Quantity */}
+                        <div className="space-y-2">
+                          <Label htmlFor="stockQuantity" className="text-sm font-medium">
+                            Quantité en stock
+                          </Label>
+                          <Input
+                            id="stockQuantity"
+                            name="stockQuantity"
+                            type="number"
+                            value={formData.stockQuantity}
+                            onChange={handleChange}
+                            min={0}
+                            className="focus-visible:ring-primary/30"
+                          />
+                        </div>
+                        
+                        {/* Threshold */}
+                        <div className="space-y-2">
+                          <Label htmlFor="threshold" className="text-sm font-medium">
+                            Seuil d'alerte
+                          </Label>
+                          <Input
+                            id="threshold"
+                            name="threshold"
+                            type="number"
+                            value={formData.threshold}
+                            onChange={handleChange}
+                            min={1}
+                            className="focus-visible:ring-primary/30"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="image" className="p-6 space-y-4 mt-0">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Image du produit
+                    </h3>
+                    
+                    <CloudinaryProductImageUpload
+                      initialImageUrl={formData.imageUrl}
+                      onImageChange={handleImageChange}
+                    />
+                    
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      <p>Vous pouvez télécharger une image depuis votre appareil ou sélectionner une image de la bibliothèque média.</p>
+                      <p className="mt-2">Format recommandé: JPEG, PNG. Taille maximale: 10MB</p>
+                    </div>
+                  </TabsContent>
+                </ScrollArea>
+              </Tabs>
               
               <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm">
                 <div className="flex gap-2 w-full sm:w-auto">

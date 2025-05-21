@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   Store, 
   Package, 
-  ShoppingBasket, 
   Users, 
   UserCog, 
   Settings, 
@@ -39,13 +38,6 @@ export const navItems: NavItem[] = [
     icon: Tags,
     href: "/categories",
     color: "text-pink-500",
-  },
-  {
-    title: "Commandes",
-    icon: ShoppingBasket,
-    href: "/orders",
-    color: "text-orange-500",
-    badge: 5,
   },
   {
     title: "Clients",
