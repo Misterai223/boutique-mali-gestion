@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,23 +165,23 @@ const ClientForm = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
         {open && (
-          <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh]">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <DialogTitle className="text-xl">
-                    {isEditing ? "Modifier le client" : "Ajouter un client"}
-                  </DialogTitle>
-                </div>
-                <DialogDescription>
-                  {isEditing
-                    ? "Mettez à jour les informations du client ci-dessous"
-                    : "Remplissez les informations pour créer un nouveau client"}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <ScrollArea className="max-h-[calc(90vh-180px)]">
+          <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
+            <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                <DialogTitle className="text-xl">
+                  {isEditing ? "Modifier le client" : "Ajouter un client"}
+                </DialogTitle>
+              </div>
+              <DialogDescription>
+                {isEditing
+                  ? "Mettez à jour les informations du client ci-dessous"
+                  : "Remplissez les informations pour créer un nouveau client"}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <ScrollArea className="flex-1 max-h-[calc(90vh-180px)]">
                 <div className="p-6 space-y-6">
                   {/* Informations de base */}
                   <div className="space-y-4">
@@ -287,7 +288,7 @@ const ClientForm = ({
                                 <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
                                   <SelectValue placeholder="Sélectionner un produit" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-popover shadow-md">
                                   {products.map((product) => (
                                     <SelectItem key={product.id} value={product.id}>
                                       {product.name} - {product.price.toLocaleString()} F CFA
@@ -350,7 +351,7 @@ const ClientForm = ({
                 </div>
               </ScrollArea>
               
-              <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm">
+              <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm mt-auto">
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button 
                     type="button" 
