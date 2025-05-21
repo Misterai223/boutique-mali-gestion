@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import CloudinaryProductImageUpload from "./CloudinaryProductImageUpload";
+import ProductImageUploader from "./ProductImageUploader";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { AnimatePresence } from "framer-motion";
 import { Package, Save, X, Image } from "lucide-react";
@@ -304,7 +304,7 @@ const ProductForm = ({
                       Image du produit
                     </h3>
                     
-                    <CloudinaryProductImageUpload
+                    <ProductImageUploader
                       initialImageUrl={formData.imageUrl}
                       onImageChange={handleImageChange}
                     />
