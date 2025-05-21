@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { exportTransactionsToPDF, printTransactionsPDF, ExportableTransaction } from "@/utils/pdfExporter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FilePdf, Download, Printer, Edit, FileText } from "lucide-react";
+import { FileText, Download, Printer, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";

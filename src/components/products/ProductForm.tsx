@@ -25,8 +25,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import CloudinaryProductImageUpload from "./CloudinaryProductImageUpload";
 import { cloudinaryService } from "@/services/cloudinaryService";
-import { motion, AnimatePresence } from "framer-motion";
-import { Package, Save, X, Upload, Image } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
+import { Package, Save, X, Image } from "lucide-react";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProductFormProps {

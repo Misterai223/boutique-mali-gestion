@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Users, Save, X, Plus, Minus } from "lucide-react";
 
 interface ClientFormProps {
@@ -163,218 +163,214 @@ const ClientForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <AnimatePresence>
-        {open && (
-          <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh]">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <DialogTitle className="text-xl">
-                    {isEditing ? "Modifier le client" : "Ajouter un client"}
-                  </DialogTitle>
+      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <DialogTitle className="text-xl">
+                {isEditing ? "Modifier le client" : "Ajouter un client"}
+              </DialogTitle>
+            </div>
+            <DialogDescription>
+              {isEditing
+                ? "Mettez à jour les informations du client ci-dessous"
+                : "Remplissez les informations pour créer un nouveau client"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[calc(90vh-180px)]">
+            <div className="p-6 space-y-6">
+              {/* Informations de base */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Informations du client
+                </h3>
+                
+                {/* Client Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium">
+                    Nom complet*
+                  </Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    className="focus-visible:ring-primary/30"
+                  />
                 </div>
-                <DialogDescription>
-                  {isEditing
-                    ? "Mettez à jour les informations du client ci-dessous"
-                    : "Remplissez les informations pour créer un nouveau client"}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <ScrollArea className="max-h-[calc(90vh-180px)]">
-                <div className="p-6 space-y-6">
-                  {/* Informations de base */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Informations du client
-                    </h3>
-                    
-                    {/* Client Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName" className="text-sm font-medium">
-                        Nom complet*
-                      </Label>
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                      <Label htmlFor="phoneNumber" className="text-sm font-medium">
-                        Numéro de téléphone*
-                      </Label>
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Address */}
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="text-sm font-medium">
-                        Adresse
-                      </Label>
-                      <Textarea
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Purchases */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-sm font-medium text-muted-foreground">
-                        Produits achetés
-                      </h3>
-                      <Button 
-                        type="button" 
-                        onClick={handleAddPurchase} 
-                        size="sm"
-                        variant="outline"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Ajouter un produit
-                      </Button>
-                    </div>
-                    
-                    {formData.purchases.length === 0 ? (
-                      <div className="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-md">
-                        Aucun produit ajouté
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {formData.purchases.map((purchase, index) => (
-                          <div key={index} className="flex items-start gap-4 p-4 border rounded-md bg-muted/20">
-                            {/* Product Selection */}
-                            <div className="flex-grow">
-                              <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
-                                Produit
-                              </Label>
-                              <Select
-                                value={purchase.product.id}
-                                onValueChange={(value) => handleProductChange(index, value)}
-                              >
-                                <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
-                                  <SelectValue placeholder="Sélectionner un produit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} - {product.price.toLocaleString()} F CFA
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            {/* Quantity */}
-                            <div className="w-32">
-                              <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
-                                Quantité
-                              </Label>
-                              <div className="flex items-center">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
-                                  className="h-8 w-8"
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <Input
-                                  id={`quantity-${index}`}
-                                  type="number"
-                                  value={purchase.quantity}
-                                  onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
-                                  min="1"
-                                  className="h-8 text-center mx-1 px-1 w-12"
-                                />
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
-                                  className="h-8 w-8"
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {/* Remove Button */}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemovePurchase(index)}
-                              className="h-8 w-8 mt-5"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                
+                {/* Phone Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                    Numéro de téléphone*
+                  </Label>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    required
+                    className="focus-visible:ring-primary/30"
+                  />
                 </div>
-              </ScrollArea>
+                
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="focus-visible:ring-primary/30"
+                  />
+                </div>
+                
+                {/* Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-medium">
+                    Adresse
+                  </Label>
+                  <Textarea
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    className="focus-visible:ring-primary/30"
+                  />
+                </div>
+              </div>
               
-              <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm">
-                <div className="flex gap-2 w-full sm:w-auto">
+              <Separator />
+              
+              {/* Purchases */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    Produits achetés
+                  </h3>
                   <Button 
                     type="button" 
-                    variant="outline" 
-                    onClick={() => onOpenChange(false)}
-                    className="flex-1"
+                    onClick={handleAddPurchase} 
+                    size="sm"
+                    variant="outline"
                   >
-                    <X className="h-4 w-4 mr-1" />
-                    Annuler
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-gradient-to-r from-primary to-primary/90 shadow-sm"
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    {isEditing ? "Mettre à jour" : "Ajouter"}
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ajouter un produit
                   </Button>
                 </div>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        )}
-      </AnimatePresence>
+                
+                {formData.purchases.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-md">
+                    Aucun produit ajouté
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {formData.purchases.map((purchase, index) => (
+                      <div key={index} className="flex items-start gap-4 p-4 border rounded-md bg-muted/20">
+                        {/* Product Selection */}
+                        <div className="flex-grow">
+                          <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
+                            Produit
+                          </Label>
+                          <Select
+                            value={purchase.product.id}
+                            onValueChange={(value) => handleProductChange(index, value)}
+                          >
+                            <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
+                              <SelectValue placeholder="Sélectionner un produit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name} - {product.price.toLocaleString()} F CFA
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Quantity */}
+                        <div className="w-32">
+                          <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
+                            Quantité
+                          </Label>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
+                              className="h-8 w-8"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <Input
+                              id={`quantity-${index}`}
+                              type="number"
+                              value={purchase.quantity}
+                              onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
+                              min="1"
+                              className="h-8 text-center mx-1 px-1 w-12"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
+                              className="h-8 w-8"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Remove Button */}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemovePurchase(index)}
+                          className="h-8 w-8 mt-5"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="flex-1"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Annuler
+              </Button>
+              <Button 
+                type="submit" 
+                className="flex-1 bg-gradient-to-r from-primary to-primary/90 shadow-sm"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                {isEditing ? "Mettre à jour" : "Ajouter"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 };
