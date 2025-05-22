@@ -46,10 +46,16 @@ export const navItems: NavItem[] = [
     color: "text-emerald-500",
   },
   {
+    title: "Utilisateurs",
+    icon: UserCog,
+    href: "/user-management",
+    color: "text-blue-500",
+  },
+  {
     title: "Employés",
     icon: UserCog,
     href: "/employees",
-    color: "text-blue-500",
+    color: "text-indigo-500",
   },
   {
     title: "Finances",

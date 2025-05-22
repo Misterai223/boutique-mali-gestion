@@ -11,6 +11,7 @@ import Finances from "@/pages/Finances";
 import Reports from "@/pages/Reports";
 import MediaLibrary from "@/pages/MediaLibrary";
 import Users from "@/pages/Users";
+import UserManagement from "@/pages/UserManagement";
 import Settings from "@/pages/Settings";
 
 interface AppRoutesProps {
@@ -97,6 +98,14 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
             <Users />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user-management"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
+            <UserManagement />
           </ProtectedRoute>
         }
       />
