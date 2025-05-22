@@ -42,7 +42,7 @@ export const navItems: NavItem[] = [
   {
     title: "Clients",
     icon: Users,
-    href: "/users",
+    href: "/clients",
     color: "text-emerald-500",
   },
   {

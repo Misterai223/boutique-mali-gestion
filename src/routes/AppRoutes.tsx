@@ -10,7 +10,7 @@ import Inventory from "@/pages/Inventory";
 import Finances from "@/pages/Finances";
 import Reports from "@/pages/Reports";
 import MediaLibrary from "@/pages/MediaLibrary";
-import Users from "@/pages/Users";
+import Clients from "@/pages/Clients";
 import UserManagement from "@/pages/UserManagement";
 import Settings from "@/pages/Settings";
 
@@ -94,10 +94,10 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         }
       />
       <Route
-        path="/users"
+        path="/clients"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Users />
+            <Clients />
           </ProtectedRoute>
         }
       />
