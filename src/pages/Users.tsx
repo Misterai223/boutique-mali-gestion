@@ -10,6 +10,7 @@ import { Product } from "@/types/product";
 import ClientForm from "@/components/clients/ClientForm";
 import ClientCard from "@/components/clients/ClientCard";
 import ClientDetail from "@/components/clients/ClientDetail";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Sample products data
 const sampleProducts: Product[] = [
@@ -135,6 +136,23 @@ const Users = () => {
     setFormOpen(false);
   };
 
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.5 } },
+    exit: { opacity: 0, transition: { duration: 0.3 } }
+  };
+  
+  const headerVariants = {
+    initial: { y: -30, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.2 } }
+  };
+  
+  const searchVariants = {
+    initial: { y: 20, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.4 } }
+  };
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -148,36 +166,95 @@ const Users = () => {
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300 } }
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      transition: { 
+        type: "spring", 
+        stiffness: 300,
+        damping: 20
+      } 
+    },
+    hover: { 
+      y: -10, 
+      scale: 1.02, 
+      boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+      transition: { 
+        type: "spring", 
+        stiffness: 400, 
+        damping: 17 
+      }
+    },
+    tap: { 
+      scale: 0.98, 
+      transition: { 
+        type: "spring", 
+        stiffness: 400, 
+        damping: 10 
+      } 
+    }
   };
 
   return (
     <motion.div 
-      className="space-y-6"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
+      className="space-y-6 pb-8"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
     >
       <motion.div 
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0"
-        variants={itemVariants}
+        variants={headerVariants}
       >
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <UsersIcon className="h-8 w-8 text-primary" />
-          Clients
-        </h1>
-        <Button 
-          onClick={handleAddClient} 
-          className="bg-gradient-to-r from-primary to-primary/90 shadow-md hover:shadow-xl transition-all duration-300"
+        <motion.h1 
+          className="text-3xl font-bold tracking-tight flex items-center gap-2"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter un client
-        </Button>
+          <motion.div
+            initial={{ rotate: -10, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <UsersIcon className="h-8 w-8 text-primary" />
+          </motion.div>
+          <motion.span
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            Clients
+          </motion.span>
+        </motion.h1>
+        
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <Button 
+            onClick={handleAddClient} 
+            className="bg-gradient-to-r from-primary to-primary/90 shadow-md hover:shadow-xl transition-all duration-300"
+          >
+            <motion.div
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+            </motion.div>
+            Ajouter un client
+          </Button>
+        </motion.div>
       </motion.div>
 
       <motion.div 
         className="flex flex-col md:flex-row gap-4"
-        variants={itemVariants}
+        variants={searchVariants}
       >
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -190,44 +267,77 @@ const Users = () => {
         </div>
       </motion.div>
 
-      {filteredClients.length > 0 ? (
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          variants={containerVariants}
-        >
-          {filteredClients.map((client) => (
+      <ScrollArea className="h-[calc(100vh-220px)] w-full pr-4">
+        {filteredClients.length > 0 ? (
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredClients.map((client, index) => (
+              <motion.div
+                key={client.id}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                whileTap="tap"
+                custom={index}
+                transition={{ delay: index * 0.1 }}
+                className="transform-gpu"
+              >
+                <ClientCard
+                  client={client}
+                  onView={handleViewClient}
+                  onEdit={handleEditClient}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div 
+            className="text-center py-16 bg-muted/30 rounded-lg border border-dashed"
+            variants={itemVariants}
+          >
             <motion.div
-              key={client.id}
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-              transition={{ type: "spring", stiffness: 400 }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 20,
+                delay: 0.3
+              }}
             >
-              <ClientCard
-                client={client}
-                onView={handleViewClient}
-                onEdit={handleEditClient}
-              />
+              <User className="h-16 w-16 mx-auto text-muted-foreground/60" />
             </motion.div>
-          ))}
-        </motion.div>
-      ) : (
-        <motion.div 
-          className="text-center py-16 bg-muted/30 rounded-lg border border-dashed"
-          variants={itemVariants}
-        >
-          <User className="h-16 w-16 mx-auto text-muted-foreground/60" />
-          <p className="text-muted-foreground mt-4 text-lg">Aucun client trouvé</p>
-          {searchTerm && (
-            <Button 
-              onClick={() => setSearchTerm("")} 
-              variant="link" 
-              className="mt-2"
+            <motion.p 
+              className="text-muted-foreground mt-4 text-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
             >
-              Réinitialiser la recherche
-            </Button>
-          )}
-        </motion.div>
-      )}
+              Aucun client trouvé
+            </motion.p>
+            {searchTerm && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Button 
+                  onClick={() => setSearchTerm("")} 
+                  variant="link" 
+                  className="mt-2"
+                >
+                  Réinitialiser la recherche
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </ScrollArea>
 
       {/* Formulaire d'ajout/modification de client */}
       <ClientForm

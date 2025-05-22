@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Users, Save, X, Plus, Minus } from "lucide-react";
 
 interface ClientFormProps {
@@ -161,217 +161,379 @@ const ClientForm = ({
     onSave(updatedData);
   };
 
+  // Animation variants
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3 } }
+  };
+  
+  const dialogVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1, 
+      transition: { 
+        type: "spring",
+        damping: 25,
+        stiffness: 300
+      } 
+    },
+    exit: { 
+      opacity: 0, 
+      y: 20, 
+      scale: 0.95, 
+      transition: { duration: 0.2 } 
+    }
+  };
+  
+  const contentVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 10, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1, 
+      transition: { type: "spring", stiffness: 300 } 
+    }
+  };
+  
+  const purchaseItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      transition: { 
+        type: "spring", 
+        stiffness: 300,
+        damping: 25 
+      } 
+    },
+    exit: { 
+      opacity: 0, 
+      x: -20, 
+      transition: { duration: 0.2 } 
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
         {open && (
-          <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
-            <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <DialogTitle className="text-xl">
-                  {isEditing ? "Modifier le client" : "Ajouter un client"}
-                </DialogTitle>
-              </div>
-              <DialogDescription>
-                {isEditing
-                  ? "Mettez à jour les informations du client ci-dessous"
-                  : "Remplissez les informations pour créer un nouveau client"}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-              <ScrollArea className="flex-1 max-h-[calc(90vh-180px)]">
-                <div className="p-6 space-y-6">
-                  {/* Informations de base */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Informations du client
-                    </h3>
-                    
-                    {/* Client Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName" className="text-sm font-medium">
-                        Nom complet*
-                      </Label>
-                      <Input
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                      <Label htmlFor="phoneNumber" className="text-sm font-medium">
-                        Numéro de téléphone*
-                      </Label>
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        required
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                    
-                    {/* Address */}
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="text-sm font-medium">
-                        Adresse
-                      </Label>
-                      <Textarea
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="focus-visible:ring-primary/30"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Purchases */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
+          <DialogContent asChild className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={dialogVariants}
+              className="bg-background flex flex-col max-h-[90vh]"
+            >
+              <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
+                <motion.div 
+                  className="flex items-center gap-2"
+                  variants={itemVariants}
+                >
+                  <motion.div
+                    initial={{ rotate: -10, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <Users className="h-5 w-5 text-primary" />
+                  </motion.div>
+                  <DialogTitle className="text-xl">
+                    {isEditing ? "Modifier le client" : "Ajouter un client"}
+                  </DialogTitle>
+                </motion.div>
+                <motion.div variants={itemVariants}>
+                  <DialogDescription>
+                    {isEditing
+                      ? "Mettez à jour les informations du client ci-dessous"
+                      : "Remplissez les informations pour créer un nouveau client"}
+                  </DialogDescription>
+                </motion.div>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                <ScrollArea className="flex-1" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+                  <motion.div 
+                    className="p-6 space-y-6"
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {/* Informations de base */}
+                    <motion.div className="space-y-4" variants={itemVariants}>
                       <h3 className="text-sm font-medium text-muted-foreground">
-                        Produits achetés
+                        Informations du client
                       </h3>
+                      
+                      {/* Client Name */}
+                      <motion.div 
+                        className="space-y-2" 
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.01 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                      >
+                        <Label htmlFor="fullName" className="text-sm font-medium">
+                          Nom complet*
+                        </Label>
+                        <Input
+                          id="fullName"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          required
+                          className="focus-visible:ring-primary/30 transition-all duration-200"
+                        />
+                      </motion.div>
+                      
+                      {/* Phone Number */}
+                      <motion.div 
+                        className="space-y-2"
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                          Numéro de téléphone*
+                        </Label>
+                        <Input
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={formData.phoneNumber}
+                          onChange={handleChange}
+                          required
+                          className="focus-visible:ring-primary/30 transition-all duration-200"
+                        />
+                      </motion.div>
+                      
+                      {/* Email */}
+                      <motion.div 
+                        className="space-y-2"
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <Label htmlFor="email" className="text-sm font-medium">
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="focus-visible:ring-primary/30 transition-all duration-200"
+                        />
+                      </motion.div>
+                      
+                      {/* Address */}
+                      <motion.div 
+                        className="space-y-2"
+                        variants={itemVariants}
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <Label htmlFor="address" className="text-sm font-medium">
+                          Adresse
+                        </Label>
+                        <Textarea
+                          id="address"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleChange}
+                          className="focus-visible:ring-primary/30 transition-all duration-200"
+                        />
+                      </motion.div>
+                    </motion.div>
+                    
+                    <Separator className="my-6" />
+                    
+                    {/* Purchases */}
+                    <motion.div className="space-y-4" variants={itemVariants}>
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Produits achetés
+                        </h3>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button 
+                            type="button" 
+                            onClick={handleAddPurchase} 
+                            size="sm"
+                            variant="outline"
+                            className="transition-all duration-300 hover:shadow-md"
+                          >
+                            <motion.div
+                              initial={{ rotate: 0 }}
+                              whileHover={{ rotate: 90 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                            </motion.div>
+                            Ajouter un produit
+                          </Button>
+                        </motion.div>
+                      </div>
+                      
+                      {formData.purchases.length === 0 ? (
+                        <motion.div 
+                          className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md"
+                          variants={itemVariants}
+                          animate={{
+                            opacity: [0.6, 1, 0.6],
+                            transition: { duration: 2, repeat: Infinity }
+                          }}
+                        >
+                          Aucun produit ajouté
+                        </motion.div>
+                      ) : (
+                        <motion.div className="space-y-4" variants={contentVariants}>
+                          <AnimatePresence>
+                            {formData.purchases.map((purchase, index) => (
+                              <motion.div 
+                                key={index} 
+                                className="flex items-start gap-4 p-4 border rounded-md bg-muted/20 hover:bg-muted/30 transition-colors duration-200"
+                                variants={purchaseItemVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                custom={index}
+                                layout
+                              >
+                                {/* Product Selection */}
+                                <div className="flex-grow">
+                                  <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
+                                    Produit
+                                  </Label>
+                                  <Select
+                                    value={purchase.product.id}
+                                    onValueChange={(value) => handleProductChange(index, value)}
+                                  >
+                                    <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
+                                      <SelectValue placeholder="Sélectionner un produit" />
+                                    </SelectTrigger>
+                                    <SelectContent 
+                                      position="popper"
+                                      className="bg-popover shadow-xl border border-border/50 backdrop-blur-sm" 
+                                      align="start"
+                                      sideOffset={8}
+                                    >
+                                      {products.map((product) => (
+                                        <SelectItem key={product.id} value={product.id}>
+                                          {product.name} - {product.price.toLocaleString()} F CFA
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                {/* Quantity */}
+                                <div className="w-32">
+                                  <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
+                                    Quantité
+                                  </Label>
+                                  <div className="flex items-center">
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                      <Button
+                                        type="button"
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
+                                        className="h-8 w-8 transition-all duration-200"
+                                      >
+                                        <Minus className="h-3 w-3" />
+                                      </Button>
+                                    </motion.div>
+                                    <Input
+                                      id={`quantity-${index}`}
+                                      type="number"
+                                      value={purchase.quantity}
+                                      onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
+                                      min="1"
+                                      className="h-8 text-center mx-1 px-1 w-12"
+                                    />
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                      <Button
+                                        type="button"
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
+                                        className="h-8 w-8 transition-all duration-200"
+                                      >
+                                        <Plus className="h-3 w-3" />
+                                      </Button>
+                                    </motion.div>
+                                  </div>
+                                </div>
+                                
+                                {/* Remove Button */}
+                                <motion.div
+                                  whileHover={{ scale: 1.1, rotate: 90 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  transition={{ type: "spring", stiffness: 400 }}
+                                >
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemovePurchase(index)}
+                                    className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive transition-colors duration-200"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </motion.div>
+                </ScrollArea>
+                
+                <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm mt-auto z-10">
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <motion.div 
+                      className="flex-1"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button 
                         type="button" 
-                        onClick={handleAddPurchase} 
-                        size="sm"
-                        variant="outline"
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}
+                        className="w-full"
                       >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Ajouter un produit
+                        <X className="h-4 w-4 mr-1" />
+                        Annuler
                       </Button>
-                    </div>
-                    
-                    {formData.purchases.length === 0 ? (
-                      <div className="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-md">
-                        Aucun produit ajouté
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {formData.purchases.map((purchase, index) => (
-                          <div key={index} className="flex items-start gap-4 p-4 border rounded-md bg-muted/20">
-                            {/* Product Selection */}
-                            <div className="flex-grow">
-                              <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
-                                Produit
-                              </Label>
-                              <Select
-                                value={purchase.product.id}
-                                onValueChange={(value) => handleProductChange(index, value)}
-                              >
-                                <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
-                                  <SelectValue placeholder="Sélectionner un produit" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-popover shadow-md">
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} - {product.price.toLocaleString()} F CFA
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            {/* Quantity */}
-                            <div className="w-32">
-                              <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
-                                Quantité
-                              </Label>
-                              <div className="flex items-center">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
-                                  className="h-8 w-8"
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <Input
-                                  id={`quantity-${index}`}
-                                  type="number"
-                                  value={purchase.quantity}
-                                  onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
-                                  min="1"
-                                  className="h-8 text-center mx-1 px-1 w-12"
-                                />
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
-                                  className="h-8 w-8"
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {/* Remove Button */}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemovePurchase(index)}
-                              className="h-8 w-8 mt-5"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    </motion.div>
+                    <motion.div 
+                      className="flex-1"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        {isEditing ? "Mettre à jour" : "Ajouter"}
+                      </Button>
+                    </motion.div>
                   </div>
-                </div>
-              </ScrollArea>
-              
-              <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm mt-auto">
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => onOpenChange(false)}
-                    className="flex-1"
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Annuler
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-gradient-to-r from-primary to-primary/90 shadow-sm"
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    {isEditing ? "Mettre à jour" : "Ajouter"}
-                  </Button>
-                </div>
-              </DialogFooter>
-            </form>
+                </DialogFooter>
+              </form>
+            </motion.div>
           </DialogContent>
         )}
       </AnimatePresence>
