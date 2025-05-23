@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -237,7 +236,7 @@ const ClientForm = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-          <ScrollArea className="flex-1 overflow-y-auto" style={{ height: '60vh' }}>
+          <ScrollArea className="overflow-y-auto flex-1" style={{ height: 'calc(70vh - 120px)' }}>
             <div className="p-6 space-y-6">
               {/* Informations de base */}
               <div className="space-y-4">

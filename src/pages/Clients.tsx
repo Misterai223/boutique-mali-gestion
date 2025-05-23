@@ -197,7 +197,7 @@ const Clients = () => {
 
   return (
     <motion.div 
-      className="space-y-6 pb-8"
+      className="space-y-6 pb-8 h-full"
       initial="initial"
       animate="animate"
       exit="exit"
@@ -267,7 +267,7 @@ const Clients = () => {
         </div>
       </motion.div>
 
-      <ScrollArea className="h-[calc(100vh-220px)] w-full pr-4">
+      <ScrollArea className="h-[calc(100vh-220px)] overflow-y-auto pr-4 rounded-md">
         {filteredClients.length > 0 ? (
           <motion.div 
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
