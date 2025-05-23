@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Users, Save, X, Plus, Minus } from "lucide-react";
+import { Users, Save, X, Plus, Minus, MapPin, ShoppingCart } from "lucide-react";
 
 interface ClientFormProps {
   open: boolean;
@@ -240,7 +241,8 @@ const ClientForm = ({
             <div className="p-6 space-y-6">
               {/* Informations de base */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-muted-foreground">
+                <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4" />
                   Informations du client
                 </h3>
                 
@@ -289,27 +291,30 @@ const ClientForm = ({
                   />
                 </div>
                 
-                {/* Address */}
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-medium">
-                    Adresse
+                {/* Address - More prominently displayed */}
+                <div className="space-y-2 border border-dashed p-4 rounded-md bg-muted/10">
+                  <Label htmlFor="address" className="text-sm font-medium flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    Adresse de résidence
                   </Label>
                   <Textarea
                     id="address"
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className="focus-visible:ring-primary/30 transition-all duration-200"
+                    className="focus-visible:ring-primary/30 transition-all duration-200 min-h-[100px]"
+                    placeholder="Entrez l'adresse complète du client..."
                   />
                 </div>
               </div>
               
               <Separator className="my-6" />
               
-              {/* Purchases */}
-              <div className="space-y-4">
+              {/* Purchases - More prominently displayed */}
+              <div className="space-y-4 border border-dashed p-4 rounded-md bg-muted/10">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-muted-foreground">
+                  <h3 className="text-sm font-medium flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-primary" />
                     Produits achetés
                   </h3>
                   <Button 
