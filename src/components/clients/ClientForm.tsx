@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { motion } from "framer-motion";
 import { Users, Save, X, Plus, Minus } from "lucide-react";
 
 interface ClientFormProps {
@@ -236,8 +236,8 @@ const ClientForm = ({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <ScrollArea className="flex-1" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+          <ScrollArea className="flex-1 overflow-y-auto" style={{ height: 'calc(90vh - 180px)' }}>
             <div className="p-6 space-y-6">
               {/* Informations de base */}
               <div className="space-y-4">
