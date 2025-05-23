@@ -236,8 +236,8 @@ const ClientForm = ({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-          <ScrollArea className="flex-1 overflow-y-auto" style={{ height: 'calc(90vh - 180px)' }}>
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+          <ScrollArea className="flex-1" style={{ height: '65vh' }}>
             <div className="p-6 space-y-6">
               {/* Informations de base */}
               <div className="space-y-4">
