@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,14 +163,14 @@ const ClientForm = ({
   const scrollToTop = () => {
     const scrollElement = document.querySelector('[data-radix-scroll-area-viewport]');
     if (scrollElement) {
-      scrollElement.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollElement.scrollTo({ top: 0, behavior: 'auto' });
     }
   };
 
   const scrollToBottom = () => {
     const scrollElement = document.querySelector('[data-radix-scroll-area-viewport]');
     if (scrollElement) {
-      scrollElement.scrollTo({ top: scrollElement.scrollHeight, behavior: 'smooth' });
+      scrollElement.scrollTo({ top: scrollElement.scrollHeight, behavior: 'auto' });
     }
   };
 
