@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { userService } from "@/services/userService";
 import { Profile } from "@/types/profile";
 import RoleSelector from "./RoleSelector";
-import AccessLevelInput from "./AccessLevelInput";
 import { UpdateUserForm as UpdateUserFormType, updateUserSchema } from "./schemas/userFormSchemas";
 
 interface UpdateUserFormProps {
@@ -26,8 +25,7 @@ const UpdateUserForm = ({ initialData, onUserUpdated, onCancel }: UpdateUserForm
     resolver: zodResolver(updateUserSchema),
     defaultValues: {
       full_name: "",
-      role: "user",
-      access_level: 1
+      role: "salesperson"
     }
   });
   
@@ -36,8 +34,7 @@ const UpdateUserForm = ({ initialData, onUserUpdated, onCancel }: UpdateUserForm
     if (initialData) {
       form.reset({
         full_name: initialData.full_name || "",
-        role: initialData.role,
-        access_level: initialData.access_level
+        role: initialData.role
       });
     }
   }, [initialData, form]);
@@ -49,7 +46,7 @@ const UpdateUserForm = ({ initialData, onUserUpdated, onCancel }: UpdateUserForm
         id: initialData.id,
         full_name: data.full_name,
         role: data.role,
-        access_level: data.access_level
+        access_level: initialData.access_level // Conserver la valeur existante
       });
       
       if (result) {
@@ -84,8 +81,6 @@ const UpdateUserForm = ({ initialData, onUserUpdated, onCancel }: UpdateUserForm
         />
         
         <RoleSelector form={form} name="role" />
-        
-        <AccessLevelInput form={form} name="access_level" />
         
         <DialogFooter>
           <Button 
