@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, User, Search, Users as UsersIcon } from "lucide-react";
+import { Plus, User, Search, Users as UsersIcon, Filter, SortAsc } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Client } from "@/types/client";
@@ -11,6 +11,7 @@ import ClientForm from "@/components/clients/ClientForm";
 import ClientCard from "@/components/clients/ClientCard";
 import ClientDetail from "@/components/clients/ClientDetail";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
 
 // Sample products data
 const sampleProducts: Product[] = [
@@ -91,6 +92,7 @@ const Clients = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [currentClient, setCurrentClient] = useState<Client | undefined>(undefined);
   const [products] = useState<Product[]>(sampleProducts);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Filtered clients based on search term
   const filteredClients = clients.filter(client => {
@@ -111,46 +113,81 @@ const Clients = () => {
   };
 
   const handleEditClient = (client: Client) => {
+    console.log("Editing client:", client);
     setCurrentClient(client);
     setFormOpen(true);
   };
 
   const handleViewClient = (client: Client) => {
+    console.log("Viewing client:", client);
     setCurrentClient(client);
     setDetailOpen(true);
   };
 
   const handleSaveClient = (client: Client) => {
-    if (currentClient) {
-      // Edit existing client
-      setClients(
-        clients.map((c) => (c.id === client.id ? client : c))
-      );
-      toast.success(`Client "${client.fullName}" mis à jour avec succès!`);
-    } else {
-      // Add new client
-      setClients([...clients, client]);
-      toast.success(`Client "${client.fullName}" ajouté avec succès!`);
-    }
-    setCurrentClient(undefined);
-    setFormOpen(false);
+    setIsLoading(true);
+    setTimeout(() => {
+      if (currentClient) {
+        // Edit existing client
+        setClients(
+          clients.map((c) => (c.id === client.id ? client : c))
+        );
+        toast.success(`Client "${client.fullName}" mis à jour avec succès!`);
+      } else {
+        // Add new client
+        setClients([...clients, client]);
+        toast.success(`Client "${client.fullName}" ajouté avec succès!`);
+      }
+      setCurrentClient(undefined);
+      setFormOpen(false);
+      setIsLoading(false);
+    }, 500);
   };
 
-  // Animation variants
+  // Advanced animation variants
   const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1, transition: { duration: 0.5 } },
-    exit: { opacity: 0, transition: { duration: 0.3 } }
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      } 
+    },
+    exit: { 
+      opacity: 0, 
+      y: -20,
+      transition: { duration: 0.4 }
+    }
   };
   
   const headerVariants = {
-    initial: { y: -30, opacity: 0 },
-    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.2 } }
+    initial: { opacity: 0, y: -30, scale: 0.95 },
+    animate: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        duration: 0.7, 
+        delay: 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      } 
+    }
   };
   
   const searchVariants = {
-    initial: { y: 20, opacity: 0 },
-    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.4 } }
+    initial: { opacity: 0, y: 20, scale: 0.95 },
+    animate: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        duration: 0.6, 
+        delay: 0.3,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      } 
+    }
   };
   
   const containerVariants = {
@@ -158,186 +195,380 @@ const Clients = () => {
     visible: { 
       opacity: 1,
       transition: { 
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
+        staggerChildren: 0.08,
+        delayChildren: 0.4,
       }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { 
+      opacity: 0, 
+      y: 30, 
+      scale: 0.95,
+      rotateX: -15
+    },
     visible: { 
-      y: 0, 
       opacity: 1, 
+      y: 0, 
+      scale: 1,
+      rotateX: 0,
       transition: { 
         type: "spring", 
         stiffness: 300,
-        damping: 20
+        damping: 25,
+        duration: 0.6
       } 
     },
     hover: { 
-      y: -10, 
-      scale: 1.02, 
-      boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+      y: -8, 
+      scale: 1.03, 
+      rotateY: 2,
+      boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
       transition: { 
         type: "spring", 
         stiffness: 400, 
-        damping: 17 
+        damping: 18 
       }
     },
     tap: { 
-      scale: 0.98, 
+      scale: 0.97, 
       transition: { 
         type: "spring", 
-        stiffness: 400, 
-        damping: 10 
+        stiffness: 500, 
+        damping: 15 
       } 
+    }
+  };
+
+  const floatingElementVariants = {
+    initial: { opacity: 0, scale: 0 },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        delay: 0.8
+      }
     }
   };
 
   return (
     <motion.div 
-      className="space-y-6 pb-8 h-full"
+      className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background relative overflow-hidden"
       initial="initial"
       animate="animate"
       exit="exit"
       variants={pageVariants}
     >
-      <motion.div 
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0"
-        variants={headerVariants}
-      >
-        <motion.h1 
-          className="text-3xl font-bold tracking-tight flex items-center gap-2"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full"
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            rotate: [360, 180, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 space-y-8 p-6 pb-16">
+        {/* Enhanced Header */}
+        <motion.div 
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0"
+          variants={headerVariants}
         >
-          <motion.div
-            initial={{ rotate: -10, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <UsersIcon className="h-8 w-8 text-primary" />
-          </motion.div>
-          <motion.span
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            Gestion des Clients
-          </motion.span>
-        </motion.h1>
-        
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Button 
-            onClick={handleAddClient} 
-            className="bg-gradient-to-r from-primary to-primary/90 shadow-md hover:shadow-xl transition-all duration-300"
-          >
-            <motion.div
-              initial={{ rotate: 0 }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+          <motion.div className="space-y-2">
+            <motion.h1 
+              className="text-4xl lg:text-5xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Plus className="h-4 w-4 mr-2" />
-            </motion.div>
-            Ajouter un client
-          </Button>
-        </motion.div>
-      </motion.div>
-
-      <motion.div 
-        className="flex flex-col md:flex-row gap-4"
-        variants={searchVariants}
-      >
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un client par nom ou numéro..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="pl-10 shadow-sm border-input/60 focus-visible:ring-primary/30"
-          />
-        </div>
-      </motion.div>
-
-      <ScrollArea className="h-[calc(100vh-220px)] overflow-y-auto pr-4 rounded-md">
-        {filteredClients.length > 0 ? (
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {filteredClients.map((client, index) => (
               <motion.div
-                key={client.id}
-                variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                whileTap="tap"
-                custom={index}
-                transition={{ delay: index * 0.1 }}
-                className="transform-gpu"
+                className="relative"
+                initial={{ rotate: -10, scale: 0.8 }}
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.3 
+                }}
+                whileHover={{ 
+                  rotate: [0, -10, 10, 0],
+                  transition: { duration: 0.5 }
+                }}
               >
-                <ClientCard
-                  client={client}
-                  onView={handleViewClient}
-                  onEdit={handleEditClient}
+                <UsersIcon className="h-10 w-10 lg:h-12 lg:w-12 text-primary drop-shadow-sm" />
+                <motion.div
+                  className="absolute inset-0 h-10 w-10 lg:h-12 lg:w-12 bg-primary/20 rounded-full"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
                 />
               </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div 
-            className="text-center py-16 bg-muted/30 rounded-lg border border-dashed"
-            variants={itemVariants}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 20,
-                delay: 0.3
-              }}
-            >
-              <User className="h-16 w-16 mx-auto text-muted-foreground/60" />
-            </motion.div>
-            <motion.p 
-              className="text-muted-foreground mt-4 text-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              Aucun client trouvé
-            </motion.p>
-            {searchTerm && (
-              <motion.div
+              <motion.span
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <Button 
-                  onClick={() => setSearchTerm("")} 
-                  variant="link" 
-                  className="mt-2"
+                Gestion des Clients
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="text-muted-foreground text-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              Gérez facilement votre portefeuille client
+            </motion.p>
+          </motion.div>
+          
+          <motion.div
+            className="flex flex-col sm:flex-row gap-3"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button 
+                variant="outline"
+                className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300"
+              >
+                <Filter className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                Filtres
+                <motion.div
+                  className="absolute inset-0 bg-primary/5"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileHover={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Button>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button 
+                onClick={handleAddClient} 
+                className="group relative overflow-hidden bg-gradient-to-r from-primary via-primary/90 to-secondary shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                disabled={isLoading}
+              >
+                <motion.div
+                  animate={{ rotate: isLoading ? 360 : 0 }}
+                  transition={{ duration: 1, repeat: isLoading ? Infinity : 0 }}
                 >
-                  Réinitialiser la recherche
+                  <Plus className="h-4 w-4 mr-2" />
+                </motion.div>
+                Nouveau client
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6 }}
+                />
+              </Button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Enhanced Search Section */}
+        <motion.div variants={searchVariants}>
+          <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-grow group">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors duration-300" />
+                <Input
+                  placeholder="Rechercher par nom, téléphone ou email..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="pl-12 h-12 text-lg border-2 focus:border-primary/50 transition-all duration-300 bg-background/50"
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-md border-2 border-primary/20"
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  whileFocus={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" size="lg" className="h-12 border-2">
+                  <SortAsc className="h-4 w-4 mr-2" />
+                  Trier
                 </Button>
+              </div>
+            </div>
+            
+            {searchTerm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 pt-4 border-t"
+              >
+                <p className="text-sm text-muted-foreground">
+                  {filteredClients.length} résultat(s) trouvé(s) pour "{searchTerm}"
+                </p>
               </motion.div>
             )}
-          </motion.div>
-        )}
-      </ScrollArea>
+          </Card>
+        </motion.div>
+
+        {/* Enhanced Content Area */}
+        <motion.div
+          className="relative"
+          variants={floatingElementVariants}
+        >
+          <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+            <AnimatePresence mode="wait">
+              {filteredClients.length > 0 ? (
+                <motion.div 
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  key="clients-grid"
+                >
+                  {filteredClients.map((client, index) => (
+                    <motion.div
+                      key={client.id}
+                      variants={itemVariants}
+                      initial="hidden"
+                      animate="visible"
+                      whileHover="hover"
+                      whileTap="tap"
+                      custom={index}
+                      layout
+                      className="transform-gpu perspective-1000"
+                    >
+                      <ClientCard
+                        client={client}
+                        onView={handleViewClient}
+                        onEdit={handleEditClient}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div 
+                  className="flex flex-col items-center justify-center py-20"
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  key="empty-state"
+                >
+                  <Card className="p-12 text-center max-w-md mx-auto shadow-xl border-0 bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm">
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 260, 
+                        damping: 20,
+                        delay: 0.2
+                      }}
+                      className="mb-6"
+                    >
+                      <User className="h-20 w-20 mx-auto text-muted-foreground/60" />
+                    </motion.div>
+                    <motion.h3 
+                      className="text-2xl font-semibold mb-2"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      Aucun client trouvé
+                    </motion.h3>
+                    <motion.p 
+                      className="text-muted-foreground mb-6"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      {searchTerm 
+                        ? "Essayez de modifier votre recherche" 
+                        : "Commencez par ajouter votre premier client"
+                      }
+                    </motion.p>
+                    {searchTerm ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                      >
+                        <Button 
+                          onClick={() => setSearchTerm("")} 
+                          variant="outline"
+                          className="group"
+                        >
+                          Réinitialiser la recherche
+                          <motion.div
+                            className="ml-2"
+                            animate={{ x: [0, 5, 0] }}
+                            transition={{ 
+                              duration: 1, 
+                              repeat: Infinity,
+                              repeatType: "reverse"
+                            }}
+                          >
+                            →
+                          </motion.div>
+                        </Button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                      >
+                        <Button 
+                          onClick={handleAddClient}
+                          className="group bg-gradient-to-r from-primary to-secondary"
+                        >
+                          <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                          Ajouter le premier client
+                        </Button>
+                      </motion.div>
+                    )}
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </ScrollArea>
+        </motion.div>
+      </div>
 
       {/* Formulaire d'ajout/modification de client */}
       <ClientForm
