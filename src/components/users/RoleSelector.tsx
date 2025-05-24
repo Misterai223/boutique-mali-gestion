@@ -30,10 +30,8 @@ const RoleSelector = ({ form, name }: RoleSelectorProps) => {
             </FormControl>
             <SelectContent>
               <SelectItem value="admin">Administrateur</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="cashier">Caissier</SelectItem>
               <SelectItem value="salesperson">Vendeur</SelectItem>
-              <SelectItem value="user">Utilisateur</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />

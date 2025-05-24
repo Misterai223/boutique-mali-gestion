@@ -9,7 +9,6 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { userService } from "@/services/userService";
 import RoleSelector from "./RoleSelector";
-import AccessLevelInput from "./AccessLevelInput";
 import { CreateUserForm as CreateUserFormType, createUserSchema } from "./schemas/userFormSchemas";
 
 interface CreateUserFormProps {
@@ -26,8 +25,7 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       email: "",
       password: "",
       full_name: "",
-      role: "user",
-      access_level: 1
+      role: "salesperson"
     }
   });
 
@@ -44,7 +42,7 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
       const { error } = await userService.createUser(data.email, data.password, {
         full_name: data.full_name,
         role: data.role,
-        access_level: data.access_level
+        access_level: 1 // Valeur par défaut
       });
       
       if (error) {
@@ -119,8 +117,6 @@ const CreateUserForm = ({ onUserCreated, onCancel }: CreateUserFormProps) => {
         />
         
         <RoleSelector form={form} name="role" />
-        
-        <AccessLevelInput form={form} name="access_level" />
         
         <DialogFooter className="mt-6">
           <Button 
