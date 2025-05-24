@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Employee } from '@/types/employee';
+import { employeeService } from '@/services/employeeService';
 import { toast } from 'sonner';
 
 export const useEmployeeManagement = () => {
@@ -9,59 +9,28 @@ export const useEmployeeManagement = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Fonction pour ajouter/modifier un employé
-  const handleAddEditEmployee = async (employee: Employee) => {
+  const handleAddEditEmployee = async (employee: Omit<Employee, 'id' | 'created_at' | 'updated_at'> | Employee) => {
     try {
       if (currentEmployee) {
         // Mettre à jour l'employé existant
-        if (employee.isUser && employee.userId) {
-          // Si l'employé est lié à un utilisateur, mettre à jour le profil utilisateur également
-          const { error } = await supabase
-            .from('profiles')
-            .update({
-              full_name: employee.name,
-              avatar_url: employee.photoUrl,
-              role: employee.role,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', employee.userId);
-            
-          if (error) throw error;
-        } else {
-          // Dans le futur, nous pourrions avoir une table dédiée pour les employés non-utilisateurs
-          // Pour l'instant, nous simulons la mise à jour
-          console.log("Mise à jour d'un employé qui n'est pas un utilisateur", employee);
-        }
+        const result = await employeeService.updateEmployee(currentEmployee.id, employee);
         
-        toast.success("Employé mis à jour avec succès");
+        if (result) {
+          toast.success("Employé mis à jour avec succès");
+        } else {
+          toast.error("Erreur lors de la mise à jour de l'employé");
+          return false;
+        }
       } else {
         // Création d'un nouvel employé
-        if (employee.isUser) {
-          // Créer un profil utilisateur pour cet employé
-          const newId = crypto.randomUUID();
-          
-          const { error } = await supabase
-            .from('profiles')
-            .insert({
-              id: newId,
-              full_name: employee.name,
-              avatar_url: employee.photoUrl,
-              role: employee.role,
-              access_level: 1, 
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
-            
-          if (error) throw error;
-          
-          // Mettre à jour l'ID de l'employé avec l'ID du profil créé
-          employee.userId = newId;
-        } else {
-          // Dans le futur, nous pourrions avoir une table dédiée pour les employés non-utilisateurs
-          // Pour l'instant, nous simulons la création
-          console.log("Création d'un employé qui n'est pas un utilisateur", employee);
-        }
+        const result = await employeeService.createEmployee(employee as Omit<Employee, 'id' | 'created_at' | 'updated_at'>);
         
-        toast.success("Employé ajouté avec succès");
+        if (result) {
+          toast.success("Employé ajouté avec succès");
+        } else {
+          toast.error("Erreur lors de l'ajout de l'employé");
+          return false;
+        }
       }
       
       // Reset state
@@ -71,7 +40,7 @@ export const useEmployeeManagement = () => {
       return true;
     } catch (error: any) {
       toast.error(`Erreur: ${error.message}`);
-      console.error("Erreur lors de la mise à jour de l'employé:", error);
+      console.error("Erreur lors de la gestion de l'employé:", error);
       return false;
     }
   };

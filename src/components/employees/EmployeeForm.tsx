@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -9,304 +11,235 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Employee } from "@/types/employee";
-import { toast } from "sonner";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import ImageSelector from "../shared/ImageSelector";
 import { User, Upload } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+
+const employeeSchema = z.object({
+  full_name: z.string().min(2, "Le nom complet est requis"),
+  email: z.string().email("Email invalide").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  role: z.string().min(1, "Le rôle est requis"),
+  photo_url: z.string().optional()
+});
+
+type EmployeeFormData = z.infer<typeof employeeSchema>;
 
 interface EmployeeFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Employee;
-  onSave: (employee: Employee) => void;
+  onSave: (employee: EmployeeFormData) => Promise<boolean>;
 }
 
-const roles = [
-  { value: "admin", label: "Administrateur" },
-  { value: "manager", label: "Gérant" },
+const employeeRoles = [
+  { value: "manager", label: "Gérant/Manager" },
+  { value: "sales_representative", label: "Représentant commercial" },
   { value: "cashier", label: "Caissier" },
-  { value: "salesperson", label: "Vendeur" },
+  { value: "warehouse_worker", label: "Magasinier" },
+  { value: "accountant", label: "Comptable" },
+  { value: "secretary", label: "Secrétaire" },
+  { value: "technician", label: "Technicien" },
+  { value: "other", label: "Autre" }
 ];
 
-const EmployeeForm = ({
-  open,
-  onOpenChange,
-  initialData,
-  onSave,
-}: EmployeeFormProps) => {
-  const [formData, setFormData] = useState<Employee>(
-    initialData || {
-      id: Date.now().toString(),
-      name: "",
-      email: "",
-      phone: "",
-      role: "salesperson",
-      photoUrl: "",
-      isUser: false
-    }
-  );
-  
+const EmployeeForm = ({ open, onOpenChange, initialData, onSave }: EmployeeFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
 
-  const isEditing = !!initialData;
+  const form = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeSchema),
+    defaultValues: {
+      full_name: "",
+      email: "",
+      phone: "",
+      role: "sales_representative",
+      photo_url: ""
+    }
+  });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      form.reset({
+        full_name: initialData.full_name,
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        role: initialData.role,
+        photo_url: initialData.photo_url || ""
+      });
     } else {
-      setFormData({
-        id: Date.now().toString(),
-        name: "",
+      form.reset({
+        full_name: "",
         email: "",
         phone: "",
-        role: "salesperson",
-        photoUrl: "",
-        isUser: false
+        role: "sales_representative",
+        photo_url: ""
       });
     }
-  }, [initialData, open]);
+  }, [initialData, form, open]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const handleSubmit = async (data: EmployeeFormData) => {
+    setIsSubmitting(true);
+    try {
+      const success = await onSave(data);
+      if (success) {
+        form.reset();
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la soumission:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleRoleChange = (value: string) => {
-    setFormData({
-      ...formData,
-      role: value,
-    });
-  };
-  
   const handleImageSelect = (url: string) => {
-    setFormData({
-      ...formData,
-      photoUrl: url,
-    });
-  };
-  
-  const handleIsUserChange = (checked: boolean) => {
-    setFormData({
-      ...formData,
-      isUser: checked,
-    });
+    form.setValue("photo_url", url);
+    setIsImageSelectorOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.name) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-    
-    // Si l'employé est aussi un utilisateur, l'email est obligatoire
-    if (formData.isUser && !formData.email) {
-      toast.error("L'email est obligatoire pour les employés qui sont aussi des utilisateurs");
-      return;
-    }
-    
-    onSave(formData);
-    toast.success(
-      isEditing
-        ? `Employé "${formData.name}" mis à jour`
-        : `Employé "${formData.name}" ajouté`
-    );
-    
-    // Reset form if not editing
-    if (!isEditing) {
-      setFormData({
-        id: Date.now().toString(),
-        name: "",
-        email: "",
-        phone: "",
-        role: "salesperson",
-        photoUrl: "",
-        isUser: false
-      });
-    }
-    
-    onOpenChange(false);
-  };
+  const photoUrl = form.watch("photo_url");
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[550px]">
-          <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle>
-                {isEditing ? "Modifier l'employé" : "Ajouter un employé"}
-              </DialogTitle>
-              <DialogDescription>
-                {isEditing
-                  ? "Mettez à jour les informations de l'employé ci-dessous"
-                  : "Remplissez les informations pour créer un nouvel employé"}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
+          <DialogHeader>
+            <DialogTitle>
+              {initialData ? "Modifier l'employé" : "Ajouter un employé"}
+            </DialogTitle>
+            <DialogDescription>
+              {initialData
+                ? "Mettez à jour les informations de l'employé"
+                : "Saisissez les informations du nouvel employé"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               {/* Photo */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="photo" className="text-right">
-                  Photo
-                </Label>
-                <div className="col-span-3 flex flex-col items-center gap-2">
-                  <div 
-                    className="relative cursor-pointer w-24 h-24 rounded-full overflow-hidden border hover:border-primary"
-                    onClick={() => setIsImageSelectorOpen(true)}
-                  >
-                    {formData.photoUrl ? (
-                      <img 
-                        src={formData.photoUrl} 
-                        alt={formData.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-secondary">
-                        <User className="h-12 w-12 text-secondary-foreground" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Upload className="h-8 w-8 text-white" />
-                    </div>
-                  </div>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsImageSelectorOpen(true)}
-                  >
-                    Sélectionner une image
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Name */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Nom complet*
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              
-              {/* Email */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
-                  Email{formData.isUser ? '*' : ''}
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="col-span-3"
-                  required={formData.isUser}
-                />
-              </div>
-              
-              {/* Phone */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="phone" className="text-right">
-                  Téléphone
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="col-span-3"
-                />
-              </div>
-              
-              {/* Role */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right">
-                  Rôle
-                </Label>
-                <Select
-                  value={formData.role}
-                  onValueChange={handleRoleChange}
+              <div className="flex flex-col items-center gap-4">
+                <div 
+                  className="relative cursor-pointer w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary transition-colors"
+                  onClick={() => setIsImageSelectorOpen(true)}
                 >
-                  <SelectTrigger id="role" className="col-span-3">
-                    <SelectValue placeholder="Sélectionner un rôle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.value} value={role.value}>
-                        {role.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* isUser Switch */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="isUser" className="text-right">
-                  Est un utilisateur
-                </Label>
-                <div className="flex items-center space-x-2 col-span-3">
-                  <Switch
-                    id="isUser"
-                    checked={formData.isUser}
-                    onCheckedChange={handleIsUserChange}
-                  />
-                  <Label htmlFor="isUser" className="text-sm text-muted-foreground">
-                    {formData.isUser 
-                      ? "Cet employé aura un compte utilisateur dans le système" 
-                      : "Cet employé n'aura pas de compte utilisateur dans le système"}
-                  </Label>
+                  {photoUrl ? (
+                    <img 
+                      src={photoUrl} 
+                      alt="Photo employé" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-secondary">
+                      <User className="h-12 w-12 text-secondary-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Upload className="h-6 w-6 text-white" />
+                  </div>
                 </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsImageSelectorOpen(true)}
+                >
+                  Sélectionner une photo
+                </Button>
               </div>
-              
-              {/* Informations supplémentaires pour l'utilisateur */}
-              {formData.isUser && !isEditing && (
-                <div className="col-span-4 p-4 border rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Information sur le compte utilisateur:
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Un compte utilisateur sera créé automatiquement pour cet employé. 
-                    Vous pourrez configurer ses informations d'authentification plus tard 
-                    dans la section "Utilisateurs".
-                  </p>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button type="submit">
-                {isEditing ? "Mettre à jour" : "Ajouter"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+              <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom complet *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Nom et prénom de l'employé" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email (facultatif)</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="email" placeholder="email@entreprise.com" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Téléphone (facultatif)</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="+33 6 12 34 56 78" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rôle dans l'entreprise *</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un rôle" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {employeeRoles.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Enregistrement..." : (initialData ? "Mettre à jour" : "Ajouter")}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
-      
+
       <ImageSelector 
         open={isImageSelectorOpen}
         onOpenChange={setIsImageSelectorOpen}

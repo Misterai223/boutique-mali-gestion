@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { Employee } from '@/types/employee';
-import { Profile } from '@/types/profile';
+import { employeeService } from '@/services/employeeService';
 import EmployeeCard from './EmployeeCard';
 import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,31 +36,12 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
     fetchEmployees();
   }, []);
 
-  // Fonction pour récupérer les employés depuis Supabase
+  // Fonction pour récupérer les employés
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      // Pour l'instant, nous utilisons les profils comme source d'employés
-      // Mais nous marquons clairement qu'ils sont aussi des utilisateurs
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*');
-        
-      if (error) throw error;
-      
-      // Transformer les données de profil en employés
-      const employeeData: Employee[] = data.map((profile: Profile) => ({
-        id: profile.id,
-        name: profile.full_name || '',
-        email: '', // Ces champs ne sont pas dans les profils
-        phone: '', // Ces champs ne sont pas dans les profils
-        role: profile.role,
-        photoUrl: profile.avatar_url || '',
-        isUser: true,  // Ces employés sont aussi des utilisateurs
-        userId: profile.id // Référence à l'ID utilisateur
-      }));
-      
-      setEmployees(employeeData);
+      const data = await employeeService.getEmployees();
+      setEmployees(data);
     } catch (error: any) {
       toast.error(`Erreur lors du chargement des employés: ${error.message}`);
       console.error('Erreur lors du chargement des employés:', error);
@@ -81,22 +61,15 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
     if (!employeeToDelete) return;
 
     try {
-      if (employeeToDelete.isUser && employeeToDelete.userId) {
-        // Si l'employé est aussi un utilisateur, supprimer le profil
-        const { error } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', employeeToDelete.userId);
-          
-        if (error) throw error;
-      } else {
-        // Dans le futur, nous pourrions avoir une table dédiée pour les employés non-utilisateurs
-        console.log("Suppression d'un employé qui n'est pas un utilisateur", employeeToDelete);
-      }
+      const success = await employeeService.deleteEmployee(employeeToDelete.id);
       
-      // Mettre à jour l'état local
-      setEmployees(employees.filter(emp => emp.id !== employeeToDelete.id));
-      toast.success(`Employé "${employeeToDelete.name}" supprimé avec succès`);
+      if (success) {
+        // Mettre à jour l'état local
+        setEmployees(employees.filter(emp => emp.id !== employeeToDelete.id));
+        toast.success(`Employé "${employeeToDelete.full_name}" supprimé avec succès`);
+      } else {
+        toast.error("Erreur lors de la suppression de l'employé");
+      }
     } catch (error: any) {
       toast.error(`Erreur lors de la suppression: ${error.message}`);
       console.error("Erreur lors de la suppression de l'employé:", error);
@@ -108,11 +81,27 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
 
   // Filtrer les employés en fonction de la recherche et du filtre de rôle
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = employee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesRole = !roleFilter || employee.role === roleFilter;
     
     return matchesSearch && matchesRole;
   });
+
+  // Fonction pour rafraîchir la liste après ajout/modification
+  const refreshEmployees = () => {
+    fetchEmployees();
+  };
+
+  // Exposer la fonction de rafraîchissement
+  useEffect(() => {
+    // Cette fonction sera appelée par le parent quand nécessaire
+    window.refreshEmployeeList = refreshEmployees;
+    
+    return () => {
+      delete window.refreshEmployeeList;
+    };
+  }, []);
 
   return (
     <>
@@ -158,8 +147,7 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action supprimera définitivement l'employé {employeeToDelete?.name}.
-              {employeeToDelete?.isUser && " Cela supprimera également son profil utilisateur."}
+              Cette action supprimera définitivement l'employé {employeeToDelete?.full_name}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

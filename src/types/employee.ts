@@ -1,11 +1,21 @@
 
 export interface Employee {
   id: string;
-  name: string;
-  email?: string;
+  full_name: string;
+  email?: string; // Facultatif
   phone?: string;
-  role: string;
-  photoUrl?: string;
-  isUser: boolean;  // Indique si cet employé est également un utilisateur du système
-  userId?: string;  // Référence optionnelle à un utilisateur (si l'employé est aussi un utilisateur)
+  role: string; // Rôle dans l'entreprise (pas dans l'application)
+  photo_url?: string;
+  created_at: string;
+  updated_at: string;
 }
+
+export type EmployeeRole = 
+  | 'manager' 
+  | 'sales_representative' 
+  | 'cashier' 
+  | 'warehouse_worker' 
+  | 'accountant' 
+  | 'secretary'
+  | 'technician'
+  | 'other';

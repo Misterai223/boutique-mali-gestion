@@ -18,6 +18,14 @@ export const Employees = () => {
     openEditEmployeeDialog
   } = useEmployeeManagement();
 
+  const handleSave = async (employeeData: any) => {
+    const success = await handleAddEditEmployee(employeeData);
+    if (success && window.refreshEmployeeList) {
+      window.refreshEmployeeList();
+    }
+    return success;
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2">
@@ -29,8 +37,8 @@ export const Employees = () => {
       </div>
       
       <div className="bg-muted/40 rounded-lg p-3 sm:p-4 border text-sm">
-        <p><strong>Note :</strong> Les employés sont des personnes qui travaillent dans votre entreprise. Ils peuvent avoir ou non un compte utilisateur dans le système.</p>
-        <p className="mt-2">Un <strong>utilisateur</strong> est une personne qui a un compte dans le système et peut se connecter. Tous les utilisateurs ne sont pas nécessairement des employés de votre entreprise.</p>
+        <p><strong>Gestion des employés :</strong> Cette section permet de gérer les informations des employés de votre entreprise (nom, contact, rôle dans l'entreprise).</p>
+        <p className="mt-2"><strong>Important :</strong> Cette page est distincte de la gestion des utilisateurs qui ont accès à l'application.</p>
       </div>
       
       <EmployeeList 
@@ -43,7 +51,7 @@ export const Employees = () => {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         initialData={currentEmployee}
-        onSave={handleAddEditEmployee}
+        onSave={handleSave}
       />
     </div>
   );
