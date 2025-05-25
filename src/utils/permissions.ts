@@ -1,8 +1,21 @@
 
 import { UserRole } from '@/types/profile';
 
+// Type pour les pages autorisées
+export type AllowedPage = 
+  | 'dashboard'
+  | 'products' 
+  | 'categories'
+  | 'clients'
+  | 'user-management'
+  | 'employees'
+  | 'finances'
+  | 'reports'
+  | 'media'
+  | 'settings';
+
 // Configuration des permissions par rôle
-export const ROLE_PERMISSIONS = {
+export const ROLE_PERMISSIONS: Record<UserRole, AllowedPage[]> = {
   admin: [
     'dashboard',
     'products', 
@@ -30,20 +43,34 @@ export const ROLE_PERMISSIONS = {
     'categories',
     'clients', 
     'media'
+  ],
+  manager: [
+    'dashboard',
+    'products',
+    'categories',
+    'clients',
+    'employees',
+    'finances',
+    'reports',
+    'media',
+    'settings'
+  ],
+  user: [
+    'dashboard'
   ]
-} as const;
+};
 
 // Fonction pour vérifier si un rôle a accès à une page
 export const hasPageAccess = (userRole: UserRole, page: string): boolean => {
   console.log(`Vérification d'accès: rôle=${userRole}, page=${page}`);
   
-  if (!userRole || !ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]) {
+  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
     console.log('Rôle non valide ou permissions non trouvées');
     return false;
   }
   
-  const permissions = ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS];
-  const hasAccess = permissions.includes(page);
+  const permissions = ROLE_PERMISSIONS[userRole];
+  const hasAccess = permissions.includes(page as AllowedPage);
   console.log(`Permissions pour ${userRole}:`, permissions, `Accès à ${page}:`, hasAccess);
   
   return hasAccess;
@@ -51,11 +78,11 @@ export const hasPageAccess = (userRole: UserRole, page: string): boolean => {
 
 // Fonction pour obtenir les pages autorisées pour un rôle
 export const getAllowedPages = (userRole: UserRole): string[] => {
-  if (!userRole || !ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]) {
+  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
     return [];
   }
   
-  return ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS];
+  return ROLE_PERMISSIONS[userRole];
 };
 
 // Fonction pour vérifier si l'utilisateur est administrateur
