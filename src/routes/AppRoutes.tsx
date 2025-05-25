@@ -1,6 +1,7 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+import RoleProtectedRoute from "@/components/access/RoleProtectedRoute";
 import LoginForm from "@/components/auth/LoginForm";
 import Dashboard from "@/pages/Dashboard";
 import { Employees } from "@/pages/Employees";
@@ -41,7 +42,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Dashboard />
+            <RoleProtectedRoute requiredPage="dashboard">
+              <Dashboard />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -49,7 +52,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/employees"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Employees />
+            <RoleProtectedRoute requiredPage="employees">
+              <Employees />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -57,7 +62,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/products"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Products />
+            <RoleProtectedRoute requiredPage="products">
+              <Products />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -65,7 +72,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/categories"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Categories />
+            <RoleProtectedRoute requiredPage="categories">
+              <Categories />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -73,7 +82,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/inventory"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Inventory />
+            <RoleProtectedRoute requiredPage="inventory">
+              <Inventory />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -81,7 +92,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/finances"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Finances />
+            <RoleProtectedRoute requiredPage="finances">
+              <Finances />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -89,7 +102,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/reports"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Reports />
+            <RoleProtectedRoute requiredPage="reports">
+              <Reports />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -97,7 +112,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/clients"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Clients />
+            <RoleProtectedRoute requiredPage="clients">
+              <Clients />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -105,7 +122,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/user-management"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <UserManagement />
+            <RoleProtectedRoute requiredPage="user-management">
+              <UserManagement />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -113,7 +132,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/settings"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <Settings />
+            <RoleProtectedRoute requiredPage="settings">
+              <Settings />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
@@ -121,7 +142,9 @@ const AppRoutes = ({ isAuthenticated, onLogin, onLogout }: AppRoutesProps) => {
         path="/media"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={onLogout}>
-            <MediaLibrary />
+            <RoleProtectedRoute requiredPage="media">
+              <MediaLibrary />
+            </RoleProtectedRoute>
           </ProtectedRoute>
         }
       />
