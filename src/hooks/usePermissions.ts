@@ -4,7 +4,7 @@ import { UserRole } from '@/types/profile';
 import { hasPageAccess, getAllowedPages, isAdmin, isCashier, isSalesperson } from '@/utils/permissions';
 
 export const usePermissions = () => {
-  const [userRole, setUserRole] = useState<UserRole>('user');
+  const [userRole, setUserRole] = useState<UserRole>('salesperson'); // Rôle par défaut valide
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,14 +12,23 @@ export const usePermissions = () => {
     const loadUserRole = () => {
       try {
         const savedRole = localStorage.getItem("userRole") as UserRole;
+        console.log('Rôle récupéré du localStorage:', savedRole);
+        
         if (savedRole && ['admin', 'cashier', 'salesperson'].includes(savedRole)) {
           setUserRole(savedRole);
+          console.log('Rôle utilisateur défini à:', savedRole);
         } else {
-          setUserRole('user'); // Rôle par défaut
+          // Si aucun rôle valide, définir par défaut sur admin pour le développement
+          const defaultRole = 'admin';
+          setUserRole(defaultRole);
+          localStorage.setItem("userRole", defaultRole);
+          console.log('Aucun rôle valide trouvé, défini par défaut à:', defaultRole);
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du rôle utilisateur:', error);
-        setUserRole('user');
+        const defaultRole = 'admin';
+        setUserRole(defaultRole);
+        localStorage.setItem("userRole", defaultRole);
       } finally {
         setLoading(false);
       }
@@ -31,6 +40,7 @@ export const usePermissions = () => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "userRole") {
         const newRole = e.newValue as UserRole;
+        console.log('Changement de rôle détecté:', newRole);
         if (newRole && ['admin', 'cashier', 'salesperson'].includes(newRole)) {
           setUserRole(newRole);
         }
@@ -45,11 +55,15 @@ export const usePermissions = () => {
   }, []);
 
   const checkPageAccess = (page: string): boolean => {
-    return hasPageAccess(userRole, page);
+    const access = hasPageAccess(userRole, page);
+    console.log(`Vérification d'accès pour ${page} avec le rôle ${userRole}:`, access);
+    return access;
   };
 
   const getAllowedPagesForUser = (): string[] => {
-    return getAllowedPages(userRole);
+    const pages = getAllowedPages(userRole);
+    console.log(`Pages autorisées pour le rôle ${userRole}:`, pages);
+    return pages;
   };
 
   return {

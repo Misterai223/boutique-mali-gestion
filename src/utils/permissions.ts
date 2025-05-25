@@ -35,20 +35,27 @@ export const ROLE_PERMISSIONS = {
 
 // Fonction pour vérifier si un rôle a accès à une page
 export const hasPageAccess = (userRole: UserRole, page: string): boolean => {
-  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
+  console.log(`Vérification d'accès: rôle=${userRole}, page=${page}`);
+  
+  if (!userRole || !ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]) {
+    console.log('Rôle non valide ou permissions non trouvées');
     return false;
   }
   
-  return ROLE_PERMISSIONS[userRole].includes(page);
+  const permissions = ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS];
+  const hasAccess = permissions.includes(page);
+  console.log(`Permissions pour ${userRole}:`, permissions, `Accès à ${page}:`, hasAccess);
+  
+  return hasAccess;
 };
 
 // Fonction pour obtenir les pages autorisées pour un rôle
 export const getAllowedPages = (userRole: UserRole): string[] => {
-  if (!userRole || !ROLE_PERMISSIONS[userRole]) {
+  if (!userRole || !ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]) {
     return [];
   }
   
-  return ROLE_PERMISSIONS[userRole];
+  return ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS];
 };
 
 // Fonction pour vérifier si l'utilisateur est administrateur
