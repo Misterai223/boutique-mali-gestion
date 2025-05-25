@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,9 +8,10 @@ import { motion } from "framer-motion";
 interface ProductCardProps {
   product: Product;
   onEdit: (product: Product) => void;
+  onView: (product: Product) => void;
 }
 
-const ProductCard = ({ product, onEdit }: ProductCardProps) => {
+const ProductCard = ({ product, onEdit, onView }: ProductCardProps) => {
   const stockStatus = () => {
     if (product.stockQuantity <= 0) return "out-of-stock";
     if (product.stockQuantity < product.threshold) return "low-stock";
@@ -106,6 +106,7 @@ const ProductCard = ({ product, onEdit }: ProductCardProps) => {
         <Button 
           size="sm" 
           variant="secondary"
+          onClick={() => onView(product)}
           className="w-full text-sm font-medium transition-colors"
         >
           <Eye className="h-3.5 w-3.5 mr-1" />

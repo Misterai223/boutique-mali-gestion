@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/products/ProductCard";
 import ProductForm from "@/components/products/ProductForm";
+import ProductDetailModal from "@/components/products/ProductDetailModal";
 import { Product } from "@/types/product";
-import { Plus, Search, Filter, PackageOpen } from "lucide-react";
+import { Plus, Search, Filter, PackageOpen, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -78,7 +78,9 @@ const Products = () => {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | undefined>(undefined);
+  const [viewProduct, setViewProduct] = useState<Product | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("Tous");
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
@@ -127,9 +129,19 @@ const Products = () => {
     setDialogOpen(true);
   };
 
+  const handleViewClick = (product: Product) => {
+    setViewProduct(product);
+    setDetailModalOpen(true);
+  };
+
   const handleCloseDialog = () => {
     setCurrentProduct(undefined);
     setDialogOpen(false);
+  };
+
+  const handleCloseDetailModal = () => {
+    setViewProduct(null);
+    setDetailModalOpen(false);
   };
 
   const containerVariants = {
@@ -159,15 +171,48 @@ const Products = () => {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0"
         variants={itemVariants}
       >
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <PackageOpen className="h-8 w-8 text-primary" />
-          Produits
-        </h1>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <motion.div
+              animate={{ 
+                boxShadow: [
+                  "0 0 20px rgba(var(--primary-rgb), 0.2)",
+                  "0 0 40px rgba(var(--primary-rgb), 0.4)", 
+                  "0 0 20px rgba(var(--primary-rgb), 0.2)"
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20"
+            >
+              <PackageOpen className="h-8 w-8 text-primary" />
+            </motion.div>
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-1 -right-1"
+            >
+              <Sparkles className="h-4 w-4 text-accent" />
+            </motion.div>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+              Produits
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Gérez votre inventaire de produits
+            </p>
+          </div>
+        </div>
         <Button 
           onClick={() => setDialogOpen(true)} 
-          className="bg-gradient-to-r from-primary to-primary/90 shadow-md hover:shadow-xl transition-all duration-300"
+          className="bg-gradient-to-r from-primary via-primary to-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 group"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <motion.div
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+          </motion.div>
           Ajouter un produit
         </Button>
       </motion.div>
@@ -237,6 +282,7 @@ const Products = () => {
               <ProductCard
                 product={product}
                 onEdit={handleEditClick}
+                onView={handleViewClick}
               />
             </motion.div>
           ))}
@@ -266,6 +312,13 @@ const Products = () => {
         onOpenChange={handleCloseDialog}
         initialData={currentProduct}
         onSave={handleAddEditProduct}
+      />
+
+      <ProductDetailModal
+        product={viewProduct}
+        open={detailModalOpen}
+        onOpenChange={handleCloseDetailModal}
+        onEdit={handleEditClick}
       />
     </motion.div>
   );
