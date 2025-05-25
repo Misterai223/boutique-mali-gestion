@@ -21,9 +21,10 @@ import {
 interface EmployeeListProps {
   onAddEmployee: () => void;
   onEditEmployee: (employee: Employee) => void;
+  refreshTrigger?: number; // Add trigger prop for refreshing
 }
 
-const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
+const EmployeeList = ({ onAddEmployee, onEditEmployee, refreshTrigger }: EmployeeListProps) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string | undefined>(undefined);
@@ -34,7 +35,7 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
   // Effectue le chargement initial des employés
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [refreshTrigger]); // Refresh when trigger changes
 
   // Fonction pour récupérer les employés
   const fetchEmployees = async () => {
@@ -87,21 +88,6 @@ const EmployeeList = ({ onAddEmployee, onEditEmployee }: EmployeeListProps) => {
     
     return matchesSearch && matchesRole;
   });
-
-  // Fonction pour rafraîchir la liste après ajout/modification
-  const refreshEmployees = () => {
-    fetchEmployees();
-  };
-
-  // Exposer la fonction de rafraîchissement
-  useEffect(() => {
-    // Cette fonction sera appelée par le parent quand nécessaire
-    window.refreshEmployeeList = refreshEmployees;
-    
-    return () => {
-      delete window.refreshEmployeeList;
-    };
-  }, []);
 
   return (
     <>

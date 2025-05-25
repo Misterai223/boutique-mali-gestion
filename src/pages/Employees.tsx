@@ -5,9 +5,11 @@ import EmployeeForm from '@/components/employees/EmployeeForm';
 import EmployeeList from '@/components/employees/EmployeeList';
 import { useEmployeeManagement } from '@/hooks/useEmployeeManagement';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useState } from 'react';
 
 export const Employees = () => {
   const isMobile = useIsMobile();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const {
     currentEmployee,
@@ -20,8 +22,9 @@ export const Employees = () => {
 
   const handleSave = async (employeeData: any) => {
     const success = await handleAddEditEmployee(employeeData);
-    if (success && window.refreshEmployeeList) {
-      window.refreshEmployeeList();
+    if (success) {
+      // Trigger refresh by incrementing the trigger
+      setRefreshTrigger(prev => prev + 1);
     }
     return success;
   };
@@ -44,6 +47,7 @@ export const Employees = () => {
       <EmployeeList 
         onAddEmployee={openAddEmployeeDialog}
         onEditEmployee={openEditEmployeeDialog}
+        refreshTrigger={refreshTrigger}
       />
 
       {/* Formulaire pour ajouter/éditer un employé */}
