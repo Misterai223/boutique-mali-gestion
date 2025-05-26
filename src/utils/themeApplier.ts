@@ -18,19 +18,31 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   // Appliquer les variables CSS pour les couleurs principales
   root.style.setProperty('--primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   root.style.setProperty('--primary-hsl', `${primaryHSL.h}, ${primaryHSL.s}%, ${primaryHSL.l}%`);
+  root.style.setProperty('--primary-foreground', darkMode ? '210 40% 98%' : '0 0% 98%');
   
   root.style.setProperty('--accent', `${accentHSL.h} ${accentHSL.s}% ${accentHSL.l}%`);
   root.style.setProperty('--accent-hsl', `${accentHSL.h}, ${accentHSL.s}%, ${accentHSL.l}%`);
+  root.style.setProperty('--accent-foreground', darkMode ? '210 40% 98%' : '0 0% 9%');
   
   root.style.setProperty('--secondary', `${secondaryHSL.h} ${secondaryHSL.s}% ${secondaryHSL.l}%`);
   root.style.setProperty('--secondary-hsl', `${secondaryHSL.h}, ${secondaryHSL.s}%, ${secondaryHSL.l}%`);
+  root.style.setProperty('--secondary-foreground', darkMode ? '210 40% 98%' : '0 0% 9%');
+  
+  // Appliquer les variables pour les boutons et éléments interactifs
+  root.style.setProperty('--muted', darkMode ? '217.2 32.6% 17.5%' : '210 40% 96%');
+  root.style.setProperty('--muted-foreground', darkMode ? '215 20.2% 65.1%' : '215.4 16.3% 46.9%');
+  
+  root.style.setProperty('--border', darkMode ? '217.2 32.6% 17.5%' : '214.3 31.8% 91.4%');
+  root.style.setProperty('--ring', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+  
+  // Variables pour les couleurs de fond et de texte
+  root.style.setProperty('--background', darkMode ? '222.2 84% 4.9%' : '0 0% 100%');
+  root.style.setProperty('--foreground', darkMode ? '210 40% 98%' : '222.2 84% 4.9%');
   
   // Appliquer les styles directs pour la barre latérale
-  // Ajouter une classe personnalisée pour la barre latérale que nous pourrons cibler avec CSS
   const sidebarElements = document.querySelectorAll('.sidebar-custom');
   sidebarElements.forEach(element => {
     (element as HTMLElement).style.backgroundColor = sidebarColor;
-    // Adapter la couleur du texte pour assurer la lisibilité
     const textColor = isLightColor(sidebarHSL.l) ? '#1a1a1a' : '#ffffff';
     (element as HTMLElement).style.color = textColor;
   });
@@ -46,16 +58,12 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   
   // Créer une variante plus claire/foncée pour l'accent de la barre latérale
   if (darkMode || !isLightSidebar) {
-    // En mode sombre ou avec une barre latérale foncée, utiliser une variante plus claire
     root.style.setProperty('--sidebar-accent', `${sidebarHSL.h} ${Math.max(0, sidebarHSL.s - 10)}% ${Math.min(100, sidebarHSL.l + 15)}%`);
   } else {
-    // En mode clair avec une barre latérale claire, utiliser une variante plus foncée
     root.style.setProperty('--sidebar-accent', `${sidebarHSL.h} ${Math.min(100, sidebarHSL.s + 10)}% ${Math.max(10, sidebarHSL.l - 15)}%`);
   }
   
   root.style.setProperty('--sidebar-accent-foreground', isLightSidebar ? '0 0% 10%' : '210 40% 98%');
-  
-  // Mettre à jour les autres variables de la barre latérale
   root.style.setProperty('--sidebar-primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
   root.style.setProperty('--sidebar-border', darkMode ? '217.2 32.6% 17.5%' : '214.3 31.8% 91.4%');
   root.style.setProperty('--sidebar-ring', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
@@ -64,7 +72,7 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   root.style.setProperty('--radius', `${borderRadius}rem`);
   
   // Appliquer la police de caractères
-  let fontFamilyValue = "'Inter', sans-serif"; // Valeur par défaut
+  let fontFamilyValue = "'Inter', sans-serif";
   
   switch(fontFamily) {
     case "Roboto":
@@ -98,7 +106,6 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
       document.body.classList.add('font-sans');
   }
   
-  // Appliquer directement la police aux éléments globaux
   root.style.fontFamily = fontFamilyValue;
 
   // Appliquer le mode sombre en ajoutant/supprimant la classe 'dark'

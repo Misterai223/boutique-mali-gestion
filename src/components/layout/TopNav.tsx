@@ -24,6 +24,10 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="h-14 sm:h-16 border-b bg-background/80 backdrop-blur-xl flex items-center px-2 sm:px-4 justify-between shadow-lg sticky top-0 z-50 border-border/50"
+      style={{
+        borderBottomColor: 'hsl(var(--primary) / 0.2)',
+        boxShadow: '0 4px 6px -1px hsl(var(--primary) / 0.1), 0 2px 4px -2px hsl(var(--primary) / 0.1)'
+      }}
     >
       <div className="flex items-center gap-2 sm:gap-4">
         <motion.div
