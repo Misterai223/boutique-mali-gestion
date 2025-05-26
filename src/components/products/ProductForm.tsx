@@ -447,7 +447,7 @@ const ProductForm = ({
                     </Button>
                   </motion.div>
                 </DialogFooter>
-              </motion.div>
+              </form>
             </motion.div>
           </DialogContent>
         )}
