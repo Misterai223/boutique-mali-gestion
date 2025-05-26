@@ -39,28 +39,28 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   root.style.setProperty('--background', darkMode ? '222.2 84% 4.9%' : '0 0% 100%');
   root.style.setProperty('--foreground', darkMode ? '210 40% 98%' : '222.2 84% 4.9%');
   
-  // Appliquer les styles directs pour la barre latérale
+  // Appliquer les styles directs pour la barre latérale avec la couleur principale
   const sidebarElements = document.querySelectorAll('.sidebar-custom');
   sidebarElements.forEach(element => {
-    (element as HTMLElement).style.backgroundColor = sidebarColor;
-    const textColor = isLightColor(sidebarHSL.l) ? '#1a1a1a' : '#ffffff';
+    (element as HTMLElement).style.backgroundColor = primaryColor;
+    const textColor = isLightColor(primaryHSL.l) ? '#1a1a1a' : '#ffffff';
     (element as HTMLElement).style.color = textColor;
   });
   
-  // Appliquer les variables pour la barre latérale
-  root.style.setProperty('--sidebar-background-hex', sidebarColor);
-  root.style.setProperty('--sidebar-background', `${sidebarHSL.h} ${sidebarHSL.s}% ${sidebarHSL.l}%`);
-  root.style.setProperty('--sidebar-background-hsl', `${sidebarHSL.h}, ${sidebarHSL.s}%, ${sidebarHSL.l}%`);
+  // Appliquer les variables pour la barre latérale en utilisant la couleur principale
+  root.style.setProperty('--sidebar-background-hex', primaryColor);
+  root.style.setProperty('--sidebar-background', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+  root.style.setProperty('--sidebar-background-hsl', `${primaryHSL.h}, ${primaryHSL.s}%, ${primaryHSL.l}%`);
   
-  // Calculer des couleurs dérivées pour la barre latérale
-  const isLightSidebar = sidebarHSL.l > 50;
+  // Calculer des couleurs dérivées pour la barre latérale avec la couleur principale
+  const isLightSidebar = primaryHSL.l > 50;
   root.style.setProperty('--sidebar-foreground', isLightSidebar ? '0 0% 10%' : '210 40% 98%');
   
   // Créer une variante plus claire/foncée pour l'accent de la barre latérale
   if (darkMode || !isLightSidebar) {
-    root.style.setProperty('--sidebar-accent', `${sidebarHSL.h} ${Math.max(0, sidebarHSL.s - 10)}% ${Math.min(100, sidebarHSL.l + 15)}%`);
+    root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${Math.max(0, primaryHSL.s - 10)}% ${Math.min(100, primaryHSL.l + 15)}%`);
   } else {
-    root.style.setProperty('--sidebar-accent', `${sidebarHSL.h} ${Math.min(100, sidebarHSL.s + 10)}% ${Math.max(10, sidebarHSL.l - 15)}%`);
+    root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${Math.min(100, primaryHSL.s + 10)}% ${Math.max(10, primaryHSL.l - 15)}%`);
   }
   
   root.style.setProperty('--sidebar-accent-foreground', isLightSidebar ? '0 0% 10%' : '210 40% 98%');

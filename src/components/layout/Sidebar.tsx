@@ -14,31 +14,31 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const { shopName, shopLogo } = useSidebarData();
   const isCollapsed = className?.includes("w-20") || className?.includes("w-0") || false;
-  const [sidebarColor, setSidebarColor] = useState("");
+  const [primaryColor, setPrimaryColor] = useState("");
   const isMobile = useIsMobile();
   
   useEffect(() => {
-    // Récupérer la couleur de la barre latérale du localStorage
-    const updateSidebarColor = () => {
-      const savedColor = localStorage.getItem("sidebarColor") || "#1E293B";
-      setSidebarColor(savedColor);
+    // Récupérer la couleur principale du localStorage
+    const updatePrimaryColor = () => {
+      const savedColor = localStorage.getItem("primaryColor") || "#3B82F6";
+      setPrimaryColor(savedColor);
     };
     
-    updateSidebarColor();
+    updatePrimaryColor();
     
     // Écouter les changements de couleur
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "sidebarColor") {
-        setSidebarColor(e.newValue || "#1E293B");
+      if (e.key === "primaryColor") {
+        setPrimaryColor(e.newValue || "#3B82F6");
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
-    document.addEventListener('localStorage.updated', updateSidebarColor);
+    document.addEventListener('localStorage.updated', updatePrimaryColor);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('localStorage.updated', updateSidebarColor);
+      document.removeEventListener('localStorage.updated', updatePrimaryColor);
     };
   }, []);
 
@@ -59,9 +59,9 @@ export function Sidebar({ className }: SidebarProps) {
         className
       )}
       style={{ 
-        backgroundColor: sidebarColor,
+        backgroundColor: primaryColor,
         backgroundImage: `
-          linear-gradient(135deg, ${sidebarColor} 0%, ${sidebarColor}dd 50%, ${sidebarColor} 100%),
+          linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 50%, ${primaryColor} 100%),
           radial-gradient(circle at 30% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
           radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)
         `
