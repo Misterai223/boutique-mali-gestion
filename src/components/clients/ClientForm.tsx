@@ -162,7 +162,7 @@ const ClientForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[700px] h-[90vh] max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="flex-shrink-0 p-6 bg-gradient-to-r from-primary/5 to-transparent border-b">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
@@ -177,211 +177,218 @@ const ClientForm = ({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 px-6 py-4">
-            <div className="space-y-6 pr-4">
-              {/* Informations de base */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Informations du client
-                </h3>
-                
-                {/* Client Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">
-                    Nom complet*
-                  </Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                    className="focus-visible:ring-primary/30 transition-all duration-200"
-                  />
-                </div>
-                
-                {/* Phone Number */}
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber" className="text-sm font-medium">
-                    Numéro de téléphone*
-                  </Label>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    required
-                    className="focus-visible:ring-primary/30 transition-all duration-200"
-                  />
-                </div>
-                
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="focus-visible:ring-primary/30 transition-all duration-200"
-                  />
-                </div>
-                
-                {/* Address - More prominently displayed */}
-                <div className="space-y-2 border border-dashed p-4 rounded-md bg-muted/10">
-                  <Label htmlFor="address" className="text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    Adresse de résidence
-                  </Label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="focus-visible:ring-primary/30 transition-all duration-200 min-h-[100px]"
-                    placeholder="Entrez l'adresse complète du client..."
-                  />
-                </div>
-              </div>
-              
-              <Separator className="my-6" />
-              
-              {/* Purchases - More prominently displayed */}
-              <div className="space-y-4 border border-dashed p-4 rounded-md bg-muted/10">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4 text-primary" />
-                    Produits achetés
-                  </h3>
-                  <Button 
-                    type="button" 
-                    onClick={handleAddPurchase} 
-                    size="sm"
-                    variant="outline"
-                    className="transition-all duration-300 hover:shadow-md"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Ajouter un produit
-                  </Button>
-                </div>
-                
-                {formData.purchases.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md">
-                    Aucun produit ajouté
-                  </div>
-                ) : (
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <form onSubmit={handleSubmit} className="flex flex-col h-full">
+              <div className="flex-1 p-6">
+                <div className="space-y-6">
+                  {/* Informations de base */}
                   <div className="space-y-4">
-                    {formData.purchases.map((purchase, index) => (
-                      <div 
-                        key={index} 
-                        className="flex items-start gap-4 p-4 border rounded-md bg-muted/20 hover:bg-muted/30 transition-colors duration-200"
+                    <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Informations du client
+                    </h3>
+                    
+                    {/* Client Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName" className="text-sm font-medium">
+                        Nom complet*
+                      </Label>
+                      <Input
+                        id="fullName"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required
+                        className="focus-visible:ring-primary/30 transition-all duration-200"
+                      />
+                    </div>
+                    
+                    {/* Phone Number */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                        Numéro de téléphone*
+                      </Label>
+                      <Input
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleChange}
+                        required
+                        className="focus-visible:ring-primary/30 transition-all duration-200"
+                      />
+                    </div>
+                    
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="focus-visible:ring-primary/30 transition-all duration-200"
+                      />
+                    </div>
+                    
+                    {/* Address - More prominently displayed */}
+                    <div className="space-y-2 border border-dashed p-4 rounded-md bg-muted/10">
+                      <Label htmlFor="address" className="text-sm font-medium flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        Adresse de résidence
+                      </Label>
+                      <Textarea
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="focus-visible:ring-primary/30 transition-all duration-200 min-h-[100px]"
+                        placeholder="Entrez l'adresse complète du client..."
+                      />
+                    </div>
+                  </div>
+                  
+                  <Separator className="my-6" />
+                  
+                  {/* Purchases - More prominently displayed */}
+                  <div className="space-y-4 border border-dashed p-4 rounded-md bg-muted/10">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-sm font-medium flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4 text-primary" />
+                        Produits achetés
+                      </h3>
+                      <Button 
+                        type="button" 
+                        onClick={handleAddPurchase} 
+                        size="sm"
+                        variant="outline"
+                        className="transition-all duration-300 hover:shadow-md"
                       >
-                        {/* Product Selection */}
-                        <div className="flex-grow">
-                          <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
-                            Produit
-                          </Label>
-                          <Select
-                            value={purchase.product.id}
-                            onValueChange={(value) => handleProductChange(index, value)}
+                        <Plus className="h-4 w-4 mr-1" />
+                        Ajouter un produit
+                      </Button>
+                    </div>
+                    
+                    {formData.purchases.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md">
+                        Aucun produit ajouté
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {formData.purchases.map((purchase, index) => (
+                          <div 
+                            key={index} 
+                            className="flex items-start gap-4 p-4 border rounded-md bg-muted/20 hover:bg-muted/30 transition-colors duration-200"
                           >
-                            <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
-                              <SelectValue placeholder="Sélectionner un produit" />
-                            </SelectTrigger>
-                            <SelectContent 
-                              position="popper"
-                              className="bg-popover shadow-xl border border-border/50 backdrop-blur-sm" 
-                              align="start"
-                              sideOffset={8}
-                            >
-                              {products.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name} - {product.price.toLocaleString()} F CFA
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        {/* Quantity */}
-                        <div className="w-32">
-                          <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
-                            Quantité
-                          </Label>
-                          <div className="flex items-center">
+                            {/* Product Selection */}
+                            <div className="flex-grow">
+                              <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
+                                Produit
+                              </Label>
+                              <Select
+                                value={purchase.product.id}
+                                onValueChange={(value) => handleProductChange(index, value)}
+                              >
+                                <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
+                                  <SelectValue placeholder="Sélectionner un produit" />
+                                </SelectTrigger>
+                                <SelectContent 
+                                  position="popper"
+                                  className="bg-popover shadow-xl border border-border/50 backdrop-blur-sm" 
+                                  align="start"
+                                  sideOffset={8}
+                                >
+                                  {products.map((product) => (
+                                    <SelectItem key={product.id} value={product.id}>
+                                      {product.name} - {product.price.toLocaleString()} F CFA
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            {/* Quantity */}
+                            <div className="w-32">
+                              <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
+                                Quantité
+                              </Label>
+                              <div className="flex items-center">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
+                                  className="h-8 w-8 transition-all duration-200"
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <Input
+                                  id={`quantity-${index}`}
+                                  type="number"
+                                  value={purchase.quantity}
+                                  onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
+                                  min="1"
+                                  className="h-8 text-center mx-1 px-1 w-12"
+                                />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
+                                  className="h-8 w-8 transition-all duration-200"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Remove Button */}
                             <Button
                               type="button"
+                              variant="ghost"
                               size="icon"
-                              variant="outline"
-                              onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
-                              className="h-8 w-8 transition-all duration-200"
+                              onClick={() => handleRemovePurchase(index)}
+                              className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive transition-colors duration-200"
                             >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <Input
-                              id={`quantity-${index}`}
-                              type="number"
-                              value={purchase.quantity}
-                              onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
-                              min="1"
-                              className="h-8 text-center mx-1 px-1 w-12"
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="outline"
-                              onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
-                              className="h-8 w-8 transition-all duration-200"
-                            >
-                              <Plus className="h-3 w-3" />
+                              <X className="h-4 w-4" />
                             </Button>
                           </div>
-                        </div>
-                        
-                        {/* Remove Button */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemovePurchase(index)}
-                          className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive transition-colors duration-200"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
+                  
+                  {/* Add some bottom padding to ensure last elements are accessible */}
+                  <div className="pb-8" />
+                </div>
               </div>
-            </div>
+              
+              <DialogFooter className="flex-shrink-0 p-6 border-t bg-muted/20 sticky bottom-0">
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => onOpenChange(false)}
+                    className="w-full"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Annuler
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-sm hover:shadow-md transition-all duration-300"
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    {isEditing ? "Mettre à jour" : "Ajouter"}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </form>
           </ScrollArea>
-          
-          <DialogFooter className="flex-shrink-0 p-6 border-t bg-muted/20">
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                className="w-full"
-              >
-                <X className="h-4 w-4 mr-1" />
-                Annuler
-              </Button>
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-sm hover:shadow-md transition-all duration-300"
-              >
-                <Save className="h-4 w-4 mr-1" />
-                {isEditing ? "Mettre à jour" : "Ajouter"}
-              </Button>
-            </div>
-          </DialogFooter>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
