@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Users, Save, X, Plus, Minus, MapPin, ShoppingCart, ArrowDown, ArrowUp } from "lucide-react";
+import { Users, Save, X, Plus, Minus, MapPin, ShoppingCart } from "lucide-react";
 
 interface ClientFormProps {
   open: boolean;
@@ -159,84 +160,10 @@ const ClientForm = ({
     onSave(updatedData);
   };
 
-  // Scroll functions
-  const scrollToTop = () => {
-    const scrollElement = document.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollElement) {
-      scrollElement.scrollTo({ top: 0, behavior: 'auto' });
-    }
-  };
-
-  const scrollToBottom = () => {
-    const scrollElement = document.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollElement) {
-      scrollElement.scrollTo({ top: scrollElement.scrollHeight, behavior: 'auto' });
-    }
-  };
-
-  // Animation variants
-  const dialogVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1, 
-      transition: { 
-        type: "spring",
-        damping: 25,
-        stiffness: 300
-      } 
-    },
-    exit: { 
-      opacity: 0, 
-      y: 20, 
-      scale: 0.95, 
-      transition: { duration: 0.2 } 
-    }
-  };
-  
-  const contentVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { y: 10, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1, 
-      transition: { type: "spring", stiffness: 300 } 
-    }
-  };
-  
-  const purchaseItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      transition: { 
-        type: "spring", 
-        stiffness: 300,
-        damping: 25 
-      } 
-    },
-    exit: { 
-      opacity: 0, 
-      x: -20, 
-      transition: { duration: 0.2 } 
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
-        <DialogHeader className="p-6 bg-gradient-to-r from-primary/5 to-transparent border-b sticky top-0 z-10 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0 p-6 bg-gradient-to-r from-primary/5 to-transparent border-b">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
             <DialogTitle className="text-xl">
@@ -250,31 +177,9 @@ const ClientForm = ({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col relative">
-          {/* Scroll Buttons */}
-          <div className="absolute right-4 top-4 z-20 flex flex-col gap-2">
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={scrollToTop}
-              className="h-8 w-8 bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-background"
-            >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={scrollToBottom}
-              className="h-8 w-8 bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-background"
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <ScrollArea className="overflow-y-auto flex-1" style={{ height: 'calc(70vh - 120px)' }}>
-            <div className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 px-6 py-4">
+            <div className="space-y-6 pr-4">
               {/* Informations de base */}
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -456,7 +361,7 @@ const ClientForm = ({
             </div>
           </ScrollArea>
           
-          <DialogFooter className="p-6 border-t bg-muted/20 sticky bottom-0 backdrop-blur-sm mt-auto z-10">
+          <DialogFooter className="flex-shrink-0 p-6 border-t bg-muted/20">
             <div className="flex gap-2 w-full sm:w-auto">
               <Button 
                 type="button" 
