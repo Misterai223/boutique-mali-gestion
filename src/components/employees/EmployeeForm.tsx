@@ -15,9 +15,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Employee } from "@/types/employee";
 import ImageSelector from "../shared/ImageSelector";
-import { User, Upload } from "lucide-react";
+import { User, Upload, Save, X, Phone, Mail, Briefcase } from "lucide-react";
 
 const employeeSchema = z.object({
   full_name: z.string().min(2, "Le nom complet est requis"),
@@ -103,140 +105,216 @@ const EmployeeForm = ({ open, onOpenChange, initialData, onSave }: EmployeeFormP
   };
 
   const photoUrl = form.watch("photo_url");
+  const isEditing = !!initialData;
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>
-              {initialData ? "Modifier l'employé" : "Ajouter un employé"}
-            </DialogTitle>
+        <DialogContent className="sm:max-w-[600px] h-[85vh] max-h-[85vh] flex flex-col p-0">
+          <DialogHeader className="flex-shrink-0 p-6 bg-gradient-to-r from-primary/5 to-transparent border-b">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              <DialogTitle className="text-xl">
+                {isEditing ? "Modifier l'employé" : "Ajouter un employé"}
+              </DialogTitle>
+            </div>
             <DialogDescription>
-              {initialData
-                ? "Mettez à jour les informations de l'employé"
-                : "Saisissez les informations du nouvel employé"}
+              {isEditing
+                ? "Mettez à jour les informations de l'employé ci-dessous"
+                : "Remplissez les informations pour créer un nouvel employé"}
             </DialogDescription>
           </DialogHeader>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              {/* Photo */}
-              <div className="flex flex-col items-center gap-4">
-                <div 
-                  className="relative cursor-pointer w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary transition-colors"
-                  onClick={() => setIsImageSelectorOpen(true)}
-                >
-                  {photoUrl ? (
-                    <img 
-                      src={photoUrl} 
-                      alt="Photo employé" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-secondary">
-                      <User className="h-12 w-12 text-secondary-foreground" />
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+                  <div className="flex-1 p-6">
+                    <div className="space-y-6">
+                      {/* Photo Section */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <Upload className="h-4 w-4" />
+                          Photo de l'employé
+                        </h3>
+                        
+                        <div className="flex flex-col items-center gap-4 p-4 border border-dashed rounded-md bg-muted/10">
+                          <div 
+                            className="relative cursor-pointer w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 hover:border-primary transition-colors duration-200"
+                            onClick={() => setIsImageSelectorOpen(true)}
+                          >
+                            {photoUrl ? (
+                              <img 
+                                src={photoUrl} 
+                                alt="Photo employé" 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-secondary">
+                                <User className="h-12 w-12 text-secondary-foreground" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                              <Upload className="h-6 w-6 text-white" />
+                            </div>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsImageSelectorOpen(true)}
+                            className="transition-all duration-300 hover:shadow-md"
+                          >
+                            <Upload className="h-4 w-4 mr-1" />
+                            Sélectionner une photo
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Separator className="my-6" />
+
+                      {/* Informations personnelles */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          Informations personnelles
+                        </h3>
+
+                        <FormField
+                          control={form.control}
+                          name="full_name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Nom complet *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  placeholder="Nom et prénom de l'employé"
+                                  className="focus-visible:ring-primary/30 transition-all duration-200"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  Email (facultatif)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    type="email" 
+                                    placeholder="email@entreprise.com"
+                                    className="focus-visible:ring-primary/30 transition-all duration-200"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  Téléphone (facultatif)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="+33 6 12 34 56 78"
+                                    className="focus-visible:ring-primary/30 transition-all duration-200"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <Separator className="my-6" />
+
+                      {/* Rôle professionnel */}
+                      <div className="space-y-4 border border-dashed p-4 rounded-md bg-muted/10">
+                        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <Briefcase className="h-4 w-4 text-primary" />
+                          Rôle dans l'entreprise
+                        </h3>
+
+                        <FormField
+                          control={form.control}
+                          name="role"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Fonction *</FormLabel>
+                              <Select value={field.value} onValueChange={field.onChange}>
+                                <FormControl>
+                                  <SelectTrigger className="focus-visible:ring-primary/30 transition-all duration-200">
+                                    <SelectValue placeholder="Sélectionner un rôle" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent 
+                                  position="popper"
+                                  className="bg-popover shadow-xl border border-border/50 backdrop-blur-sm z-50" 
+                                  align="start"
+                                  sideOffset={8}
+                                >
+                                  {employeeRoles.map((role) => (
+                                    <SelectItem key={role.value} value={role.value}>
+                                      {role.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Add some bottom padding to ensure last elements are accessible */}
+                      <div className="pb-8" />
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Upload className="h-6 w-6 text-white" />
                   </div>
-                </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setIsImageSelectorOpen(true)}
-                >
-                  Sélectionner une photo
-                </Button>
-              </div>
 
-              <FormField
-                control={form.control}
-                name="full_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom complet *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Nom et prénom de l'employé" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email (facultatif)</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="email" placeholder="email@entreprise.com" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Téléphone (facultatif)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="+33 6 12 34 56 78" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rôle dans l'entreprise *</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un rôle" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {employeeRoles.map((role) => (
-                          <SelectItem key={role.value} value={role.value}>
-                            {role.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
-                >
-                  Annuler
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Enregistrement..." : (initialData ? "Mettre à jour" : "Ajouter")}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                  <DialogFooter className="flex-shrink-0 p-6 border-t bg-muted/20 sticky bottom-0">
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}
+                        disabled={isSubmitting}
+                        className="w-full"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Annuler
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        className="w-full bg-gradient-to-r from-primary to-primary/90 shadow-sm hover:shadow-md transition-all duration-300"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        {isSubmitting ? "Enregistrement..." : (isEditing ? "Mettre à jour" : "Ajouter")}
+                      </Button>
+                    </div>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
 
