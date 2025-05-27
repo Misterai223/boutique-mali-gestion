@@ -54,21 +54,20 @@ export function Sidebar({ className }: SidebarProps) {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className={cn(
         "flex h-full border-r transition-all duration-300 sidebar-custom overflow-y-auto overflow-x-hidden relative",
-        "before:absolute before:inset-0 before:bg-gradient-to-b before:from-background/80 before:to-background/95 before:backdrop-blur-xl before:z-0",
-        "after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-primary/5 after:to-transparent after:z-0",
         className
       )}
       style={{ 
         backgroundColor: primaryColor,
         backgroundImage: `
-          linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 50%, ${primaryColor} 100%),
-          radial-gradient(circle at 30% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)
-        `
+          linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}ee 50%, ${primaryColor} 100%),
+          radial-gradient(circle at 30% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%)
+        `,
+        color: '#ffffff'
       }}
     >
-      {/* Animated background pattern */}
-      <div className="absolute inset-0 opacity-5 z-0">
+      {/* Pattern de fond subtil sans masquer la couleur */}
+      <div className="absolute inset-0 opacity-10 z-0">
         <motion.div
           animate={{
             backgroundPosition: ["0% 0%", "100% 100%"]
@@ -108,12 +107,12 @@ export function Sidebar({ className }: SidebarProps) {
           <NavMenu isCollapsed={isCollapsed} />
         </motion.div>
 
-        {/* Decorative gradient at bottom */}
+        {/* Dégradé décoratif en bas */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/5 to-transparent pointer-events-none"
         />
       </div>
     </motion.aside>
