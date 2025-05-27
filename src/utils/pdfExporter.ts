@@ -28,12 +28,14 @@ const createPDF = (
   const doc = new jsPDF();
   
   // Configuration des couleurs
-  const primaryColor = [41, 128, 185]; // Bleu
-  const lightGray = [245, 245, 245];
-  const darkGray = [64, 64, 64];
+  const primaryColor: [number, number, number] = [41, 128, 185]; // Bleu
+  const lightGray: [number, number, number] = [245, 245, 245];
+  const darkGray: [number, number, number] = [64, 64, 64];
+  const greenColor: [number, number, number] = [46, 204, 113];
+  const redColor: [number, number, number] = [231, 76, 60];
   
   // En-tête avec logo et informations entreprise
-  doc.setFillColor(...primaryColor);
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.rect(0, 0, 210, 35, 'F');
   
   // Titre principal en blanc
@@ -49,14 +51,14 @@ const createPDF = (
   doc.text(`Généré le ${currentDate}`, 20, 28);
   
   // Informations de l'entreprise
-  doc.setTextColor(...darkGray);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
   doc.setFontSize(10);
   doc.text("Mon Commerce", 150, 20);
   doc.text("Gestion des Finances", 150, 25);
   doc.text("contact@moncommerce.com", 150, 30);
   
   // Ligne de séparation
-  doc.setDrawColor(...primaryColor);
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setLineWidth(1);
   doc.line(20, 40, 190, 40);
   
@@ -78,7 +80,7 @@ const createPDF = (
   const boxHeight = 20;
   
   // Boîte revenus
-  doc.setFillColor(46, 204, 113); // Vert
+  doc.setFillColor(greenColor[0], greenColor[1], greenColor[2]); // Vert
   doc.rect(20, startY, boxWidth, boxHeight, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
@@ -89,7 +91,7 @@ const createPDF = (
   doc.text("CFA", 22, startY + 17);
   
   // Boîte dépenses
-  doc.setFillColor(231, 76, 60); // Rouge
+  doc.setFillColor(redColor[0], redColor[1], redColor[2]); // Rouge
   doc.rect(70, startY, boxWidth, boxHeight, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
@@ -100,8 +102,8 @@ const createPDF = (
   doc.text("CFA", 72, startY + 17);
   
   // Boîte solde
-  const balanceColor = balance >= 0 ? [46, 204, 113] : [231, 76, 60];
-  doc.setFillColor(...balanceColor);
+  const balanceColor: [number, number, number] = balance >= 0 ? greenColor : redColor;
+  doc.setFillColor(balanceColor[0], balanceColor[1], balanceColor[2]);
   doc.rect(120, startY, boxWidth, boxHeight, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
@@ -157,13 +159,13 @@ const createPDF = (
   const finalY = (doc as any).lastAutoTable.finalY + 15;
   
   // Encadré de résumé
-  doc.setFillColor(...lightGray);
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
   doc.rect(20, finalY, 170, 35, 'F');
-  doc.setDrawColor(...primaryColor);
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setLineWidth(0.5);
   doc.rect(20, finalY, 170, 35, 'S');
   
-  doc.setTextColor(...darkGray);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("RÉSUMÉ FINANCIER", 25, finalY + 8);
@@ -176,7 +178,8 @@ const createPDF = (
   
   // Solde final avec couleur
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...(balance >= 0 ? [46, 204, 113] : [231, 76, 60]));
+  const finalBalanceColor = balance >= 0 ? greenColor : redColor;
+  doc.setTextColor(finalBalanceColor[0], finalBalanceColor[1], finalBalanceColor[2]);
   doc.text(`Solde final: ${balance.toLocaleString()} F CFA`, 120, finalY + 22);
   
   // Pied de page
