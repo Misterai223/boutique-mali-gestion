@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, Calendar, Download, Filter, Printer } from "lucide-react";
+import { ArrowDown, ArrowUp, Calendar, Download, Filter, Printer, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import AddTransactionForm from "./AddTransactionForm";
-import { exportTransactionsToPDF, printTransactionsPDF } from "@/utils/pdfExporter";
+import { exportTransactionsToPDF, printTransactionsPDF, previewPDF } from "@/utils/pdfExporter";
 
 export type Transaction = {
   id: number;
@@ -104,12 +103,16 @@ const TransactionList = ({ onAddTransactionClick, onExportPDFClick }: Transactio
     setTransactions([newTransaction, ...transactions]);
   };
 
+  const handlePreviewPDF = () => {
+    previewPDF(filteredTransactions, "Rapport des Transactions");
+  };
+
   const handleExportPDF = () => {
-    exportTransactionsToPDF(filteredTransactions);
+    exportTransactionsToPDF(filteredTransactions, "Rapport des Transactions");
   };
 
   const handlePrintPDF = () => {
-    printTransactionsPDF(filteredTransactions);
+    printTransactionsPDF(filteredTransactions, "Rapport des Transactions");
   };
 
   const handleAddTransactionClick = () => {
@@ -240,18 +243,22 @@ const TransactionList = ({ onAddTransactionClick, onExportPDFClick }: Transactio
             )}
           </div>
 
-          <div className="flex justify-between mt-6 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-between mt-6 pt-4 border-t gap-3">
             <Button variant="outline" onClick={handleAddTransactionClick}>
               Ajouter une transaction
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handlePrintPDF}>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={handlePreviewPDF} className="flex-1 sm:flex-none">
+                <Eye className="h-4 w-4 mr-2" />
+                Aperçu PDF
+              </Button>
+              <Button variant="outline" onClick={handlePrintPDF} className="flex-1 sm:flex-none">
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimer
               </Button>
-              <Button variant="outline" onClick={handleExportPDFClick}>
+              <Button variant="outline" onClick={handleExportPDFClick} className="flex-1 sm:flex-none">
                 <Download className="h-4 w-4 mr-2" />
-                Exporter PDF
+                Télécharger PDF
               </Button>
             </div>
           </div>

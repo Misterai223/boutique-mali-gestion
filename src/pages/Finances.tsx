@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TransactionList from "@/components/finances/TransactionList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
-import { PlusCircle, Download, FileText } from "lucide-react";
+import { PlusCircle, Download, FileText, Eye } from "lucide-react";
 import AddTransactionForm from "@/components/finances/AddTransactionForm";
-import { exportTransactionsToPDF } from "@/utils/pdfExporter";
+import { exportTransactionsToPDF, previewPDF } from "@/utils/pdfExporter";
 
 const financialData = [
   {
@@ -74,9 +73,22 @@ const Finances = () => {
     setIsAddTransactionOpen(false);
   };
 
+  const handlePreviewFinancialData = () => {
+    const transformedData = financialData.map((item, index) => ({
+      id: index + 1,
+      description: `Récapitulatif financier - ${item.month}`,
+      amount: item.revenus,
+      type: "income" as const,
+      date: new Date().toISOString().split('T')[0],
+      category: "Récapitulatif",
+    }));
+    
+    previewPDF(transformedData, "Récapitulatif Financier");
+  };
+
   const handleExportFinancialData = () => {
     const transformedData = financialData.map((item, index) => ({
-      id: index + 1, // Convert to number by using the array index + 1
+      id: index + 1,
       description: `Récapitulatif financier - ${item.month}`,
       amount: item.revenus,
       type: "income" as const,
@@ -97,6 +109,10 @@ const Finances = () => {
       >
         <h1 className="text-3xl font-bold tracking-tight">Finances</h1>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handlePreviewFinancialData}>
+            <Eye className="h-4 w-4 mr-2" />
+            Aperçu PDF
+          </Button>
           <Button variant="outline" onClick={handleExportFinancialData}>
             <Download className="h-4 w-4 mr-2" />
             Exporter PDF

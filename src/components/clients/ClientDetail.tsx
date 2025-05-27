@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { exportTransactionsToPDF, printTransactionsPDF, ExportableTransaction } from "@/utils/pdfExporter";
+import { exportTransactionsToPDF, printTransactionsPDF, previewPDF, ExportableTransaction } from "@/utils/pdfExporter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Download, Printer, Edit, Users, Phone, Mail, MapPin, ShoppingBag, Calendar } from "lucide-react";
+import { FileText, Download, Printer, Edit, Users, Phone, Mail, MapPin, ShoppingBag, Calendar, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -40,9 +40,8 @@ const ClientDetail = ({
     return total + (purchase.product.price * purchase.quantity);
   }, 0);
 
-  const handleGenerateInvoice = () => {
-    console.log("Generating invoice for client:", client.fullName);
-    const transactions: ExportableTransaction[] = client.purchases.map((purchase, index) => ({
+  const getTransactionsFromClient = (): ExportableTransaction[] => {
+    return client.purchases.map((purchase, index) => ({
       id: index + 1,
       description: purchase.product.name,
       amount: purchase.product.price * purchase.quantity,
@@ -50,22 +49,25 @@ const ClientDetail = ({
       date: client.createdAt,
       category: purchase.product.category
     }));
+  };
 
+  const handlePreviewInvoice = () => {
+    console.log("Previewing invoice for client:", client.fullName);
+    const transactions = getTransactionsFromClient();
+    previewPDF(transactions, `Facture - ${client.fullName}`);
+    toast.success("Aperçu de la facture ouvert");
+  };
+
+  const handleGenerateInvoice = () => {
+    console.log("Generating invoice for client:", client.fullName);
+    const transactions = getTransactionsFromClient();
     exportTransactionsToPDF(transactions, `Facture - ${client.fullName}`);
     toast.success("La facture a été générée avec succès");
   };
 
   const handlePrintInvoice = () => {
     console.log("Printing invoice for client:", client.fullName);
-    const transactions: ExportableTransaction[] = client.purchases.map((purchase, index) => ({
-      id: index + 1,
-      description: purchase.product.name,
-      amount: purchase.product.price * purchase.quantity,
-      type: "income",
-      date: client.createdAt,
-      category: purchase.product.category
-    }));
-
+    const transactions = getTransactionsFromClient();
     printTransactionsPDF(transactions, `Facture - ${client.fullName}`);
     toast.success("Impression de la facture en cours");
   };
@@ -258,11 +260,24 @@ const ClientDetail = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1"
+                      >
+                        <Button 
+                          variant="outline" 
+                          onClick={handlePreviewInvoice}
+                          className="w-full h-12 text-base group border-2"
+                        >
+                          <Eye className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+                          Aperçu
+                        </Button>
+                      </motion.div>
+                      
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         <Button 
                           variant="outline" 
@@ -270,14 +285,13 @@ const ClientDetail = ({
                           className="w-full h-12 text-base group border-2"
                         >
                           <Download className="h-5 w-5 mr-2 group-hover:animate-bounce" />
-                          Télécharger la facture (PDF)
+                          Télécharger
                         </Button>
                       </motion.div>
                       
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1"
                       >
                         <Button 
                           variant="outline" 
@@ -285,7 +299,7 @@ const ClientDetail = ({
                           className="w-full h-12 text-base group border-2"
                         >
                           <Printer className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
-                          Imprimer la facture
+                          Imprimer
                         </Button>
                       </motion.div>
                     </div>
