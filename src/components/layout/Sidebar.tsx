@@ -14,31 +14,43 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const { shopName, shopLogo } = useSidebarData();
   const isCollapsed = className?.includes("w-20") || className?.includes("w-0") || false;
-  const [primaryColor, setPrimaryColor] = useState("");
+  const [currentPrimaryColor, setCurrentPrimaryColor] = useState("");
   const isMobile = useIsMobile();
   
   useEffect(() => {
     // Récupérer la couleur principale du localStorage
     const updatePrimaryColor = () => {
       const savedColor = localStorage.getItem("primaryColor") || "#3B82F6";
-      setPrimaryColor(savedColor);
+      setCurrentPrimaryColor(savedColor);
+      console.log("Sidebar: Couleur principale mise à jour:", savedColor);
     };
     
     updatePrimaryColor();
     
-    // Écouter les changements de couleur
+    // Écouter les changements de couleur via localStorage
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "primaryColor") {
-        setPrimaryColor(e.newValue || "#3B82F6");
+        const newColor = e.newValue || "#3B82F6";
+        setCurrentPrimaryColor(newColor);
+        console.log("Sidebar: Nouvelle couleur via storage:", newColor);
       }
+    };
+    
+    // Écouter l'événement personnalisé de mise à jour de la sidebar
+    const handleSidebarUpdate = (e: CustomEvent) => {
+      const newColor = e.detail.color;
+      setCurrentPrimaryColor(newColor);
+      console.log("Sidebar: Nouvelle couleur via événement:", newColor);
     };
     
     window.addEventListener('storage', handleStorageChange);
     document.addEventListener('localStorage.updated', updatePrimaryColor);
+    document.addEventListener('sidebar-color-update', handleSidebarUpdate as EventListener);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       document.removeEventListener('localStorage.updated', updatePrimaryColor);
+      document.removeEventListener('sidebar-color-update', handleSidebarUpdate as EventListener);
     };
   }, []);
 
@@ -57,9 +69,9 @@ export function Sidebar({ className }: SidebarProps) {
         className
       )}
       style={{ 
-        backgroundColor: primaryColor,
+        backgroundColor: currentPrimaryColor,
         backgroundImage: `
-          linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}ee 50%, ${primaryColor} 100%),
+          linear-gradient(135deg, ${currentPrimaryColor} 0%, ${currentPrimaryColor}ee 50%, ${currentPrimaryColor} 100%),
           radial-gradient(circle at 30% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
           radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%)
         `,

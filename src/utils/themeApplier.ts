@@ -1,4 +1,3 @@
-
 import { hexToHSL } from "./colorUtils";
 import type { ThemeSettings } from "../types/theme";
 
@@ -39,34 +38,39 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
   root.style.setProperty('--background', darkMode ? '222.2 84% 4.9%' : '0 0% 100%');
   root.style.setProperty('--foreground', darkMode ? '210 40% 98%' : '222.2 84% 4.9%');
   
+  // Utiliser la couleur principale pour la barre latérale
+  const actualSidebarColor = primaryColor; // Toujours utiliser la couleur principale
+  const actualSidebarHSL = primaryHSL; // Utiliser le HSL de la couleur principale
+  
   // Appliquer les styles directs pour la barre latérale avec la couleur principale
   const sidebarElements = document.querySelectorAll('.sidebar-custom');
   sidebarElements.forEach(element => {
-    (element as HTMLElement).style.backgroundColor = primaryColor;
-    const textColor = isLightColor(primaryHSL.l) ? '#1a1a1a' : '#ffffff';
+    (element as HTMLElement).style.backgroundColor = actualSidebarColor;
+    (element as HTMLElement).style.setProperty('--sidebar-bg-color', actualSidebarColor);
+    const textColor = isLightColor(actualSidebarHSL.l) ? '#1a1a1a' : '#ffffff';
     (element as HTMLElement).style.color = textColor;
   });
   
   // Appliquer les variables pour la barre latérale en utilisant la couleur principale
-  root.style.setProperty('--sidebar-background-hex', primaryColor);
-  root.style.setProperty('--sidebar-background', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
-  root.style.setProperty('--sidebar-background-hsl', `${primaryHSL.h}, ${primaryHSL.s}%, ${primaryHSL.l}%`);
+  root.style.setProperty('--sidebar-background-hex', actualSidebarColor);
+  root.style.setProperty('--sidebar-background', `${actualSidebarHSL.h} ${actualSidebarHSL.s}% ${actualSidebarHSL.l}%`);
+  root.style.setProperty('--sidebar-background-hsl', `${actualSidebarHSL.h}, ${actualSidebarHSL.s}%, ${actualSidebarHSL.l}%`);
   
   // Calculer des couleurs dérivées pour la barre latérale avec la couleur principale
-  const isLightSidebar = primaryHSL.l > 50;
+  const isLightSidebar = actualSidebarHSL.l > 50;
   root.style.setProperty('--sidebar-foreground', isLightSidebar ? '0 0% 10%' : '210 40% 98%');
   
   // Créer une variante plus claire/foncée pour l'accent de la barre latérale
   if (darkMode || !isLightSidebar) {
-    root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${Math.max(0, primaryHSL.s - 10)}% ${Math.min(100, primaryHSL.l + 15)}%`);
+    root.style.setProperty('--sidebar-accent', `${actualSidebarHSL.h} ${Math.max(0, actualSidebarHSL.s - 10)}% ${Math.min(100, actualSidebarHSL.l + 15)}%`);
   } else {
-    root.style.setProperty('--sidebar-accent', `${primaryHSL.h} ${Math.min(100, primaryHSL.s + 10)}% ${Math.max(10, primaryHSL.l - 15)}%`);
+    root.style.setProperty('--sidebar-accent', `${actualSidebarHSL.h} ${Math.min(100, actualSidebarHSL.s + 10)}% ${Math.max(10, actualSidebarHSL.l - 15)}%`);
   }
   
   root.style.setProperty('--sidebar-accent-foreground', isLightSidebar ? '0 0% 10%' : '210 40% 98%');
-  root.style.setProperty('--sidebar-primary', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+  root.style.setProperty('--sidebar-primary', `${actualSidebarHSL.h} ${actualSidebarHSL.s}% ${actualSidebarHSL.l}%`);
   root.style.setProperty('--sidebar-border', darkMode ? '217.2 32.6% 17.5%' : '214.3 31.8% 91.4%');
-  root.style.setProperty('--sidebar-ring', `${primaryHSL.h} ${primaryHSL.s}% ${primaryHSL.l}%`);
+  root.style.setProperty('--sidebar-ring', `${actualSidebarHSL.h} ${actualSidebarHSL.s}% ${actualSidebarHSL.l}%`);
   
   // Appliquer le rayon de bordure
   root.style.setProperty('--radius', `${borderRadius}rem`);
@@ -110,6 +114,12 @@ export const applyTheme = (settings: Pick<ThemeSettings, 'primaryColor' | 'accen
 
   // Appliquer le mode sombre en ajoutant/supprimant la classe 'dark'
   document.documentElement.classList.toggle("dark", darkMode);
+  
+  // Déclencher un événement personnalisé pour notifier la sidebar du changement
+  const sidebarUpdateEvent = new CustomEvent('sidebar-color-update', {
+    detail: { color: actualSidebarColor }
+  });
+  document.dispatchEvent(sidebarUpdateEvent);
 };
 
 // Fonction utilitaire pour déterminer si une couleur est claire ou foncée
