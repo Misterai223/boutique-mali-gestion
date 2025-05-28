@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +34,8 @@ interface AppearanceSettingsProps {
   setFontFamily: (value: string) => void;
   darkMode: boolean;
   toggleDarkMode?: (value: boolean) => void;
+  onSave: () => void;
+  onReset: () => void;
 }
 
 const AppearanceSettings = ({
@@ -52,6 +53,8 @@ const AppearanceSettings = ({
   setFontFamily,
   darkMode,
   toggleDarkMode,
+  onSave,
+  onReset,
 }: AppearanceSettingsProps) => {
   // Pour forcer le rendu après changement de couleurs
   const [previewKey, setPreviewKey] = useState(0);
@@ -338,6 +341,25 @@ const AppearanceSettings = ({
           
           <div className="mt-4 text-sm text-muted-foreground italic">
             Note: Cet aperçu est une simulation. L'apparence réelle peut varier légèrement selon les éléments de l'interface.
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Actions</CardTitle>
+          <CardDescription>
+            Sauvegarder ou réinitialiser vos modifications
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button onClick={onSave} className="flex-1">
+              Sauvegarder les modifications
+            </Button>
+            <Button onClick={onReset} variant="outline" className="flex-1">
+              Réinitialiser
+            </Button>
           </div>
         </CardContent>
       </Card>
