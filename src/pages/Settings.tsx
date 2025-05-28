@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +95,6 @@ const Settings = () => {
             fontFamily={settings.fontFamily}
             setFontFamily={setters.setFontFamily}
             darkMode={settings.darkMode}
-            hasChanges={hasChanges}
             onSave={handleSaveSettings}
             onReset={handleResetSettings}
           />

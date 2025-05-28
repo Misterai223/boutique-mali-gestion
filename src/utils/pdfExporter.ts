@@ -21,7 +21,7 @@ export const previewPDF = (
   try {
     const settings = invoiceSettingsService.getSettings();
     const generator = new AdvancedPdfGenerator(settings);
-    const doc = generator.generateInvoice(transactions, title);
+    const doc = generator.generateInvoice(transactions);
     
     // Ouvrir l'aperçu dans une nouvelle fenêtre
     const pdfBlob = doc.output('blob');
@@ -124,7 +124,7 @@ export const exportTransactionsToPDF = (
   try {
     const settings = invoiceSettingsService.getSettings();
     const generator = new AdvancedPdfGenerator(settings);
-    const doc = generator.generateInvoice(transactions, title);
+    const doc = generator.generateInvoice(transactions);
     const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
     doc.save(fileName);
     console.log("PDF exporté avec succès!");
@@ -142,7 +142,7 @@ export const printTransactionsPDF = (
   try {
     const settings = invoiceSettingsService.getSettings();
     const generator = new AdvancedPdfGenerator(settings);
-    const doc = generator.generateInvoice(transactions, title);
+    const doc = generator.generateInvoice(transactions);
     
     // Use dataurlnewwindow for printing
     const dataUri = doc.output('dataurlstring');

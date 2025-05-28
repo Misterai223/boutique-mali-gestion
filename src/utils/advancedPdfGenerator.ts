@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { InvoiceSettings, InvoiceData } from '@/types/invoice';
@@ -275,8 +276,8 @@ export class AdvancedPdfGenerator {
     let currentY = this.margin;
 
     // Couleur principale pour l'en-tête
-    const primaryRgb = this.hexToRgb(this.settings.primaryColor);
-    this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    const headerPrimaryRgb = this.hexToRgb(this.settings.primaryColor);
+    this.doc.setFillColor(headerPrimaryRgb.r, headerPrimaryRgb.g, headerPrimaryRgb.b);
     this.doc.rect(0, 0, this.pageWidth, 40, 'F');
 
     // Logo de l'entreprise
@@ -342,7 +343,8 @@ export class AdvancedPdfGenerator {
       transaction.category
     ]);
 
-    const primaryRgb = this.hexToRgb(this.settings.primaryColor);
+    // Utiliser une variable différente pour éviter le conflit
+    const tablePrimaryRgb = this.hexToRgb(this.settings.primaryColor);
 
     autoTable(this.doc, {
       head: [tableHeaders],
@@ -350,7 +352,7 @@ export class AdvancedPdfGenerator {
       startY: currentY,
       theme: 'grid',
       headStyles: {
-        fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
+        fillColor: [tablePrimaryRgb.r, tablePrimaryRgb.g, tablePrimaryRgb.b],
         textColor: [255, 255, 255],
         fontSize: this.getFontSize(),
         fontStyle: 'bold'
