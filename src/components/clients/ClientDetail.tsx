@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Client } from "@/types/client";
 import {
@@ -11,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { exportTransactionsToPDF, printTransactionsPDF, previewPDF, ExportableTransaction } from "@/utils/pdfExporter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Download, Printer, Edit, Users, Phone, Mail, MapPin, ShoppingBag, Calendar, Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +18,8 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { AdvancedPdfGenerator } from "@/utils/advancedPdfGenerator";
+import { invoiceSettingsService } from "@/services/invoiceSettingsService";
 
 interface ClientDetailProps {
   open: boolean;
@@ -40,36 +40,64 @@ const ClientDetail = ({
     return total + (purchase.product.price * purchase.quantity);
   }, 0);
 
-  const getTransactionsFromClient = (): ExportableTransaction[] => {
-    return client.purchases.map((purchase, index) => ({
-      id: index + 1,
-      description: purchase.product.name,
-      amount: purchase.product.price * purchase.quantity,
-      type: "income",
-      date: client.createdAt,
-      category: purchase.product.category
-    }));
-  };
-
   const handlePreviewInvoice = () => {
     console.log("Previewing invoice for client:", client.fullName);
-    const transactions = getTransactionsFromClient();
-    previewPDF(transactions, `Facture - ${client.fullName}`);
-    toast.success("Aperçu de la facture ouvert");
+    try {
+      const settings = invoiceSettingsService.getSettings();
+      const generator = new AdvancedPdfGenerator(settings);
+      const doc = generator.generateClientInvoice(client);
+      
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+      
+      toast.success("Aperçu de la facture ouvert");
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast.error("Erreur lors de la génération de l'aperçu");
+    }
   };
 
   const handleGenerateInvoice = () => {
     console.log("Generating invoice for client:", client.fullName);
-    const transactions = getTransactionsFromClient();
-    exportTransactionsToPDF(transactions, `Facture - ${client.fullName}`);
-    toast.success("La facture a été générée avec succès");
+    try {
+      const settings = invoiceSettingsService.getSettings();
+      const generator = new AdvancedPdfGenerator(settings);
+      const doc = generator.generateClientInvoice(client);
+      
+      const fileName = `Facture-${client.fullName.replace(/\s+/g, '_')}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      doc.save(fileName);
+      
+      toast.success("La facture a été générée avec succès");
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      toast.error("Erreur lors de la génération de la facture");
+    }
   };
 
   const handlePrintInvoice = () => {
     console.log("Printing invoice for client:", client.fullName);
-    const transactions = getTransactionsFromClient();
-    printTransactionsPDF(transactions, `Facture - ${client.fullName}`);
-    toast.success("Impression de la facture en cours");
+    try {
+      const settings = invoiceSettingsService.getSettings();
+      const generator = new AdvancedPdfGenerator(settings);
+      const doc = generator.generateClientInvoice(client);
+      
+      const dataUri = doc.output('dataurlstring');
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`<iframe width='100%' height='100%' src='${dataUri}'></iframe>`);
+        newWindow.document.close();
+        newWindow.focus();
+        setTimeout(() => {
+          newWindow.print();
+        }, 250);
+      }
+      
+      toast.success("Impression de la facture en cours");
+    } catch (error) {
+      console.error('Error printing invoice:', error);
+      toast.error("Erreur lors de l'impression");
+    }
   };
 
   const handleEditClient = () => {
@@ -304,7 +332,6 @@ const ClientDetail = ({
                       </motion.div>
                     </div>
                     
-                    {/* Invoice Summary */}
                     <div className="border-2 border-dashed border-primary/20 rounded-xl p-6 bg-gradient-to-br from-primary/5 to-primary/10">
                       <h4 className="text-2xl font-bold mb-4 text-center">Résumé de facturation</h4>
                       <div className="space-y-3">
@@ -337,7 +364,6 @@ const ClientDetail = ({
           </Tabs>
         </ScrollArea>
         
-        {/* Enhanced Footer */}
         <DialogFooter className="p-6 border-t bg-gradient-to-r from-muted/20 to-muted/10 backdrop-blur-sm sticky bottom-0 flex-wrap gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="h-11">
             Fermer
