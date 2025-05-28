@@ -1,40 +1,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
-interface InvoiceSettings {
-  companyName: string;
-  companyAddress: string;
-  companyPhone: string;
-  companyEmail: string;
-  logoUrl?: string;
-  primaryColor: string;
-  accentColor: string;
-  fontSize: number;
-  pageFormat: 'A4' | 'Letter';
-  showLogo: boolean;
-  includeFooter: boolean;
-  footerText: string;
-}
-
-interface InvoiceData {
-  invoiceNumber: string;
-  date: string;
-  dueDate?: string;
-  clientName: string;
-  clientAddress?: string;
-  clientEmail?: string;
-  items: {
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    total: number;
-  }[];
-  subtotal: number;
-  tax?: number;
-  total: number;
-  notes?: string;
-}
+import type { InvoiceSettings, InvoiceData } from '@/types/invoice';
 
 export class AdvancedPdfGenerator {
   private doc: jsPDF;
@@ -46,9 +13,9 @@ export class AdvancedPdfGenerator {
   constructor(settings: InvoiceSettings) {
     this.settings = settings;
     this.doc = new jsPDF({
-      orientation: 'portrait',
+      orientation: settings.orientation || 'portrait',
       unit: 'mm',
-      format: settings.pageFormat.toLowerCase() as 'a4' | 'letter'
+      format: settings.pageSize.toLowerCase() as 'a4' | 'letter'
     });
     
     this.pageWidth = this.doc.internal.pageSize.getWidth();
@@ -64,6 +31,15 @@ export class AdvancedPdfGenerator {
     } : { r: 0, g: 0, b: 0 };
   }
 
+  private getFontSize(): number {
+    const sizeMap = {
+      small: 10,
+      medium: 12,
+      large: 14
+    };
+    return sizeMap[this.settings.fontSize] || 12;
+  }
+
   private addHeader(): number {
     let yPosition = this.margin;
 
@@ -73,9 +49,18 @@ export class AdvancedPdfGenerator {
     this.doc.rect(0, 0, this.pageWidth, 40, 'F');
 
     // Logo de l'entreprise
-    if (this.settings.showLogo && this.settings.logoUrl) {
+    if (this.settings.companyInfo.logo) {
       try {
-        this.doc.addImage(this.settings.logoUrl, 'PNG', this.margin, yPosition, 30, 20);
+        const logoSize = this.settings.logoSize === 'small' ? 20 : this.settings.logoSize === 'large' ? 40 : 30;
+        let logoX = this.margin;
+        
+        if (this.settings.logoPosition === 'center') {
+          logoX = (this.pageWidth - logoSize) / 2;
+        } else if (this.settings.logoPosition === 'right') {
+          logoX = this.pageWidth - this.margin - logoSize;
+        }
+        
+        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', logoX, yPosition, logoSize, logoSize * 0.6);
       } catch (error) {
         console.warn('Impossible de charger le logo:', error);
       }
@@ -83,21 +68,23 @@ export class AdvancedPdfGenerator {
 
     // Nom de l'entreprise
     this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(this.settings.fontSize + 6);
+    this.doc.setFontSize(this.getFontSize() + 6);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text(this.settings.companyName, this.settings.showLogo ? this.margin + 35 : this.margin, yPosition + 15);
+    const companyNameX = this.settings.logoPosition === 'left' && this.settings.companyInfo.logo ? this.margin + 35 : this.margin;
+    this.doc.text(this.settings.companyInfo.name, companyNameX, yPosition + 15);
 
     yPosition += 50;
 
     // Informations de l'entreprise
     this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(this.settings.fontSize - 1);
+    this.doc.setFontSize(this.getFontSize() - 1);
     this.doc.setFont('helvetica', 'normal');
     
     const companyInfo = [
-      this.settings.companyAddress,
-      this.settings.companyPhone,
-      this.settings.companyEmail
+      this.settings.companyInfo.address,
+      this.settings.companyInfo.phone,
+      this.settings.companyInfo.email,
+      this.settings.companyInfo.website
     ].filter(info => info);
 
     companyInfo.forEach((info, index) => {
@@ -107,62 +94,34 @@ export class AdvancedPdfGenerator {
     return yPosition + (companyInfo.length * 6) + 10;
   }
 
-  private addInvoiceInfo(data: InvoiceData, yPosition: number): number {
-    // Titre Facture
+  private addInvoiceInfo(data: any, yPosition: number): number {
+    // Titre
     const accentRgb = this.hexToRgb(this.settings.accentColor);
     this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.setFontSize(this.settings.fontSize + 8);
+    this.doc.setFontSize(this.getFontSize() + 8);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text('FACTURE', this.pageWidth - this.margin - 40, yPosition);
+    const headerText = this.settings.headerText || 'RAPPORT';
+    this.doc.text(headerText, this.pageWidth - this.margin - 60, yPosition);
 
-    // Numéro de facture et dates
+    // Date et informations
     this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(this.settings.fontSize);
+    this.doc.setFontSize(this.getFontSize());
     this.doc.setFont('helvetica', 'normal');
 
-    const invoiceDetails = [
-      `N° ${data.invoiceNumber}`,
-      `Date: ${data.date}`,
-      data.dueDate ? `Échéance: ${data.dueDate}` : ''
-    ].filter(detail => detail);
-
-    invoiceDetails.forEach((detail, index) => {
-      this.doc.text(detail, this.pageWidth - this.margin - 60, yPosition + 15 + (index * 6));
-    });
+    const currentDate = new Date().toLocaleDateString('fr-FR');
+    this.doc.text(`Date: ${currentDate}`, this.pageWidth - this.margin - 60, yPosition + 15);
 
     return yPosition + 35;
   }
 
-  private addClientInfo(data: InvoiceData, yPosition: number): number {
-    // Titre Client
-    this.doc.setFontSize(this.settings.fontSize + 2);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Facturé à:', this.margin, yPosition);
-
-    // Informations client
-    this.doc.setFontSize(this.settings.fontSize);
-    this.doc.setFont('helvetica', 'normal');
-    
-    const clientInfo = [
-      data.clientName,
-      data.clientAddress || '',
-      data.clientEmail || ''
-    ].filter(info => info);
-
-    clientInfo.forEach((info, index) => {
-      this.doc.text(info, this.margin, yPosition + 10 + (index * 6));
-    });
-
-    return yPosition + 10 + (clientInfo.length * 6) + 15;
-  }
-
-  private addItemsTable(data: InvoiceData, yPosition: number): number {
-    const tableHeaders = ['Description', 'Quantité', 'Prix unitaire', 'Total'];
-    const tableData = data.items.map(item => [
-      item.description,
-      item.quantity.toString(),
-      `${item.unitPrice.toFixed(2)} XOF`,
-      `${item.total.toFixed(2)} XOF`
+  private addTransactionsTable(transactions: any[], yPosition: number): number {
+    const tableHeaders = ['Description', 'Type', 'Montant', 'Date', 'Catégorie'];
+    const tableData = transactions.map(transaction => [
+      transaction.description,
+      transaction.type === 'income' ? 'Recette' : 'Dépense',
+      `${transaction.amount.toFixed(2)} ${this.settings.currency}`,
+      new Date(transaction.date).toLocaleDateString('fr-FR'),
+      transaction.category
     ]);
 
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
@@ -175,18 +134,19 @@ export class AdvancedPdfGenerator {
       headStyles: {
         fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
         textColor: [255, 255, 255],
-        fontSize: this.settings.fontSize,
+        fontSize: this.getFontSize(),
         fontStyle: 'bold'
       },
       bodyStyles: {
-        fontSize: this.settings.fontSize - 1,
+        fontSize: this.getFontSize() - 1,
         cellPadding: 4
       },
       columnStyles: {
         0: { cellWidth: 'auto' },
         1: { cellWidth: 25, halign: 'center' },
         2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' }
+        3: { cellWidth: 30, halign: 'center' },
+        4: { cellWidth: 25, halign: 'center' }
       },
       margin: { left: this.margin, right: this.margin },
       tableWidth: 'auto'
@@ -195,54 +155,42 @@ export class AdvancedPdfGenerator {
     return (this.doc as any).lastAutoTable.finalY + 10;
   }
 
-  private addTotals(data: InvoiceData, yPosition: number): number {
+  private addTotals(transactions: any[], yPosition: number): number {
     const totalsX = this.pageWidth - this.margin - 80;
     
-    // Sous-total
-    this.doc.setFontSize(this.settings.fontSize);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.text('Sous-total:', totalsX, yPosition);
-    this.doc.text(`${data.subtotal.toFixed(2)} XOF`, totalsX + 40, yPosition);
+    const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const expenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const total = income - expenses;
 
-    // Taxes si applicables
-    if (data.tax && data.tax > 0) {
-      yPosition += 8;
-      this.doc.text('TVA:', totalsX, yPosition);
-      this.doc.text(`${data.tax.toFixed(2)} XOF`, totalsX + 40, yPosition);
-    }
+    this.doc.setFontSize(this.getFontSize());
+    this.doc.setFont('helvetica', 'normal');
+    
+    // Recettes
+    this.doc.text('Recettes:', totalsX, yPosition);
+    this.doc.text(`${income.toFixed(2)} ${this.settings.currency}`, totalsX + 40, yPosition);
+
+    // Dépenses
+    yPosition += 8;
+    this.doc.text('Dépenses:', totalsX, yPosition);
+    this.doc.text(`${expenses.toFixed(2)} ${this.settings.currency}`, totalsX + 40, yPosition);
 
     // Total
     yPosition += 12;
-    this.doc.setFontSize(this.settings.fontSize + 2);
+    this.doc.setFontSize(this.getFontSize() + 2);
     this.doc.setFont('helvetica', 'bold');
     const accentRgb = this.hexToRgb(this.settings.accentColor);
     this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.text('TOTAL:', totalsX, yPosition);
-    this.doc.text(`${data.total.toFixed(2)} XOF`, totalsX + 40, yPosition);
+    this.doc.text('SOLDE:', totalsX, yPosition);
+    this.doc.text(`${total.toFixed(2)} ${this.settings.currency}`, totalsX + 40, yPosition);
 
     return yPosition + 15;
-  }
-
-  private addNotes(data: InvoiceData, yPosition: number): number {
-    if (!data.notes) return yPosition;
-
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(this.settings.fontSize);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Notes:', this.margin, yPosition);
-
-    this.doc.setFont('helvetica', 'normal');
-    const splitNotes = this.doc.splitTextToSize(data.notes, this.pageWidth - (this.margin * 2));
-    this.doc.text(splitNotes, this.margin, yPosition + 8);
-
-    return yPosition + 8 + (splitNotes.length * 6) + 10;
   }
 
   private addFooter(): void {
     if (!this.settings.includeFooter) return;
 
     const footerY = this.pageHeight - 20;
-    this.doc.setFontSize(this.settings.fontSize - 2);
+    this.doc.setFontSize(this.getFontSize() - 2);
     this.doc.setFont('helvetica', 'italic');
     this.doc.setTextColor(128, 128, 128);
     
@@ -250,13 +198,11 @@ export class AdvancedPdfGenerator {
     this.doc.text(footerText, this.pageWidth / 2, footerY, { align: 'center' });
   }
 
-  public generateInvoice(data: InvoiceData): jsPDF {
+  public generateInvoice(data: any[], title?: string): jsPDF {
     let currentY = this.addHeader();
     currentY = this.addInvoiceInfo(data, currentY);
-    currentY = this.addClientInfo(data, currentY);
-    currentY = this.addItemsTable(data, currentY);
+    currentY = this.addTransactionsTable(data, currentY);
     currentY = this.addTotals(data, currentY);
-    currentY = this.addNotes(data, currentY);
     
     this.addFooter();
 
@@ -267,7 +213,7 @@ export class AdvancedPdfGenerator {
     return this.doc.output('datauristring');
   }
 
-  public downloadPDF(filename: string = 'facture.pdf'): void {
+  public downloadPDF(filename: string = 'rapport.pdf'): void {
     this.doc.save(filename);
   }
 
@@ -276,7 +222,7 @@ export class AdvancedPdfGenerator {
     if (pdfWindow) {
       pdfWindow.document.write(`
         <html>
-          <head><title>Impression Facture</title></head>
+          <head><title>Impression</title></head>
           <body>
             <iframe src="${this.doc.output('datauristring')}" 
                     style="width:100%;height:100%;border:none;" 
@@ -289,30 +235,29 @@ export class AdvancedPdfGenerator {
   }
 }
 
-// Fonction utilitaire pour générer des données de test
-export const generateSampleInvoiceData = (): InvoiceData => ({
-  invoiceNumber: 'FAC-2024-001',
-  date: new Date().toLocaleDateString('fr-FR'),
-  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR'),
-  clientName: 'Client Exemple',
-  clientAddress: '123 Rue de la Paix, Dakar, Sénégal',
-  clientEmail: 'client@exemple.com',
-  items: [
-    {
-      description: 'Produit 1',
-      quantity: 2,
-      unitPrice: 15000,
-      total: 30000
-    },
-    {
-      description: 'Produit 2',
-      quantity: 1,
-      unitPrice: 25000,
-      total: 25000
-    }
-  ],
-  subtotal: 55000,
-  tax: 9900,
-  total: 64900,
-  notes: 'Merci pour votre achat. Paiement dû sous 30 jours.'
+// Fonction utilitaire pour créer des paramètres par défaut
+export const createDefaultSettings = (overrides: Partial<InvoiceSettings> = {}): InvoiceSettings => ({
+  companyInfo: {
+    name: "Mon Commerce",
+    address: "123 Rue de l'Entreprise, Dakar, Sénégal",
+    phone: "+221 33 XXX XX XX",
+    email: "contact@moncommerce.com",
+    website: "www.moncommerce.com",
+    taxNumber: "SN123456789",
+    ...overrides.companyInfo
+  },
+  logoPosition: 'left',
+  logoSize: 'medium',
+  pageSize: 'A4',
+  orientation: 'portrait',
+  primaryColor: '#2980b9',
+  accentColor: '#3498db',
+  fontSize: 'medium',
+  includeHeader: true,
+  includeFooter: true,
+  headerText: "Rapport",
+  footerText: "Merci pour votre confiance",
+  currency: "F CFA",
+  dateFormat: 'DD/MM/YYYY',
+  ...overrides
 });

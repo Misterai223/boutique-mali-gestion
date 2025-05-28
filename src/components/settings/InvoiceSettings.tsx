@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ const InvoiceSettings = () => {
         }
       ];
 
-      const doc = generator.generateInvoice(sampleData, "Aperçu de Facture");
+      const doc = generator.generateInvoice(sampleData);
       const pdfBlob = doc.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       window.open(pdfUrl, '_blank');

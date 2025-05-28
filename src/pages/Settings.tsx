@@ -96,7 +96,6 @@ const Settings = () => {
             fontFamily={settings.fontFamily}
             setFontFamily={setters.setFontFamily}
             darkMode={settings.darkMode}
-            hasChanges={hasChanges}
             onSave={handleSaveSettings}
             onReset={handleResetSettings}
           />
