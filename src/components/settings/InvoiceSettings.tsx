@@ -17,19 +17,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { FileText, Building, Palette, Layout, Eye } from "lucide-react";
 import { invoiceSettingsService } from "@/services/invoiceSettingsService";
-import { InvoiceSettings } from "@/types/invoice";
+import type { InvoiceSettings as InvoiceSettingsType } from "@/types/invoice";
 import { useToast } from "@/hooks/use-toast";
 import LogoUploader from "@/components/settings/logos/LogoUploader";
 import { useLogoManagement } from "@/hooks/useLogoManagement";
 import { AdvancedPdfGenerator } from "@/utils/advancedPdfGenerator";
 
 const InvoiceSettings = () => {
-  const [settings, setSettings] = useState<InvoiceSettings>(invoiceSettingsService.getSettings());
+  const [settings, setSettings] = useState<InvoiceSettingsType>(invoiceSettingsService.getSettings());
   const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
   const { handleFileChange, isUploading } = useLogoManagement();
 
-  const handleSettingChange = (key: keyof InvoiceSettings, value: any) => {
+  const handleSettingChange = (key: keyof InvoiceSettingsType, value: any) => {
     setSettings(prev => ({
       ...prev,
       [key]: value
@@ -37,7 +37,7 @@ const InvoiceSettings = () => {
     setHasChanges(true);
   };
 
-  const handleCompanyInfoChange = (key: keyof InvoiceSettings['companyInfo'], value: string) => {
+  const handleCompanyInfoChange = (key: keyof InvoiceSettingsType['companyInfo'], value: string) => {
     setSettings(prev => ({
       ...prev,
       companyInfo: {
@@ -58,30 +58,39 @@ const InvoiceSettings = () => {
   };
 
   const handlePreview = () => {
-    const generator = new AdvancedPdfGenerator(settings);
-    const sampleData = [
-      {
-        id: 1,
-        description: "Vente de téléphones",
-        amount: 250000,
-        type: "income" as const,
-        date: new Date().toISOString(),
-        category: "Ventes"
-      },
-      {
-        id: 2,
-        description: "Paiement du loyer",
-        amount: 100000,
-        type: "expense" as const,
-        date: new Date().toISOString(),
-        category: "Loyer"
-      }
-    ];
+    try {
+      const generator = new AdvancedPdfGenerator(settings);
+      const sampleData = [
+        {
+          id: 1,
+          description: "Vente de téléphones",
+          amount: 250000,
+          type: "income" as const,
+          date: new Date().toISOString(),
+          category: "Ventes"
+        },
+        {
+          id: 2,
+          description: "Paiement du loyer",
+          amount: 100000,
+          type: "expense" as const,
+          date: new Date().toISOString(),
+          category: "Loyer"
+        }
+      ];
 
-    const doc = generator.generateInvoice(sampleData, "Aperçu de Facture");
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
+      const doc = generator.generateInvoice(sampleData, "Aperçu de Facture");
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer l'aperçu",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLogoSelect = (url: string) => {

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +12,12 @@ import SecuritySettings from "@/components/settings/SecuritySettings";
 import GeneralSettings from "@/components/settings/GeneralSettings";
 import LogoSettings from "@/components/settings/LogoSettings";
 import InvoiceSettings from "@/components/settings/InvoiceSettings";
+import { useThemeSettings } from "@/hooks/useThemeSettings";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("general");
   const { theme, setTheme } = useTheme();
+  const { settings, setters, hasChanges, handleSaveSettings, handleResetSettings } = useThemeSettings();
 
   const [shopName, setShopName] = useState(
     typeof localStorage !== "undefined"
@@ -79,7 +82,25 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="appearance">
-          <AppearanceSettings />
+          <AppearanceSettings
+            primaryColor={settings.primaryColor}
+            setPrimaryColor={setters.setPrimaryColor}
+            accentColor={settings.accentColor}
+            setAccentColor={setters.setAccentColor}
+            secondaryColor={settings.secondaryColor}
+            setSecondaryColor={setters.setSecondaryColor}
+            sidebarColor={settings.sidebarColor}
+            setSidebarColor={setters.setSidebarColor}
+            borderRadius={settings.borderRadius}
+            setBorderRadius={setters.setBorderRadius}
+            fontFamily={settings.fontFamily}
+            setFontFamily={setters.setFontFamily}
+            darkMode={settings.darkMode}
+            setDarkMode={setters.setDarkMode}
+            hasChanges={hasChanges}
+            onSave={handleSaveSettings}
+            onReset={handleResetSettings}
+          />
         </TabsContent>
 
         <TabsContent value="account">

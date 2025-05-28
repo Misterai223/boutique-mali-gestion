@@ -100,8 +100,7 @@ export const previewPDF = (
               }
               
               function printPDF() {
-                const iframe = document.querySelector('iframe');
-                iframe.contentWindow.print();
+                window.print();
               }
             </script>
           </body>
@@ -144,8 +143,18 @@ export const printTransactionsPDF = (
     const settings = invoiceSettingsService.getSettings();
     const generator = new AdvancedPdfGenerator(settings);
     const doc = generator.generateInvoice(transactions, title);
-    doc.autoPrint();
-    doc.output('dataurlnewwindow');
+    
+    // Use dataurlnewwindow for printing
+    const dataUri = doc.output('dataurlstring');
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`<iframe width='100%' height='100%' src='${dataUri}'></iframe>`);
+      newWindow.document.close();
+      newWindow.focus();
+      setTimeout(() => {
+        newWindow.print();
+      }, 250);
+    }
     console.log("PDF envoyé à l'impression!");
   } catch (error) {
     console.error("Erreur lors de l'impression PDF:", error);

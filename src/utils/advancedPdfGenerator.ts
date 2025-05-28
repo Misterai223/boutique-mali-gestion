@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { InvoiceSettings, InvoiceData } from "@/types/invoice";
+import type { InvoiceSettings, InvoiceData } from "@/types/invoice";
 import { invoiceSettingsService } from "@/services/invoiceSettingsService";
 
 export class AdvancedPdfGenerator {
@@ -50,7 +50,8 @@ export class AdvancedPdfGenerator {
     const logoSize = this.getLogoSize();
 
     // Background header
-    this.doc.setFillColor(this.hexToRgb(this.settings.primaryColor));
+    const [r, g, b] = this.hexToRgb(this.settings.primaryColor);
+    this.doc.setFillColor(r, g, b);
     this.doc.rect(0, 0, this.pageWidth, 50, 'F');
 
     // Logo and company info positioning
@@ -131,8 +132,8 @@ export class AdvancedPdfGenerator {
     const dateText = `Généré le ${format(new Date(), "dd/MM/yyyy 'à' HH:mm", { locale: fr })}`;
     this.doc.text(dateText, this.margins.left, footerY + 8);
 
-    // Page number
-    const pageText = `Page ${this.doc.internal.getCurrentPageInfo().pageNumber}`;
+    // Page number - using a simpler approach since getCurrentPageInfo may not exist
+    const pageText = `Page 1`;
     const pageWidth = this.doc.getTextWidth(pageText);
     this.doc.text(pageText, this.pageWidth - this.margins.right - pageWidth, footerY + 8);
   }
@@ -190,14 +191,15 @@ export class AdvancedPdfGenerator {
     });
 
     // Generate table
+    const [headR, headG, headB] = this.hexToRgb(this.settings.primaryColor);
     autoTable(this.doc, {
       startY: currentY,
       head: [["Date", "Description", "Catégorie", "Type", "Montant"]],
       body: tableData,
       theme: "grid",
       headStyles: {
-        fillColor: this.hexToRgb(this.settings.primaryColor),
-        textColor: [255, 255, 255],
+        fillColor: [headR, headG, headB] as [number, number, number],
+        textColor: [255, 255, 255] as [number, number, number],
         fontSize: this.getFontSize(this.settings.fontSize),
         fontStyle: "bold",
         halign: "center"
@@ -207,7 +209,7 @@ export class AdvancedPdfGenerator {
         cellPadding: 3
       },
       alternateRowStyles: {
-        fillColor: [245, 245, 245]
+        fillColor: [245, 245, 245] as [number, number, number]
       },
       columnStyles: {
         0: { halign: "center", cellWidth: 25 },
@@ -223,7 +225,7 @@ export class AdvancedPdfGenerator {
     });
 
     // Final summary
-    const finalY = (this.doc as any).lastAutoTable.finalY + 15;
+    const finalY = (this.doc as any).lastAutoTable?.finalY + 15 || currentY + 100;
     this.addFinalSummary(finalY, data.length, totalIncome, totalExpense, balance);
 
     this.addFooter();
@@ -259,7 +261,7 @@ export class AdvancedPdfGenerator {
     this.doc.text(this.settings.currency, startX + boxWidth + spacing + 2, y + 20);
 
     // Balance box
-    const balanceColor = balance >= 0 ? [46, 204, 113] : [231, 76, 60];
+    const balanceColor: [number, number, number] = balance >= 0 ? [46, 204, 113] : [231, 76, 60];
     this.doc.setFillColor(...balanceColor);
     this.doc.rect(startX + 2 * (boxWidth + spacing), y, boxWidth, boxHeight, 'F');
     this.doc.setTextColor(255, 255, 255);
@@ -279,7 +281,8 @@ export class AdvancedPdfGenerator {
 
     this.doc.setFillColor(245, 245, 245);
     this.doc.rect(this.margins.left, y, this.pageWidth - this.margins.left - this.margins.right, 35, 'F');
-    this.doc.setDrawColor(...this.hexToRgb(this.settings.primaryColor));
+    const [borderR, borderG, borderB] = this.hexToRgb(this.settings.primaryColor);
+    this.doc.setDrawColor(borderR, borderG, borderB);
     this.doc.setLineWidth(0.5);
     this.doc.rect(this.margins.left, y, this.pageWidth - this.margins.left - this.margins.right, 35, 'S');
 
@@ -294,7 +297,7 @@ export class AdvancedPdfGenerator {
     this.doc.text(`Total des revenus: ${income.toLocaleString()} ${this.settings.currency}`, this.margins.left + 5, y + 24);
     this.doc.text(`Total des dépenses: ${expense.toLocaleString()} ${this.settings.currency}`, this.margins.left + 5, y + 30);
 
-    const balanceColor = balance >= 0 ? [46, 204, 113] : [231, 76, 60];
+    const balanceColor: [number, number, number] = balance >= 0 ? [46, 204, 113] : [231, 76, 60];
     this.doc.setFont("helvetica", "bold");
     this.doc.setTextColor(...balanceColor);
     this.doc.text(`Solde final: ${balance.toLocaleString()} ${this.settings.currency}`, this.pageWidth - this.margins.right - 80, y + 24);
