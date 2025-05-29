@@ -3,12 +3,28 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   currentTime: Date;
+  onDateRangeChange?: (from: Date | null, to: Date | null) => void;
+  onRefresh?: () => void;
 }
 
-const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
+const DashboardHeader = ({ currentTime, onDateRangeChange, onRefresh }: DashboardHeaderProps) => {
+  const [dateRange, setDateRange] = useState<{
+    from: Date | null;
+    to: Date | null;
+  }>({
+    from: null,
+    to: null
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
   // Formatter la date actuelle
   const formattedDate = new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long',
@@ -21,6 +37,45 @@ const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(currentTime);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    if (!dateRange.from || (dateRange.from && dateRange.to)) {
+      // Première sélection ou reset
+      const newRange = { from: date, to: null };
+      setDateRange(newRange);
+      onDateRangeChange?.(date, null);
+    } else {
+      // Deuxième sélection
+      const newRange = {
+        from: dateRange.from,
+        to: date >= dateRange.from ? date : dateRange.from
+      };
+      if (date < dateRange.from) {
+        newRange.from = date;
+        newRange.to = dateRange.from;
+      }
+      setDateRange(newRange);
+      onDateRangeChange?.(newRange.from, newRange.to);
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    console.log('Actualisation des données...');
+    onRefresh?.();
+  };
+
+  const getDateRangeText = () => {
+    if (!dateRange.from) {
+      return "Sélectionner une période";
+    }
+    if (!dateRange.to) {
+      return `Du ${format(dateRange.from, "dd MMM yyyy", { locale: fr })}`;
+    }
+    return `Du ${format(dateRange.from, "dd MMM", { locale: fr })} au ${format(dateRange.to, "dd MMM yyyy", { locale: fr })}`;
+  };
 
   return (
     <motion.div 
@@ -54,11 +109,52 @@ const DashboardHeader = ({ currentTime }: DashboardHeaderProps) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4, duration: 0.3 }}
       >
-        <Button size="sm" variant="outline" className="flex items-center gap-1">
-          <Calendar className="h-4 w-4" />
-          <span>Cette semaine</span>
-        </Button>
-        <Button size="sm" variant="default" className="flex items-center gap-1">
+        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className={cn(
+                "flex items-center gap-1 min-w-[200px] justify-start",
+                !dateRange.from && "text-muted-foreground"
+              )}
+            >
+              <Calendar className="h-4 w-4" />
+              <span>{getDateRangeText()}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <CalendarComponent
+              mode="single"
+              selected={dateRange.from || undefined}
+              onSelect={handleDateSelect}
+              initialFocus
+              className="pointer-events-auto"
+            />
+            {dateRange.from && dateRange.to && (
+              <div className="p-3 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setDateRange({ from: null, to: null });
+                    onDateRangeChange?.(null, null);
+                  }}
+                  className="w-full"
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+        
+        <Button 
+          size="sm" 
+          variant="default" 
+          className="flex items-center gap-1"
+          onClick={handleRefresh}
+        >
           <Activity className="h-4 w-4" />
           <span>Rafraîchir</span>
         </Button>
