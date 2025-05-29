@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { InvoiceSettings, InvoiceData } from '@/types/invoice';
@@ -8,7 +7,7 @@ export class AdvancedPdfGenerator {
   private settings: InvoiceSettings;
   private pageWidth: number;
   private pageHeight: number;
-  private margin: number = 20;
+  private margin: number = 15;
 
   constructor(settings: InvoiceSettings) {
     this.settings = settings;
@@ -33,52 +32,68 @@ export class AdvancedPdfGenerator {
 
   private getFontSize(): number {
     const sizeMap = {
-      small: 10,
-      medium: 12,
-      large: 14
+      small: 9,
+      medium: 10,
+      large: 12
     };
-    return sizeMap[this.settings.fontSize] || 12;
+    return sizeMap[this.settings.fontSize] || 10;
+  }
+
+  private formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount) + ' ' + this.settings.currency;
   }
 
   private addCompanyHeader(): number {
     let yPosition = this.margin;
 
-    // Bande colorée en haut
+    // En-tête avec design moderne
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
     this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    this.doc.rect(0, 0, this.pageWidth, 35, 'F');
+    this.doc.rect(0, 0, this.pageWidth, 45, 'F');
 
-    // Logo de l'entreprise (si disponible)
+    // Logo de l'entreprise (optimisé)
     if (this.settings.companyInfo.logo) {
       try {
-        const logoSize = this.settings.logoSize === 'small' ? 25 : this.settings.logoSize === 'large' ? 35 : 30;
-        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', this.margin, yPosition, logoSize, logoSize * 0.7);
+        const logoSize = this.settings.logoSize === 'small' ? 20 : this.settings.logoSize === 'large' ? 30 : 25;
+        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', this.margin, yPosition + 5, logoSize, logoSize * 0.6);
       } catch (error) {
-        console.warn('Impossible de charger le logo:', error);
+        console.warn('Logo non disponible:', error);
       }
     }
 
-    // Nom de l'entreprise en blanc sur la bande colorée
+    // Nom de l'entreprise en blanc et en gras
     this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(18);
+    this.doc.setFontSize(16);
     this.doc.setFont('helvetica', 'bold');
-    const companyNameX = this.settings.companyInfo.logo ? this.margin + 40 : this.margin;
-    this.doc.text(this.settings.companyInfo.name, companyNameX, yPosition + 20);
+    const companyNameX = this.settings.companyInfo.logo ? this.margin + 35 : this.margin;
+    this.doc.text(this.settings.companyInfo.name, companyNameX, yPosition + 18);
 
-    yPosition += 50;
+    // Slogan ou description courte
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.text('Solutions commerciales professionnelles', companyNameX, yPosition + 25);
 
-    // Informations de l'entreprise dans un cadre à gauche
+    yPosition += 55;
+
+    // Section informations entreprise - mieux organisée
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFontSize(this.getFontSize());
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text("INFORMATIONS ENTREPRISE", this.margin, yPosition);
+    this.doc.text("EXPÉDITEUR", this.margin, yPosition);
     
-    // Cadre pour les informations de l'entreprise
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.5);
-    this.doc.rect(this.margin, yPosition + 5, 80, 45);
+    // Cadre moderne pour les informations
+    this.doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    this.doc.setLineWidth(1);
+    this.doc.rect(this.margin, yPosition + 3, 75, 35);
+    
+    // Fond léger
+    this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b, 0.05);
+    this.doc.rect(this.margin, yPosition + 3, 75, 35, 'F');
 
-    yPosition += 15;
+    yPosition += 10;
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(this.getFontSize() - 1);
     
@@ -86,51 +101,69 @@ export class AdvancedPdfGenerator {
       this.settings.companyInfo.address,
       `Tél: ${this.settings.companyInfo.phone}`,
       `Email: ${this.settings.companyInfo.email}`,
-      this.settings.companyInfo.website ? `Web: ${this.settings.companyInfo.website}` : '',
-      this.settings.companyInfo.taxNumber ? `N° Fiscal: ${this.settings.companyInfo.taxNumber}` : ''
+      this.settings.companyInfo.website ? `${this.settings.companyInfo.website}` : '',
+      this.settings.companyInfo.taxNumber ? `NINEA: ${this.settings.companyInfo.taxNumber}` : ''
     ].filter(info => info);
 
     companyInfo.forEach((info, index) => {
-      this.doc.text(info, this.margin + 3, yPosition + (index * 6));
+      // Limiter la largeur du texte pour éviter les débordements
+      const textLines = this.doc.splitTextToSize(info, 68);
+      if (Array.isArray(textLines)) {
+        textLines.forEach((line, lineIndex) => {
+          this.doc.text(line, this.margin + 2, yPosition + (index * 5) + (lineIndex * 4));
+        });
+      } else {
+        this.doc.text(textLines, this.margin + 2, yPosition + (index * 5));
+      }
     });
 
-    return yPosition + (companyInfo.length * 6) + 15;
+    return yPosition + 35;
   }
 
   private addInvoiceHeader(clientData: any, yPosition: number): number {
-    // Titre FACTURE à droite
+    // Titre FACTURE stylé
     const accentRgb = this.hexToRgb(this.settings.accentColor);
     this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.setFontSize(24);
+    this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.text("FACTURE", this.pageWidth - this.margin - 50, yPosition - 25);
+    this.doc.text("FACTURE", this.pageWidth - this.margin - 40, yPosition - 35);
 
-    // Numéro de facture et date
+    // Informations facture dans un cadre
+    this.doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
+    this.doc.setLineWidth(1);
+    this.doc.rect(this.pageWidth - this.margin - 65, yPosition - 25, 60, 20);
+    
     this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(this.getFontSize());
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(this.getFontSize() - 1);
+    this.doc.setFont('helvetica', 'bold');
     
     const invoiceNumber = `FAC-${Date.now().toString().slice(-6)}`;
     const currentDate = new Date().toLocaleDateString('fr-FR');
     
-    this.doc.text(`N° Facture: ${invoiceNumber}`, this.pageWidth - this.margin - 80, yPosition - 10);
-    this.doc.text(`Date: ${currentDate}`, this.pageWidth - this.margin - 80, yPosition - 2);
+    this.doc.text(`N°: ${invoiceNumber}`, this.pageWidth - this.margin - 62, yPosition - 18);
+    this.doc.text(`Date: ${currentDate}`, this.pageWidth - this.margin - 62, yPosition - 12);
 
     return yPosition;
   }
 
   private addClientInfo(clientData: any, yPosition: number): number {
-    // Informations client dans un cadre à droite
+    // Informations client bien structurées
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(this.getFontSize());
-    this.doc.text("FACTURÉ À", this.pageWidth - this.margin - 80, yPosition);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text("DESTINATAIRE", this.pageWidth - this.margin - 65, yPosition);
 
-    // Cadre pour les informations client
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.5);
-    this.doc.rect(this.pageWidth - this.margin - 80, yPosition + 5, 75, 40);
+    // Cadre moderne pour le client
+    const primaryRgb = this.hexToRgb(this.settings.primaryColor);
+    this.doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    this.doc.setLineWidth(1);
+    this.doc.rect(this.pageWidth - this.margin - 65, yPosition + 3, 60, 30);
+    
+    // Fond léger
+    this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b, 0.05);
+    this.doc.rect(this.pageWidth - this.margin - 65, yPosition + 3, 60, 30, 'F');
 
-    yPosition += 15;
+    yPosition += 10;
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(this.getFontSize() - 1);
 
@@ -142,28 +175,41 @@ export class AdvancedPdfGenerator {
     ].filter(info => info);
 
     clientInfo.forEach((info, index) => {
-      // Limiter la longueur du texte pour éviter le débordement
-      const maxWidth = 70;
-      const text = this.doc.splitTextToSize(info, maxWidth);
-      this.doc.text(text, this.pageWidth - this.margin - 77, yPosition + (index * 7));
+      // Limiter la largeur et gérer les débordements
+      const textLines = this.doc.splitTextToSize(info, 55);
+      if (Array.isArray(textLines)) {
+        textLines.forEach((line, lineIndex) => {
+          this.doc.text(line, this.pageWidth - this.margin - 62, yPosition + (index * 5) + (lineIndex * 4));
+        });
+      } else {
+        this.doc.text(textLines, this.pageWidth - this.margin - 62, yPosition + (index * 5));
+      }
     });
 
-    return yPosition + Math.max(clientInfo.length * 7, 40) + 15;
+    return yPosition + 35;
   }
 
   private addProductsTable(clientData: any, yPosition: number): number {
     if (!clientData.purchases || clientData.purchases.length === 0) {
       this.doc.setFont('helvetica', 'italic');
-      this.doc.text("Aucun produit acheté", this.margin, yPosition);
-      return yPosition + 10;
+      this.doc.setFontSize(this.getFontSize());
+      this.doc.text("Aucun article", this.margin, yPosition);
+      return yPosition + 15;
     }
 
-    const tableHeaders = ['Description', 'Quantité', 'Prix unitaire', 'Total'];
+    // Titre de section
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFontSize(this.getFontSize() + 1);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text("DÉTAIL DES ARTICLES", this.margin, yPosition);
+    yPosition += 8;
+
+    const tableHeaders = ['Description', 'Qté', 'Prix Unit.', 'Total'];
     const tableData = clientData.purchases.map((purchase: any) => [
       purchase.product.name,
       purchase.quantity.toString(),
-      `${purchase.product.price.toLocaleString()} ${this.settings.currency}`,
-      `${(purchase.quantity * purchase.product.price).toLocaleString()} ${this.settings.currency}`
+      this.formatCurrency(purchase.product.price),
+      this.formatCurrency(purchase.quantity * purchase.product.price)
     ]);
 
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
@@ -172,33 +218,56 @@ export class AdvancedPdfGenerator {
       head: [tableHeaders],
       body: tableData,
       startY: yPosition,
-      theme: 'striped',
+      theme: 'grid',
       headStyles: {
         fillColor: [primaryRgb.r, primaryRgb.g, primaryRgb.b],
         textColor: [255, 255, 255],
         fontSize: this.getFontSize(),
         fontStyle: 'bold',
-        halign: 'center'
+        halign: 'center',
+        cellPadding: 4
       },
       bodyStyles: {
         fontSize: this.getFontSize() - 1,
-        cellPadding: 5
+        cellPadding: 3,
+        valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 'auto', halign: 'left' },
-        1: { cellWidth: 25, halign: 'center' },
-        2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' }
+        0: { 
+          cellWidth: 'auto', 
+          halign: 'left',
+          fontStyle: 'normal'
+        },
+        1: { 
+          cellWidth: 15, 
+          halign: 'center',
+          fontStyle: 'bold'
+        },
+        2: { 
+          cellWidth: 25, 
+          halign: 'right',
+          fontStyle: 'normal'
+        },
+        3: { 
+          cellWidth: 30, 
+          halign: 'right',
+          fontStyle: 'bold'
+        }
       },
       margin: { left: this.margin, right: this.margin },
       tableWidth: 'auto',
       styles: {
         lineColor: [200, 200, 200],
-        lineWidth: 0.1
+        lineWidth: 0.2,
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250]
       }
     });
 
-    return (this.doc as any).lastAutoTable.finalY + 15;
+    return (this.doc as any).lastAutoTable.finalY + 10;
   }
 
   private addTotalSection(clientData: any, yPosition: number): number {
@@ -206,57 +275,81 @@ export class AdvancedPdfGenerator {
       return yPosition;
     }
 
-    const total = clientData.purchases.reduce((sum: number, purchase: any) => {
+    const subtotal = clientData.purchases.reduce((sum: number, purchase: any) => {
       return sum + (purchase.quantity * purchase.product.price);
     }, 0);
 
-    // Cadre pour le total
-    const totalBoxWidth = 60;
-    const totalBoxHeight = 25;
-    const totalBoxX = this.pageWidth - this.margin - totalBoxWidth;
+    // Section totaux bien structurée
+    const totalSectionWidth = 80;
+    const totalSectionX = this.pageWidth - this.margin - totalSectionWidth;
 
-    this.doc.setDrawColor(100, 100, 100);
-    this.doc.setLineWidth(1);
-    this.doc.rect(totalBoxX, yPosition, totalBoxWidth, totalBoxHeight);
+    // Ligne de séparation
+    this.doc.setDrawColor(200, 200, 200);
+    this.doc.setLineWidth(0.5);
+    this.doc.line(totalSectionX, yPosition, this.pageWidth - this.margin, yPosition);
 
-    // Fond coloré pour le total
+    yPosition += 5;
+
+    // Sous-total
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(this.getFontSize());
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text('Sous-total:', totalSectionX, yPosition);
+    this.doc.text(this.formatCurrency(subtotal), this.pageWidth - this.margin - 5, yPosition, { align: 'right' });
+
+    yPosition += 6;
+
+    // TVA (si applicable)
+    const tva = 0; // Pas de TVA pour l'instant
+    this.doc.text('TVA (0%):', totalSectionX, yPosition);
+    this.doc.text(this.formatCurrency(tva), this.pageWidth - this.margin - 5, yPosition, { align: 'right' });
+
+    yPosition += 8;
+
+    // Total final - bien mis en évidence
     const accentRgb = this.hexToRgb(this.settings.accentColor);
     this.doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b, 0.1);
-    this.doc.rect(totalBoxX, yPosition, totalBoxWidth, totalBoxHeight, 'F');
+    this.doc.rect(totalSectionX - 2, yPosition - 3, totalSectionWidth + 2, 12, 'F');
+    
+    this.doc.setDrawColor(accentRgb.r, accentRgb.g, accentRgb.b);
+    this.doc.setLineWidth(1);
+    this.doc.rect(totalSectionX - 2, yPosition - 3, totalSectionWidth + 2, 12);
 
-    // Texte du total
-    this.doc.setTextColor(0, 0, 0);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(this.getFontSize() + 2);
-    this.doc.text('TOTAL À PAYER', totalBoxX + 5, yPosition + 10);
-    
-    this.doc.setFontSize(this.getFontSize() + 4);
     this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.text(`${total.toLocaleString()} ${this.settings.currency}`, totalBoxX + 5, yPosition + 20);
+    this.doc.text('TOTAL À PAYER:', totalSectionX, yPosition + 3);
+    
+    this.doc.setFontSize(this.getFontSize() + 3);
+    this.doc.text(this.formatCurrency(subtotal), this.pageWidth - this.margin - 5, yPosition + 3, { align: 'right' });
 
-    return yPosition + totalBoxHeight + 20;
+    return yPosition + 20;
   }
 
   private addFooter(): void {
     if (!this.settings.includeFooter) return;
 
-    const footerY = this.pageHeight - 25;
+    const footerY = this.pageHeight - 20;
     
-    // Ligne de séparation
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.5);
-    this.doc.line(this.margin, footerY - 5, this.pageWidth - this.margin, footerY - 5);
+    // Ligne de séparation élégante
+    const primaryRgb = this.hexToRgb(this.settings.primaryColor);
+    this.doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    this.doc.setLineWidth(0.8);
+    this.doc.line(this.margin, footerY - 8, this.pageWidth - this.margin, footerY - 8);
 
-    // Texte du pied de page
+    // Texte du pied de page centré et stylé
     this.doc.setTextColor(100, 100, 100);
     this.doc.setFont('helvetica', 'italic');
     this.doc.setFontSize(this.getFontSize() - 2);
     
-    const footerText = this.settings.footerText || 'Merci pour votre confiance';
-    this.doc.text(footerText, this.pageWidth / 2, footerY, { align: 'center' });
+    const footerText = this.settings.footerText || 'Merci pour votre confiance - Règlement à 30 jours';
+    this.doc.text(footerText, this.pageWidth / 2, footerY - 2, { align: 'center' });
 
-    // Numéro de page
-    this.doc.text('Page 1', this.pageWidth - this.margin, footerY, { align: 'right' });
+    // Informations légales
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(this.getFontSize() - 3);
+    this.doc.text('Document généré automatiquement', this.margin, footerY + 3);
+    this.doc.text(`Page 1 - ${new Date().toLocaleDateString('fr-FR')}`, this.pageWidth - this.margin, footerY + 3, { align: 'right' });
   }
 
   public generateClientInvoice(clientData: any): jsPDF {
@@ -271,19 +364,18 @@ export class AdvancedPdfGenerator {
     return this.doc;
   }
 
-  // Méthode pour les rapports généraux (transactions)
   public generateInvoice(data: any[]): jsPDF {
     let currentY = this.margin;
 
-    // Couleur principale pour l'en-tête
+    // En-tête amélioré pour les rapports
     const headerPrimaryRgb = this.hexToRgb(this.settings.primaryColor);
     this.doc.setFillColor(headerPrimaryRgb.r, headerPrimaryRgb.g, headerPrimaryRgb.b);
-    this.doc.rect(0, 0, this.pageWidth, 40, 'F');
+    this.doc.rect(0, 0, this.pageWidth, 35, 'F');
 
-    // Logo de l'entreprise
+    // Logo et nom d'entreprise
     if (this.settings.companyInfo.logo) {
       try {
-        const logoSize = this.settings.logoSize === 'small' ? 20 : this.settings.logoSize === 'large' ? 40 : 30;
+        const logoSize = this.settings.logoSize === 'small' ? 18 : this.settings.logoSize === 'large' ? 28 : 23;
         let logoX = this.margin;
         
         if (this.settings.logoPosition === 'center') {
@@ -292,22 +384,21 @@ export class AdvancedPdfGenerator {
           logoX = this.pageWidth - this.margin - logoSize;
         }
         
-        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', logoX, currentY, logoSize, logoSize * 0.6);
+        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', logoX, currentY + 3, logoSize, logoSize * 0.6);
       } catch (error) {
-        console.warn('Impossible de charger le logo:', error);
+        console.warn('Logo non disponible:', error);
       }
     }
 
-    // Nom de l'entreprise
     this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(this.getFontSize() + 6);
+    this.doc.setFontSize(this.getFontSize() + 4);
     this.doc.setFont('helvetica', 'bold');
-    const companyNameX = this.settings.logoPosition === 'left' && this.settings.companyInfo.logo ? this.margin + 35 : this.margin;
-    this.doc.text(this.settings.companyInfo.name, companyNameX, currentY + 15);
+    const companyNameX = this.settings.logoPosition === 'left' && this.settings.companyInfo.logo ? this.margin + 30 : this.margin;
+    this.doc.text(this.settings.companyInfo.name, companyNameX, currentY + 12);
 
-    currentY += 50;
+    currentY += 45;
 
-    // Informations de l'entreprise
+    // Informations entreprise compactes
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFontSize(this.getFontSize() - 1);
     this.doc.setFont('helvetica', 'normal');
@@ -315,53 +406,63 @@ export class AdvancedPdfGenerator {
     const companyInfo = [
       this.settings.companyInfo.address,
       this.settings.companyInfo.phone,
-      this.settings.companyInfo.email,
-      this.settings.companyInfo.website
+      this.settings.companyInfo.email
     ].filter(info => info);
 
     companyInfo.forEach((info, index) => {
-      this.doc.text(info, this.margin, currentY + (index * 6));
+      this.doc.text(info, this.margin, currentY + (index * 4));
     });
     
-    // Titre du rapport
+    // Titre du rapport stylé
     const accentRgb = this.hexToRgb(this.settings.accentColor);
     this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.setFontSize(this.getFontSize() + 8);
+    this.doc.setFontSize(this.getFontSize() + 6);
     this.doc.setFont('helvetica', 'bold');
-    const headerText = this.settings.headerText || 'RAPPORT';
-    this.doc.text(headerText, this.pageWidth - this.margin - 60, currentY);
+    const headerText = this.settings.headerText || 'RAPPORT FINANCIER';
+    this.doc.text(headerText, this.pageWidth - this.margin - 50, currentY + 5);
 
-    currentY += 20;
+    currentY += 25;
 
-    // Tableau des transactions
+    // Tableau des transactions optimisé
     const tableHeaders = ['Description', 'Type', 'Montant', 'Date', 'Catégorie'];
     const tableData = data.map(transaction => [
       transaction.description,
       transaction.type === 'income' ? 'Recette' : 'Dépense',
-      `${transaction.amount.toFixed(2)} ${this.settings.currency}`,
+      this.formatCurrency(transaction.amount),
       new Date(transaction.date).toLocaleDateString('fr-FR'),
       transaction.category
     ]);
 
-    // Utiliser une variable différente pour éviter le conflit
     const tablePrimaryRgb = this.hexToRgb(this.settings.primaryColor);
 
     autoTable(this.doc, {
       head: [tableHeaders],
       body: tableData,
       startY: currentY,
-      theme: 'grid',
+      theme: 'striped',
       headStyles: {
         fillColor: [tablePrimaryRgb.r, tablePrimaryRgb.g, tablePrimaryRgb.b],
         textColor: [255, 255, 255],
         fontSize: this.getFontSize(),
-        fontStyle: 'bold'
+        fontStyle: 'bold',
+        halign: 'center'
       },
       bodyStyles: {
         fontSize: this.getFontSize() - 1,
-        cellPadding: 4
+        cellPadding: 3
       },
-      margin: { left: this.margin, right: this.margin }
+      columnStyles: {
+        0: { cellWidth: 'auto', halign: 'left' },
+        1: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
+        2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+        3: { cellWidth: 25, halign: 'center' },
+        4: { cellWidth: 25, halign: 'center' }
+      },
+      margin: { left: this.margin, right: this.margin },
+      styles: {
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      }
     });
 
     this.addFooter();
