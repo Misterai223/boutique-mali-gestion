@@ -330,13 +330,13 @@ const Finances = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="w-full h-auto p-6 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
+                        className="w-full h-auto p-4 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">Rapport mensuel</span>
+                        <div className="flex items-center space-x-2 w-full">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-sm truncate">Rapport mensuel</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground text-left leading-relaxed">
                           Résumé détaillé des finances pour le mois en cours
                         </p>
                       </Button>
@@ -349,13 +349,13 @@ const Finances = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="w-full h-auto p-6 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
+                        className="w-full h-auto p-4 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">Rapport trimestriel</span>
+                        <div className="flex items-center space-x-2 w-full">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-sm truncate">Rapport trimestriel</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground text-left leading-relaxed">
                           Analyse des tendances sur les 3 derniers mois
                         </p>
                       </Button>
@@ -368,13 +368,13 @@ const Finances = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="w-full h-auto p-6 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
+                        className="w-full h-auto p-4 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">Rapport annuel</span>
+                        <div className="flex items-center space-x-2 w-full">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-sm truncate">Rapport annuel</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground text-left leading-relaxed">
                           Bilan financier complet de l'année
                         </p>
                       </Button>
@@ -387,13 +387,13 @@ const Finances = () => {
                     >
                       <Button 
                         variant="outline" 
-                        className="w-full h-auto p-6 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
+                        className="w-full h-auto p-4 flex flex-col items-start text-left space-y-2 hover:bg-accent/5 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">Rapport personnalisé</span>
+                        <div className="flex items-center space-x-2 w-full">
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-sm truncate">Rapport personnalisé</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground text-left leading-relaxed">
                           Créer un rapport adapté à vos besoins spécifiques
                         </p>
                       </Button>
