@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { InvoiceSettings, InvoiceData } from '@/types/invoice';
@@ -51,22 +50,21 @@ export class AdvancedPdfGenerator {
   private addPremiumHeader(clientData: any): number {
     let yPosition = this.margin;
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
-    const accentRgb = this.hexToRgb(this.settings.accentColor);
 
-    // Bande supérieure colorée avec dégradé visuel
+    // Bande supérieure colorée
     this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-    this.doc.rect(0, 0, this.pageWidth, 50, 'F');
+    this.doc.rect(0, 0, this.pageWidth, 60, 'F');
 
-    // Logo premium avec cadre
+    // Logo avec marges équilibrées
     if (this.settings.companyInfo.logo) {
       try {
         const logoSize = this.settings.logoSize === 'small' ? 25 : this.settings.logoSize === 'large' ? 40 : 35;
-        let logoX = this.margin + 5;
+        let logoX = this.margin;
         
         if (this.settings.logoPosition === 'center') {
           logoX = (this.pageWidth - logoSize) / 2;
         } else if (this.settings.logoPosition === 'right') {
-          logoX = this.pageWidth - this.margin - logoSize - 5;
+          logoX = this.pageWidth - this.margin - logoSize;
         }
         
         // Cadre blanc autour du logo
@@ -83,31 +81,47 @@ export class AdvancedPdfGenerator {
         );
       } catch (error) {
         console.warn('Erreur lors du chargement du logo:', error);
-        // Logo de remplacement élégant
-        this.doc.setFillColor(255, 255, 255);
-        this.doc.roundedRect(this.margin + 2, yPosition + 2, 40, 28, 8, 8, 'F');
-        this.doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
-        this.doc.setFont('helvetica', 'bold');
-        this.doc.setFontSize(16);
-        this.doc.text(this.settings.companyInfo.name.substring(0, 2).toUpperCase(), this.margin + 15, yPosition + 20);
       }
     }
 
-    // Titre FACTURE stylé
+    // Informations de l'entreprise à gauche
+    this.doc.setTextColor(255, 255, 255);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFontSize(14);
+    this.doc.text(this.settings.companyInfo.name, this.margin, yPosition + 15);
+
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(9);
+    const companyLines = [
+      this.settings.companyInfo.address,
+      this.settings.companyInfo.phone,
+      this.settings.companyInfo.email
+    ].filter(line => line);
+
+    companyLines.forEach((line, index) => {
+      this.doc.text(line, this.margin, yPosition + 23 + (index * 4));
+    });
+
+    // Titre FACTURE à droite avec marges équilibrées
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(42);
-    const titleX = this.pageWidth - this.margin - 80;
-    this.doc.text("FACTURE", titleX, yPosition + 25);
+    const titleText = "FACTURE";
+    const titleWidth = this.doc.getTextWidth(titleText);
+    const titleX = this.pageWidth - this.margin - titleWidth;
+    this.doc.text(titleText, titleX, yPosition + 30);
 
     // Sous-titre élégant
     this.doc.setFontSize(12);
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text("Document commercial", titleX, yPosition + 35);
+    const subtitleText = "Document commercial";
+    const subtitleWidth = this.doc.getTextWidth(subtitleText);
+    const subtitleX = this.pageWidth - this.margin - subtitleWidth;
+    this.doc.text(subtitleText, subtitleX, yPosition + 40);
 
-    yPosition += 60;
+    yPosition += 70;
 
-    // Section informations avec design en cartes
+    // Section informations client avec design en cartes
     this.addInfoCards(clientData, yPosition);
 
     return yPosition + 45;
@@ -118,7 +132,7 @@ export class AdvancedPdfGenerator {
     const cardHeight = 35;
     const accentRgb = this.hexToRgb(this.settings.accentColor);
 
-    // Carte Expéditeur
+    // Carte Expéditeur (maintenant plus petite car infos déjà en haut)
     this.doc.setFillColor(248, 249, 250);
     this.doc.roundedRect(this.margin, yPosition, cardWidth, cardHeight, 6, 6, 'F');
     this.doc.setDrawColor(220, 220, 220);
@@ -135,7 +149,7 @@ export class AdvancedPdfGenerator {
     this.doc.setFontSize(9);
     this.doc.text("EXPÉDITEUR", this.margin + 3, yPosition + 6);
 
-    // Contenu expéditeur
+    // Contenu expéditeur (référence rapide)
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(11);
@@ -143,24 +157,16 @@ export class AdvancedPdfGenerator {
 
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(8);
-    const senderLines = [
-      this.settings.companyInfo.address,
-      this.settings.companyInfo.phone,
-      this.settings.companyInfo.email
-    ].filter(line => line);
+    this.doc.text("Voir en-tête pour détails complets", this.margin + 3, yPosition + 25);
 
-    senderLines.forEach((line, index) => {
-      this.doc.text(line, this.margin + 3, yPosition + 21 + (index * 3.5));
-    });
-
-    // Carte Destinataire
+    // Carte Client (anciennement Destinataire)
     const destX = this.margin + cardWidth + 15;
     this.doc.setFillColor(248, 249, 250);
     this.doc.roundedRect(destX, yPosition, cardWidth, cardHeight, 6, 6, 'F');
     this.doc.setDrawColor(220, 220, 220);
     this.doc.roundedRect(destX, yPosition, cardWidth, cardHeight, 6, 6, 'S');
 
-    // En-tête de carte destinataire
+    // En-tête de carte client
     this.doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
     this.doc.roundedRect(destX, yPosition, cardWidth, 8, 6, 6, 'F');
     this.doc.rect(destX, yPosition + 4, cardWidth, 4, 'F');
@@ -168,9 +174,9 @@ export class AdvancedPdfGenerator {
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(9);
-    this.doc.text("DESTINATAIRE", destX + 3, yPosition + 6);
+    this.doc.text("CLIENT", destX + 3, yPosition + 6);
 
-    // Contenu destinataire
+    // Contenu client
     this.doc.setTextColor(0, 0, 0);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setFontSize(11);
@@ -320,7 +326,7 @@ export class AdvancedPdfGenerator {
     const tva = subtotal * tvaRate;
     const total = subtotal + tva;
 
-    // Section totaux avec design premium
+    // Section totaux avec design premium et marges équilibrées
     const sectionWidth = 85;
     const sectionX = this.pageWidth - this.margin - sectionWidth;
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
@@ -387,7 +393,7 @@ export class AdvancedPdfGenerator {
     const lineWidth = 40;
     this.doc.line((this.pageWidth - lineWidth) / 2, yPosition + 3, (this.pageWidth + lineWidth) / 2, yPosition + 3);
 
-    // Nom de l'entreprise au pied de page
+    // Nom de l'entreprise au pied de page avec marges équilibrées
     yPosition += 15;
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(10);
@@ -419,12 +425,12 @@ export class AdvancedPdfGenerator {
     try {
       let currentY = this.margin;
 
-      // En-tête amélioré pour les rapports
+      // En-tête amélioré pour les rapports avec marges équilibrées
       const headerPrimaryRgb = this.hexToRgb(this.settings.primaryColor);
       this.doc.setFillColor(headerPrimaryRgb.r, headerPrimaryRgb.g, headerPrimaryRgb.b);
       this.doc.rect(0, 0, this.pageWidth, 35, 'F');
 
-      // Logo et nom d'entreprise
+      // Logo et nom d'entreprise avec marges équilibrées
       if (this.settings.companyInfo.logo) {
         try {
           const logoSize = this.settings.logoSize === 'small' ? 18 : this.settings.logoSize === 'large' ? 28 : 23;
@@ -465,17 +471,18 @@ export class AdvancedPdfGenerator {
         this.doc.text(info, this.margin, currentY + (index * 4));
       });
       
-      // Titre du rapport stylé
+      // Titre du rapport stylé avec marges équilibrées
       const accentRgb = this.hexToRgb(this.settings.accentColor);
       this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
       this.doc.setFontSize(this.getFontSize() + 6);
       this.doc.setFont('helvetica', 'bold');
       const headerText = this.settings.headerText || 'RAPPORT FINANCIER';
-      this.doc.text(headerText, this.pageWidth - this.margin - 50, currentY + 5);
+      const headerTextWidth = this.doc.getTextWidth(headerText);
+      this.doc.text(headerText, this.pageWidth - this.margin - headerTextWidth, currentY + 5);
 
       currentY += 25;
 
-      // Tableau des transactions optimisé
+      // Tableau des transactions optimisé avec marges équilibrées
       const tableHeaders = ['Description', 'Type', 'Montant', 'Date', 'Catégorie'];
       const tableData = data.map(transaction => [
         transaction.description,
@@ -545,7 +552,7 @@ export class AdvancedPdfGenerator {
     const footerText = this.settings.footerText || 'Merci pour votre confiance - Règlement à 30 jours';
     this.doc.text(footerText, this.pageWidth / 2, footerY - 2, { align: 'center' });
 
-    // Nom de l'entreprise au pied de page
+    // Nom de l'entreprise au pied de page avec marges équilibrées
     this.doc.setFont('helvetica', 'normal');
     this.doc.setFontSize(this.getFontSize() - 2);
     this.doc.text(this.settings.companyInfo.name, this.margin, footerY + 3);
