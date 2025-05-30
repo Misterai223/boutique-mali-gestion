@@ -56,12 +56,6 @@ export class AdvancedPdfGenerator {
     this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
     this.doc.rect(0, 0, this.pageWidth, 50, 'F');
 
-    // Effet d'ombre subtile
-    this.doc.setFillColor(0, 0, 0);
-    this.doc.setGState({ opacity: 0.1 });
-    this.doc.rect(0, 48, this.pageWidth, 4, 'F');
-    this.doc.setGState({ opacity: 1 });
-
     // Logo premium avec cadre
     if (this.settings.companyInfo.logo) {
       try {
@@ -246,7 +240,6 @@ export class AdvancedPdfGenerator {
     ]);
 
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
-    const accentRgb = this.hexToRgb(this.settings.accentColor);
 
     autoTable(this.doc, {
       head: [tableHeaders],
@@ -329,7 +322,6 @@ export class AdvancedPdfGenerator {
     const sectionWidth = 85;
     const sectionX = this.pageWidth - this.margin - sectionWidth;
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
-    const accentRgb = this.hexToRgb(this.settings.accentColor);
 
     yPosition += 10;
 
@@ -361,12 +353,6 @@ export class AdvancedPdfGenerator {
     // Total TTC avec design premium
     this.doc.setFillColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
     this.doc.roundedRect(sectionX - 3, yPosition - 2, sectionWidth + 6, 16, 6, 6, 'F');
-
-    // Effet d'ombre
-    this.doc.setFillColor(0, 0, 0);
-    this.doc.setGState({ opacity: 0.15 });
-    this.doc.roundedRect(sectionX - 2, yPosition + 1, sectionWidth + 4, 14, 6, 6, 'F');
-    this.doc.setGState({ opacity: 1 });
 
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFont('helvetica', 'bold');
@@ -453,118 +439,132 @@ export class AdvancedPdfGenerator {
   }
 
   public generateClientInvoice(clientData: any): jsPDF {
-    let currentY = this.addPremiumHeader(clientData);
-    currentY = this.addPremiumTable(clientData, currentY);
-    currentY = this.addPremiumTotalSection(clientData, currentY);
-    
-    this.addPremiumFooter(clientData, currentY);
+    console.log("Generating client invoice for:", clientData.fullName);
+    try {
+      let currentY = this.addPremiumHeader(clientData);
+      currentY = this.addPremiumTable(clientData, currentY);
+      currentY = this.addPremiumTotalSection(clientData, currentY);
+      
+      this.addPremiumFooter(clientData, currentY);
 
-    return this.doc;
+      console.log("Invoice generated successfully");
+      return this.doc;
+    } catch (error) {
+      console.error("Error generating client invoice:", error);
+      throw error;
+    }
   }
 
   public generateInvoice(data: any[]): jsPDF {
-    let currentY = this.margin;
+    console.log("Generating transaction report");
+    try {
+      let currentY = this.margin;
 
-    // En-tête amélioré pour les rapports
-    const headerPrimaryRgb = this.hexToRgb(this.settings.primaryColor);
-    this.doc.setFillColor(headerPrimaryRgb.r, headerPrimaryRgb.g, headerPrimaryRgb.b);
-    this.doc.rect(0, 0, this.pageWidth, 35, 'F');
+      // En-tête amélioré pour les rapports
+      const headerPrimaryRgb = this.hexToRgb(this.settings.primaryColor);
+      this.doc.setFillColor(headerPrimaryRgb.r, headerPrimaryRgb.g, headerPrimaryRgb.b);
+      this.doc.rect(0, 0, this.pageWidth, 35, 'F');
 
-    // Logo et nom d'entreprise
-    if (this.settings.companyInfo.logo) {
-      try {
-        const logoSize = this.settings.logoSize === 'small' ? 18 : this.settings.logoSize === 'large' ? 28 : 23;
-        let logoX = this.margin;
-        
-        if (this.settings.logoPosition === 'center') {
-          logoX = (this.pageWidth - logoSize) / 2;
-        } else if (this.settings.logoPosition === 'right') {
-          logoX = this.pageWidth - this.margin - logoSize;
+      // Logo et nom d'entreprise
+      if (this.settings.companyInfo.logo) {
+        try {
+          const logoSize = this.settings.logoSize === 'small' ? 18 : this.settings.logoSize === 'large' ? 28 : 23;
+          let logoX = this.margin;
+          
+          if (this.settings.logoPosition === 'center') {
+            logoX = (this.pageWidth - logoSize) / 2;
+          } else if (this.settings.logoPosition === 'right') {
+            logoX = this.pageWidth - this.margin - logoSize;
+          }
+          
+          this.doc.addImage(this.settings.companyInfo.logo, 'PNG', logoX, currentY + 3, logoSize, logoSize * 0.6);
+        } catch (error) {
+          console.warn('Logo non disponible:', error);
         }
-        
-        this.doc.addImage(this.settings.companyInfo.logo, 'PNG', logoX, currentY + 3, logoSize, logoSize * 0.6);
-      } catch (error) {
-        console.warn('Logo non disponible:', error);
       }
+
+      this.doc.setTextColor(255, 255, 255);
+      this.doc.setFontSize(this.getFontSize() + 4);
+      this.doc.setFont('helvetica', 'bold');
+      const companyNameX = this.settings.logoPosition === 'left' && this.settings.companyInfo.logo ? this.margin + 30 : this.margin;
+      this.doc.text(this.settings.companyInfo.name, companyNameX, currentY + 12);
+
+      currentY += 45;
+
+      // Informations entreprise compactes
+      this.doc.setTextColor(0, 0, 0);
+      this.doc.setFontSize(this.getFontSize() - 1);
+      this.doc.setFont('helvetica', 'normal');
+      
+      const companyInfo = [
+        this.settings.companyInfo.address,
+        this.settings.companyInfo.phone,
+        this.settings.companyInfo.email
+      ].filter(info => info);
+
+      companyInfo.forEach((info, index) => {
+        this.doc.text(info, this.margin, currentY + (index * 4));
+      });
+      
+      // Titre du rapport stylé
+      const accentRgb = this.hexToRgb(this.settings.accentColor);
+      this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
+      this.doc.setFontSize(this.getFontSize() + 6);
+      this.doc.setFont('helvetica', 'bold');
+      const headerText = this.settings.headerText || 'RAPPORT FINANCIER';
+      this.doc.text(headerText, this.pageWidth - this.margin - 50, currentY + 5);
+
+      currentY += 25;
+
+      // Tableau des transactions optimisé
+      const tableHeaders = ['Description', 'Type', 'Montant', 'Date', 'Catégorie'];
+      const tableData = data.map(transaction => [
+        transaction.description,
+        transaction.type === 'income' ? 'Recette' : 'Dépense',
+        this.formatCurrency(transaction.amount),
+        new Date(transaction.date).toLocaleDateString('fr-FR'),
+        transaction.category
+      ]);
+
+      const tablePrimaryRgb = this.hexToRgb(this.settings.primaryColor);
+
+      autoTable(this.doc, {
+        head: [tableHeaders],
+        body: tableData,
+        startY: currentY,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [tablePrimaryRgb.r, tablePrimaryRgb.g, tablePrimaryRgb.b],
+          textColor: [255, 255, 255],
+          fontSize: this.getFontSize(),
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        bodyStyles: {
+          fontSize: this.getFontSize() - 1,
+          cellPadding: 3
+        },
+        columnStyles: {
+          0: { cellWidth: 'auto', halign: 'left' },
+          1: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
+          2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+          3: { cellWidth: 25, halign: 'center' },
+          4: { cellWidth: 25, halign: 'center' }
+        },
+        margin: { left: this.margin, right: this.margin },
+        styles: {
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
+        }
+      });
+
+      this.addFooter();
+      console.log("Transaction report generated successfully");
+      return this.doc;
+    } catch (error) {
+      console.error("Error generating transaction report:", error);
+      throw error;
     }
-
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(this.getFontSize() + 4);
-    this.doc.setFont('helvetica', 'bold');
-    const companyNameX = this.settings.logoPosition === 'left' && this.settings.companyInfo.logo ? this.margin + 30 : this.margin;
-    this.doc.text(this.settings.companyInfo.name, companyNameX, currentY + 12);
-
-    currentY += 45;
-
-    // Informations entreprise compactes
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFontSize(this.getFontSize() - 1);
-    this.doc.setFont('helvetica', 'normal');
-    
-    const companyInfo = [
-      this.settings.companyInfo.address,
-      this.settings.companyInfo.phone,
-      this.settings.companyInfo.email
-    ].filter(info => info);
-
-    companyInfo.forEach((info, index) => {
-      this.doc.text(info, this.margin, currentY + (index * 4));
-    });
-    
-    // Titre du rapport stylé
-    const accentRgb = this.hexToRgb(this.settings.accentColor);
-    this.doc.setTextColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.setFontSize(this.getFontSize() + 6);
-    this.doc.setFont('helvetica', 'bold');
-    const headerText = this.settings.headerText || 'RAPPORT FINANCIER';
-    this.doc.text(headerText, this.pageWidth - this.margin - 50, currentY + 5);
-
-    currentY += 25;
-
-    // Tableau des transactions optimisé
-    const tableHeaders = ['Description', 'Type', 'Montant', 'Date', 'Catégorie'];
-    const tableData = data.map(transaction => [
-      transaction.description,
-      transaction.type === 'income' ? 'Recette' : 'Dépense',
-      this.formatCurrency(transaction.amount),
-      new Date(transaction.date).toLocaleDateString('fr-FR'),
-      transaction.category
-    ]);
-
-    const tablePrimaryRgb = this.hexToRgb(this.settings.primaryColor);
-
-    autoTable(this.doc, {
-      head: [tableHeaders],
-      body: tableData,
-      startY: currentY,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [tablePrimaryRgb.r, tablePrimaryRgb.g, tablePrimaryRgb.b],
-        textColor: [255, 255, 255],
-        fontSize: this.getFontSize(),
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: {
-        fontSize: this.getFontSize() - 1,
-        cellPadding: 3
-      },
-      columnStyles: {
-        0: { cellWidth: 'auto', halign: 'left' },
-        1: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
-        2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
-        3: { cellWidth: 25, halign: 'center' },
-        4: { cellWidth: 25, halign: 'center' }
-      },
-      margin: { left: this.margin, right: this.margin },
-      styles: {
-        overflow: 'linebreak',
-        cellWidth: 'wrap'
-      }
-    });
-
-    this.addFooter();
-    return this.doc;
   }
 
   private addFooter(): void {
@@ -598,23 +598,39 @@ export class AdvancedPdfGenerator {
   }
 
   public downloadPDF(filename: string = 'facture.pdf'): void {
-    this.doc.save(filename);
+    try {
+      console.log("Downloading PDF:", filename);
+      this.doc.save(filename);
+      console.log("PDF downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      throw error;
+    }
   }
 
   public printPDF(): void {
-    const pdfWindow = window.open('', '_blank');
-    if (pdfWindow) {
-      pdfWindow.document.write(`
-        <html>
-          <head><title>Impression</title></head>
-          <body>
-            <iframe src="${this.doc.output('datauristring')}" 
-                    style="width:100%;height:100%;border:none;" 
-                    onload="window.print()">
-            </iframe>
-          </body>
-        </html>
-      `);
+    try {
+      console.log("Printing PDF");
+      const pdfWindow = window.open('', '_blank');
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <html>
+            <head><title>Impression</title></head>
+            <body>
+              <iframe src="${this.doc.output('datauristring')}" 
+                      style="width:100%;height:100%;border:none;" 
+                      onload="window.print()">
+              </iframe>
+            </body>
+          </html>
+        `);
+        console.log("PDF sent to printer");
+      } else {
+        throw new Error("Unable to open print window");
+      }
+    } catch (error) {
+      console.error("Error printing PDF:", error);
+      throw error;
     }
   }
 }

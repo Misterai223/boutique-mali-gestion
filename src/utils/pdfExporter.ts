@@ -24,8 +24,7 @@ export const previewPDF = (
     const doc = generator.generateInvoice(transactions);
     
     // Ouvrir l'aperçu dans une nouvelle fenêtre
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const pdfDataUri = doc.output('datauristring');
     
     // Créer une nouvelle fenêtre pour l'aperçu
     const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
@@ -90,11 +89,11 @@ export const previewPDF = (
                 <button onclick="window.close()">✕ Fermer</button>
               </div>
             </div>
-            <iframe src="${pdfUrl}" type="application/pdf"></iframe>
+            <iframe src="${pdfDataUri}" type="application/pdf"></iframe>
             <script>
               function downloadPDF() {
                 const link = document.createElement('a');
-                link.href = '${pdfUrl}';
+                link.href = '${pdfDataUri}';
                 link.download = '${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${format(new Date(), "yyyy-MM-dd")}.pdf';
                 link.click();
               }
@@ -108,10 +107,13 @@ export const previewPDF = (
       `);
     } else {
       // Fallback si le popup est bloqué
-      window.open(pdfUrl, '_blank');
+      window.open(pdfDataUri, '_blank');
     }
+    
+    console.log("Aperçu PDF créé avec succès");
   } catch (error) {
     console.error("Erreur lors de la création de l'aperçu PDF:", error);
+    throw error;
   }
 };
 
@@ -126,10 +128,12 @@ export const exportTransactionsToPDF = (
     const generator = new AdvancedPdfGenerator(settings);
     const doc = generator.generateInvoice(transactions);
     const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+    
     doc.save(fileName);
     console.log("PDF exporté avec succès!");
   } catch (error) {
     console.error("Erreur lors de l'export PDF:", error);
+    throw error;
   }
 };
 
@@ -144,19 +148,30 @@ export const printTransactionsPDF = (
     const generator = new AdvancedPdfGenerator(settings);
     const doc = generator.generateInvoice(transactions);
     
-    // Use dataurlnewwindow for printing
-    const dataUri = doc.output('dataurlstring');
-    const newWindow = window.open();
+    // Utilisation du datauristring pour l'impression
+    const dataUri = doc.output('datauristring');
+    const newWindow = window.open('', '_blank');
     if (newWindow) {
-      newWindow.document.write(`<iframe width='100%' height='100%' src='${dataUri}'></iframe>`);
+      newWindow.document.write(`
+        <html>
+          <head><title>Impression</title></head>
+          <body style="margin:0;">
+            <iframe width='100%' height='100%' src='${dataUri}' style="border:none;"></iframe>
+          </body>
+        </html>
+      `);
       newWindow.document.close();
       newWindow.focus();
       setTimeout(() => {
         newWindow.print();
-      }, 250);
+      }, 500);
+    } else {
+      throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
+    
     console.log("PDF envoyé à l'impression!");
   } catch (error) {
     console.error("Erreur lors de l'impression PDF:", error);
+    throw error;
   }
 };
