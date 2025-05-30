@@ -84,14 +84,14 @@ export class AdvancedPdfGenerator {
       }
     }
 
-    // Informations de l'entreprise à gauche
+    // Informations de l'entreprise à gauche avec taille augmentée
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(14);
+    this.doc.setFontSize(16); // Augmenté de 14 à 16
     this.doc.text(this.settings.companyInfo.name, this.margin, yPosition + 15);
 
     this.doc.setFont('helvetica', 'normal');
-    this.doc.setFontSize(9);
+    this.doc.setFontSize(11); // Augmenté de 9 à 11
     const companyLines = [
       this.settings.companyInfo.address,
       this.settings.companyInfo.phone,
@@ -99,7 +99,7 @@ export class AdvancedPdfGenerator {
     ].filter(line => line);
 
     companyLines.forEach((line, index) => {
-      this.doc.text(line, this.margin, yPosition + 23 + (index * 4));
+      this.doc.text(line, this.margin, yPosition + 25 + (index * 5)); // Espacement augmenté de 4 à 5
     });
 
     // Titre FACTURE à droite avec marges équilibrées
@@ -109,15 +109,9 @@ export class AdvancedPdfGenerator {
     const titleText = "FACTURE";
     const titleWidth = this.doc.getTextWidth(titleText);
     const titleX = this.pageWidth - this.margin - titleWidth;
-    this.doc.text(titleText, titleX, yPosition + 30);
+    this.doc.text(titleText, titleX, yPosition + 35); // Centré verticalement dans la bande
 
-    // Sous-titre élégant
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'normal');
-    const subtitleText = "Document commercial";
-    const subtitleWidth = this.doc.getTextWidth(subtitleText);
-    const subtitleX = this.pageWidth - this.margin - subtitleWidth;
-    this.doc.text(subtitleText, subtitleX, yPosition + 40);
+    // Suppression du sous-titre "Document commercial"
 
     yPosition += 70;
 
