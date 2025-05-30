@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,16 +15,38 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Building, Palette, Layout, Eye } from "lucide-react";
+import { FileText, Building, Palette, Layout, Eye, Paintbrush } from "lucide-react";
 import { invoiceSettingsService } from "@/services/invoiceSettingsService";
-import type { InvoiceSettings as InvoiceSettingsType } from "@/types/invoice";
+import type { InvoiceSettings as InvoiceSettingsType, InvoiceTheme } from "@/types/invoice";
 import { useToast } from "@/hooks/use-toast";
 import LogoUploader from "@/components/settings/logos/LogoUploader";
 import { useLogoManagement } from "@/hooks/useLogoManagement";
 import { AdvancedPdfGenerator } from "@/utils/advancedPdfGenerator";
+import InvoiceThemeSettings from "./InvoiceThemeSettings";
+
+const defaultTheme: InvoiceTheme = {
+  templateStyle: 'premium',
+  headerStyle: 'gradient',
+  cardStyle: 'rounded',
+  tableStyle: 'modern',
+  shadowIntensity: 'medium',
+  borderRadius: 6,
+  spacing: 'normal'
+};
 
 const InvoiceSettings = () => {
-  const [settings, setSettings] = useState<InvoiceSettingsType>(invoiceSettingsService.getSettings());
+  const [settings, setSettings] = useState<InvoiceSettingsType>(() => {
+    const loadedSettings = invoiceSettingsService.getSettings();
+    return {
+      ...loadedSettings,
+      theme: loadedSettings.theme || defaultTheme,
+      fontFamily: loadedSettings.fontFamily || 'helvetica',
+      secondaryColor: loadedSettings.secondaryColor || '#95a5a6',
+      backgroundColor: loadedSettings.backgroundColor || '#ffffff',
+      textColor: loadedSettings.textColor || '#000000',
+      watermark: loadedSettings.watermark || { enabled: false, text: '', opacity: 0.1 }
+    };
+  });
   const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
   const { handleFileChange, isUploading } = useLogoManagement();
@@ -32,6 +55,17 @@ const InvoiceSettings = () => {
     setSettings(prev => ({
       ...prev,
       [key]: value
+    }));
+    setHasChanges(true);
+  };
+
+  const handleThemeChange = (key: keyof InvoiceTheme, value: any) => {
+    setSettings(prev => ({
+      ...prev,
+      theme: {
+        ...prev.theme,
+        [key]: value
+      }
     }));
     setHasChanges(true);
   };
@@ -62,7 +96,7 @@ const InvoiceSettings = () => {
       const sampleData = [
         {
           id: 1,
-          description: "Vente de téléphones",
+          description: "Vente de téléphones Samsung Galaxy",
           amount: 250000,
           type: "income" as const,
           date: new Date().toISOString(),
@@ -70,7 +104,7 @@ const InvoiceSettings = () => {
         },
         {
           id: 2,
-          description: "Paiement du loyer",
+          description: "Paiement du loyer mensuel",
           amount: 100000,
           type: "expense" as const,
           date: new Date().toISOString(),
@@ -104,12 +138,12 @@ const InvoiceSettings = () => {
           Configuration des Factures PDF
         </CardTitle>
         <CardDescription>
-          Personnalisez l'apparence et le contenu de vos factures PDF
+          Personnalisez l'apparence et le contenu de vos factures PDF avec des options avancées
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="company" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="company">
               <Building className="h-4 w-4 mr-2" />
               Entreprise
@@ -121,6 +155,10 @@ const InvoiceSettings = () => {
             <TabsTrigger value="appearance">
               <Palette className="h-4 w-4 mr-2" />
               Apparence
+            </TabsTrigger>
+            <TabsTrigger value="theme">
+              <Paintbrush className="h-4 w-4 mr-2" />
+              Thème
             </TabsTrigger>
             <TabsTrigger value="content">
               <FileText className="h-4 w-4 mr-2" />
@@ -165,7 +203,7 @@ const InvoiceSettings = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="company-tax">Numéro fiscal</Label>
+                  <Label htmlFor="company-tax">Numéro fiscal / IBAN</Label>
                   <Input
                     id="company-tax"
                     value={settings.companyInfo.taxNumber || ''}
@@ -342,6 +380,14 @@ const InvoiceSettings = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="theme" className="space-y-4">
+            <InvoiceThemeSettings
+              settings={settings}
+              onSettingChange={handleSettingChange}
+              onThemeChange={handleThemeChange}
+            />
+          </TabsContent>
+
           <TabsContent value="content" className="space-y-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -408,7 +454,18 @@ const InvoiceSettings = () => {
           <div className="flex gap-2">
             {hasChanges && (
               <Button variant="outline" onClick={() => {
-                setSettings(invoiceSettingsService.getSettings());
+                setSettings(() => {
+                  const loadedSettings = invoiceSettingsService.getSettings();
+                  return {
+                    ...loadedSettings,
+                    theme: loadedSettings.theme || defaultTheme,
+                    fontFamily: loadedSettings.fontFamily || 'helvetica',
+                    secondaryColor: loadedSettings.secondaryColor || '#95a5a6',
+                    backgroundColor: loadedSettings.backgroundColor || '#ffffff',
+                    textColor: loadedSettings.textColor || '#000000',
+                    watermark: loadedSettings.watermark || { enabled: false, text: '', opacity: 0.1 }
+                  };
+                });
                 setHasChanges(false);
               }}>
                 Annuler
