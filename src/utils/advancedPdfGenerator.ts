@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { InvoiceSettings, InvoiceData } from '@/types/invoice';
@@ -59,8 +60,14 @@ export class AdvancedPdfGenerator {
     // Logo premium avec cadre
     if (this.settings.companyInfo.logo) {
       try {
-        const logoSize = 35;
+        const logoSize = this.settings.logoSize === 'small' ? 25 : this.settings.logoSize === 'large' ? 40 : 35;
         let logoX = this.margin + 5;
+        
+        if (this.settings.logoPosition === 'center') {
+          logoX = (this.pageWidth - logoSize) / 2;
+        } else if (this.settings.logoPosition === 'right') {
+          logoX = this.pageWidth - this.margin - logoSize - 5;
+        }
         
         // Cadre blanc autour du logo
         this.doc.setFillColor(255, 255, 255);
@@ -75,6 +82,7 @@ export class AdvancedPdfGenerator {
           logoSize * 0.7
         );
       } catch (error) {
+        console.warn('Erreur lors du chargement du logo:', error);
         // Logo de remplacement élégant
         this.doc.setFillColor(255, 255, 255);
         this.doc.roundedRect(this.margin + 2, yPosition + 2, 40, 28, 8, 8, 'F');
@@ -293,12 +301,6 @@ export class AdvancedPdfGenerator {
       },
       alternateRowStyles: {
         fillColor: [248, 249, 250]
-      },
-      didParseCell: (data) => {
-        // Bordures arrondies pour les en-têtes
-        if (data.section === 'head') {
-          data.cell.styles.fillColor = [primaryRgb.r, primaryRgb.g, primaryRgb.b];
-        }
       }
     });
 
@@ -369,59 +371,7 @@ export class AdvancedPdfGenerator {
   private addPremiumFooter(clientData: any, yPosition: number): void {
     yPosition += 15;
 
-    // Section conditions et paiement
-    const sectionWidth = (this.pageWidth - this.margin * 2 - 15) / 2;
-    const accentRgb = this.hexToRgb(this.settings.accentColor);
-
-    // Conditions de paiement
-    this.doc.setFillColor(248, 249, 250);
-    this.doc.roundedRect(this.margin, yPosition, sectionWidth, 25, 6, 6, 'F');
-    this.doc.setDrawColor(220, 220, 220);
-    this.doc.roundedRect(this.margin, yPosition, sectionWidth, 25, 6, 6, 'S');
-
-    this.doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.roundedRect(this.margin, yPosition, sectionWidth, 6, 6, 6, 'F');
-    this.doc.rect(this.margin, yPosition + 3, sectionWidth, 3, 'F');
-
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(8);
-    this.doc.text("CONDITIONS DE PAIEMENT", this.margin + 3, yPosition + 4);
-
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setFontSize(8);
-    this.doc.text("• Paiement sous 30 jours", this.margin + 3, yPosition + 12);
-    this.doc.text("• Pénalités de retard: 3% par mois", this.margin + 3, yPosition + 17);
-    this.doc.text("• Escompte: 2% si paiement à 8 jours", this.margin + 3, yPosition + 22);
-
-    // Informations bancaires
-    const bankX = this.margin + sectionWidth + 15;
-    this.doc.setFillColor(248, 249, 250);
-    this.doc.roundedRect(bankX, yPosition, sectionWidth, 25, 6, 6, 'F');
-    this.doc.setDrawColor(220, 220, 220);
-    this.doc.roundedRect(bankX, yPosition, sectionWidth, 25, 6, 6, 'S');
-
-    this.doc.setFillColor(accentRgb.r, accentRgb.g, accentRgb.b);
-    this.doc.roundedRect(bankX, yPosition, sectionWidth, 6, 6, 6, 'F');
-    this.doc.rect(bankX, yPosition + 3, sectionWidth, 3, 'F');
-
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(8);
-    this.doc.text("COORDONNÉES BANCAIRES", bankX + 3, yPosition + 4);
-
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.setFontSize(8);
-    this.doc.text(`Bénéficiaire: ${this.settings.companyInfo.name}`, bankX + 3, yPosition + 12);
-    if (this.settings.companyInfo.taxNumber) {
-      this.doc.text(`IBAN: ${this.settings.companyInfo.taxNumber}`, bankX + 3, yPosition + 17);
-    }
-    this.doc.text("Référence: Facture", bankX + 3, yPosition + 22);
-
     // Message de remerciement stylé
-    yPosition += 35;
     const primaryRgb = this.hexToRgb(this.settings.primaryColor);
     
     this.doc.setFont('helvetica', 'bold');
@@ -436,6 +386,15 @@ export class AdvancedPdfGenerator {
     this.doc.setLineWidth(1);
     const lineWidth = 40;
     this.doc.line((this.pageWidth - lineWidth) / 2, yPosition + 3, (this.pageWidth + lineWidth) / 2, yPosition + 3);
+
+    // Nom de l'entreprise au pied de page
+    yPosition += 15;
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(60, 60, 60);
+    const companyName = this.settings.companyInfo.name;
+    const companyNameWidth = this.doc.getTextWidth(companyName);
+    this.doc.text(companyName, (this.pageWidth - companyNameWidth) / 2, yPosition);
   }
 
   public generateClientInvoice(clientData: any): jsPDF {
@@ -586,10 +545,10 @@ export class AdvancedPdfGenerator {
     const footerText = this.settings.footerText || 'Merci pour votre confiance - Règlement à 30 jours';
     this.doc.text(footerText, this.pageWidth / 2, footerY - 2, { align: 'center' });
 
-    // Informations légales
+    // Nom de l'entreprise au pied de page
     this.doc.setFont('helvetica', 'normal');
-    this.doc.setFontSize(this.getFontSize() - 3);
-    this.doc.text('Document généré automatiquement', this.margin, footerY + 3);
+    this.doc.setFontSize(this.getFontSize() - 2);
+    this.doc.text(this.settings.companyInfo.name, this.margin, footerY + 3);
     this.doc.text(`Page 1 - ${new Date().toLocaleDateString('fr-FR')}`, this.pageWidth - this.margin, footerY + 3, { align: 'right' });
   }
 
@@ -652,6 +611,9 @@ export const createDefaultSettings = (overrides: Partial<InvoiceSettings> = {}):
   orientation: 'portrait',
   primaryColor: '#2980b9',
   accentColor: '#3498db',
+  secondaryColor: '#95a5a6',
+  backgroundColor: '#ffffff',
+  textColor: '#000000',
   fontSize: 'medium',
   fontFamily: 'helvetica',
   includeHeader: true,
@@ -668,6 +630,11 @@ export const createDefaultSettings = (overrides: Partial<InvoiceSettings> = {}):
     shadowIntensity: 'medium',
     borderRadius: 6,
     spacing: 'normal'
+  },
+  watermark: {
+    enabled: false,
+    text: '',
+    opacity: 0.1
   },
   ...overrides
 });
