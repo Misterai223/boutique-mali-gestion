@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Palette, Layers, Type, Shadow } from "lucide-react";
+import { Palette, Layers, Type, Sparkles } from "lucide-react";
 import type { InvoiceSettings, InvoiceTheme } from "@/types/invoice";
 
 interface InvoiceThemeSettingsProps {
@@ -250,7 +250,7 @@ const InvoiceThemeSettings = ({ settings, onSettingChange, onThemeChange }: Invo
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shadow className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
             Effets Visuels
           </CardTitle>
           <CardDescription>

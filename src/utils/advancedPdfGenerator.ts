@@ -58,9 +58,9 @@ export class AdvancedPdfGenerator {
 
     // Effet d'ombre subtile
     this.doc.setFillColor(0, 0, 0);
-    this.doc.setGState(new this.doc.GState({ opacity: 0.1 }));
+    this.doc.setGState({ opacity: 0.1 });
     this.doc.rect(0, 48, this.pageWidth, 4, 'F');
-    this.doc.setGState(new this.doc.GState({ opacity: 1 }));
+    this.doc.setGState({ opacity: 1 });
 
     // Logo premium avec cadre
     if (this.settings.companyInfo.logo) {
@@ -364,9 +364,9 @@ export class AdvancedPdfGenerator {
 
     // Effet d'ombre
     this.doc.setFillColor(0, 0, 0);
-    this.doc.setGState(new this.doc.GState({ opacity: 0.15 }));
+    this.doc.setGState({ opacity: 0.15 });
     this.doc.roundedRect(sectionX - 2, yPosition + 1, sectionWidth + 4, 14, 6, 6, 'F');
-    this.doc.setGState(new this.doc.GState({ opacity: 1 }));
+    this.doc.setGState({ opacity: 1 });
 
     this.doc.setTextColor(255, 255, 255);
     this.doc.setFont('helvetica', 'bold');
@@ -637,11 +637,21 @@ export const createDefaultSettings = (overrides: Partial<InvoiceSettings> = {}):
   primaryColor: '#2980b9',
   accentColor: '#3498db',
   fontSize: 'medium',
+  fontFamily: 'helvetica',
   includeHeader: true,
   includeFooter: true,
   headerText: "Rapport",
   footerText: "Merci pour votre confiance",
   currency: "F CFA",
   dateFormat: 'DD/MM/YYYY',
+  theme: {
+    templateStyle: 'premium',
+    headerStyle: 'gradient',
+    cardStyle: 'rounded',
+    tableStyle: 'modern',
+    shadowIntensity: 'medium',
+    borderRadius: 6,
+    spacing: 'normal'
+  },
   ...overrides
 });
