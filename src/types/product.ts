@@ -14,5 +14,13 @@ export interface Product {
   updated_at: string;
 }
 
+export interface ProductWithCategory extends Product {
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
+
 export type CreateProductData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
 export type UpdateProductData = Partial<CreateProductData>;

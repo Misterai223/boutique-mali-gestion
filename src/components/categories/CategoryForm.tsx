@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +36,8 @@ const CategoryForm = ({
       name: "",
       slug: "",
       description: "",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
   );
   
@@ -50,6 +51,8 @@ const CategoryForm = ({
           name: "",
           slug: "",
           description: "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
       );
     }
@@ -96,7 +99,13 @@ const CategoryForm = ({
     try {
       // Simulate API call
       await new Promise(r => setTimeout(r, 600));
-      onSave(formData);
+      
+      const updatedFormData = {
+        ...formData,
+        updated_at: new Date().toISOString(),
+      };
+      
+      onSave(updatedFormData);
       
       // Reset form if not editing
       if (!isEditing) {
@@ -105,6 +114,8 @@ const CategoryForm = ({
           name: "",
           slug: "",
           description: "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
       }
       
@@ -201,7 +212,7 @@ const CategoryForm = ({
                     <Textarea
                       id="description"
                       name="description"
-                      value={formData.description}
+                      value={formData.description || ""}
                       onChange={handleChange}
                       className="w-full min-h-[80px] pl-8 pt-2 resize-none"
                       placeholder="Description de la catégorie..."

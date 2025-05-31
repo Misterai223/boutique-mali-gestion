@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +15,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface CategoryWithProductCount extends Category {
+  product_count?: number;
+}
+
 interface CategoryListProps {
-  categories: Category[];
+  categories: CategoryWithProductCount[];
   onEdit: (category: Category) => void;
   onDelete: (id: string) => void;
 }
@@ -253,7 +256,7 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
                   >
                     <Layers className="h-4 w-4 mr-2 text-primary/60" />
                     <span className="text-sm font-medium">
-                      {category.productCount || 0} 
+                      {category.product_count || 0} 
                       <span className="ml-1 text-xs">produits</span>
                     </span>
                   </motion.div>

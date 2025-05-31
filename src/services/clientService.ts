@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Client, CreateClientData, UpdateClientData } from "@/types/client";
+import { Client, ClientWithPurchases, CreateClientData, UpdateClientData } from "@/types/client";
 
 export const clientService = {
   // Récupérer tous les clients
@@ -32,6 +32,27 @@ export const clientService = {
     }
 
     return data;
+  },
+
+  // Récupérer un client avec ses achats
+  async getClientWithPurchases(id: string): Promise<ClientWithPurchases | null> {
+    const { data: client, error: clientError } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (clientError) {
+      console.error('Erreur lors de la récupération du client:', clientError);
+      throw clientError;
+    }
+
+    // Pour l'instant, retourner le client avec un tableau vide de purchases
+    // TODO: Implémenter la récupération des achats depuis order_items
+    return {
+      ...client,
+      purchases: []
+    };
   },
 
   // Créer un nouveau client
@@ -78,21 +99,5 @@ export const clientService = {
       console.error('Erreur lors de la suppression du client:', error);
       throw error;
     }
-  },
-
-  // Rechercher des clients
-  async searchClients(query: string): Promise<Client[]> {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .or(`full_name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
-      .order('full_name');
-
-    if (error) {
-      console.error('Erreur lors de la recherche de clients:', error);
-      throw error;
-    }
-
-    return data || [];
   }
 };

@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Product } from "@/types/product";
+import { ProductWithCategory } from "@/types/product";
 import { 
   Package, 
   Tag, 
@@ -24,10 +24,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ProductDetailModalProps {
-  product: Product | null;
+  product: ProductWithCategory | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEdit: (product: Product) => void;
+  onEdit: (product: ProductWithCategory) => void;
 }
 
 const ProductDetailModal = ({ 
@@ -39,8 +39,8 @@ const ProductDetailModal = ({
   if (!product) return null;
 
   const stockStatus = () => {
-    if (product.stockQuantity <= 0) return "out-of-stock";
-    if (product.stockQuantity < product.threshold) return "low-stock";
+    if (product.stock_quantity <= 0) return "out-of-stock";
+    if (product.stock_quantity < product.threshold) return "low-stock";
     return "in-stock";
   };
 
@@ -102,12 +102,12 @@ const ProductDetailModal = ({
                 <div className="flex flex-col lg:flex-row gap-6">
                   <div className="lg:w-1/2">
                     <div className="aspect-square relative bg-muted rounded-lg overflow-hidden">
-                      {product.imageUrl ? (
+                      {product.image_url ? (
                         <motion.img
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.5 }}
-                          src={product.imageUrl}
+                          src={product.image_url}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
@@ -150,7 +150,7 @@ const ProductDetailModal = ({
                           <span className="text-sm font-medium text-muted-foreground">Stock</span>
                         </div>
                         <p className="text-xl font-bold text-blue-600">
-                          {product.stockQuantity} <span className="text-sm">unités</span>
+                          {product.stock_quantity} <span className="text-sm">unités</span>
                         </p>
                       </div>
                     </div>
@@ -161,7 +161,7 @@ const ProductDetailModal = ({
                         <span className="text-sm font-medium text-muted-foreground">Catégorie</span>
                       </div>
                       <Badge variant="outline" className="font-normal">
-                        {product.category}
+                        {product.category?.name || "Sans catégorie"}
                       </Badge>
                     </div>
                   </div>

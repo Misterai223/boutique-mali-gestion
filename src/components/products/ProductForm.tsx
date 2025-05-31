@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea"; 
-import { Product } from "@/types/product";
+import { ProductWithCategory } from "@/types/product";
 import { toast } from "sonner";
 import { 
   Select, 
@@ -32,8 +32,8 @@ import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 interface ProductFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: Product;
-  onSave: (product: Product) => void;
+  initialData?: ProductWithCategory;
+  onSave: (product: ProductWithCategory) => void;
 }
 
 const categories = [
@@ -52,15 +52,19 @@ const ProductForm = ({
   initialData,
   onSave,
 }: ProductFormProps) => {
-  const [formData, setFormData] = useState<Product>({
+  const [formData, setFormData] = useState<ProductWithCategory>({
     id: Date.now().toString(),
     name: "",
-    category: "",
+    category_id: null,
     price: 0,
-    stockQuantity: 0,
+    stock_quantity: 0,
     threshold: 5,
     description: "",
-    imageUrl: "",
+    image_url: "",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   const [activeTab, setActiveTab] = useState<string>("details");
@@ -70,7 +74,7 @@ const ProductForm = ({
     if (initialData) {
       setFormData({...initialData});
       // Si l'image existe, afficher l'onglet image directement
-      if (initialData.imageUrl) {
+      if (initialData.image_url) {
         setActiveTab("image");
       } else {
         setActiveTab("details");
@@ -79,12 +83,16 @@ const ProductForm = ({
       setFormData({
         id: Date.now().toString(),
         name: "",
-        category: "",
+        category_id: null,
         price: 0,
-        stockQuantity: 0,
+        stock_quantity: 0,
         threshold: 5,
         description: "",
-        imageUrl: "",
+        image_url: "",
+        sku: null,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
       setActiveTab("details");
     }
@@ -98,7 +106,7 @@ const ProductForm = ({
     const { name, value } = e.target;
     
     // Convert number fields from string to number
-    if (name === "price" || name === "stockQuantity" || name === "threshold") {
+    if (name === "price" || name === "stock_quantity" || name === "threshold") {
       setFormData({
         ...formData,
         [name]: Number(value),
@@ -114,14 +122,14 @@ const ProductForm = ({
   const handleCategoryChange = (value: string) => {
     setFormData({
       ...formData,
-      category: value,
+      category_id: value,
     });
   };
 
   const handleImageChange = (url: string) => {
     setFormData({
       ...formData,
-      imageUrl: url,
+      image_url: url,
     });
   };
 
@@ -129,14 +137,14 @@ const ProductForm = ({
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.category || formData.price <= 0) {
+    if (!formData.name || formData.price <= 0) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
     
     // Si Cloudinary est configuré, sauvegarder l'URL de l'image si elle existe
-    if (cloudinaryService.isConfigured() && formData.imageUrl) {
-      cloudinaryService.saveUploadedFileUrl('products', formData.imageUrl);
+    if (cloudinaryService.isConfigured() && formData.image_url) {
+      cloudinaryService.saveUploadedFileUrl('products', formData.image_url);
     }
     
     // Pass the form data to parent component
@@ -252,15 +260,15 @@ const ProductForm = ({
                                 whileHover={{ scale: 1.01 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                               >
-                                <Label htmlFor="category" className="text-sm font-medium flex items-center gap-2">
+                                <Label htmlFor="category_id" className="text-sm font-medium flex items-center gap-2">
                                   <Tag className="h-4 w-4 text-primary" />
-                                  Catégorie*
+                                  Catégorie
                                 </Label>
                                 <Select
-                                  value={formData.category}
+                                  value={formData.category_id || ""}
                                   onValueChange={handleCategoryChange}
                                 >
-                                  <SelectTrigger id="category" className="focus-visible:ring-primary/30 border-primary/20 bg-background/50 backdrop-blur-sm">
+                                  <SelectTrigger id="category_id" className="focus-visible:ring-primary/30 border-primary/20 bg-background/50 backdrop-blur-sm">
                                     <SelectValue placeholder="Sélectionner une catégorie" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-popover/95 backdrop-blur-sm shadow-xl border-primary/20 z-50">
@@ -343,15 +351,15 @@ const ProductForm = ({
                                 whileHover={{ scale: 1.01 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                               >
-                                <Label htmlFor="stockQuantity" className="text-sm font-medium flex items-center gap-2">
+                                <Label htmlFor="stock_quantity" className="text-sm font-medium flex items-center gap-2">
                                   <Archive className="h-4 w-4 text-blue-600" />
                                   Quantité en stock
                                 </Label>
                                 <Input
-                                  id="stockQuantity"
-                                  name="stockQuantity"
+                                  id="stock_quantity"
+                                  name="stock_quantity"
                                   type="number"
-                                  value={formData.stockQuantity}
+                                  value={formData.stock_quantity}
                                   onChange={handleChange}
                                   min={0}
                                   className="focus-visible:ring-primary/30 border-primary/20 bg-background/50 backdrop-blur-sm"
@@ -375,7 +383,7 @@ const ProductForm = ({
                                   type="number"
                                   value={formData.threshold}
                                   onChange={handleChange}
-                                  min={1}
+                                  min={0}
                                   className="focus-visible:ring-primary/30 border-primary/20 bg-background/50 backdrop-blur-sm"
                                   placeholder="5"
                                 />
@@ -385,67 +393,41 @@ const ProductForm = ({
                         </motion.div>
                       </TabsContent>
                       
-                      <TabsContent value="image" className="p-6 space-y-4 mt-0">
+                      <TabsContent value="image" className="p-6 mt-0">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
                         >
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                              <Image className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground">
-                              Image du produit
-                            </h3>
-                          </div>
-                          
                           <ProductImageUploader
-                            initialImageUrl={formData.imageUrl}
+                            currentImageUrl={formData.image_url || ""}
                             onImageChange={handleImageChange}
                           />
-                          
-                          <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-dashed border-primary/20">
-                            <div className="text-sm text-muted-foreground space-y-2">
-                              <p className="flex items-center gap-2">
-                                <Sparkles className="h-4 w-4 text-accent" />
-                                Ajoutez une image pour rendre votre produit plus attractif
-                              </p>
-                              <p>• Format recommandé: JPEG, PNG</p>
-                              <p>• Taille maximale: 10MB</p>
-                              <p>• Résolution optimale: 800x800px</p>
-                            </div>
-                          </div>
                         </motion.div>
                       </TabsContent>
                     </ScrollArea>
                   </div>
                 </Tabs>
                 
-                <DialogFooter className="p-6 border-t bg-gradient-to-r from-muted/20 via-muted/30 to-muted/20 backdrop-blur-sm sticky bottom-0 mt-auto">
-                  <motion.div 
-                    className="flex gap-3 w-full"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
+                <DialogFooter className="p-6 border-t bg-muted/30 sticky bottom-0">
+                  <div className="flex gap-2 w-full">
                     <Button 
                       type="button" 
                       variant="outline" 
                       onClick={() => onOpenChange(false)}
-                      className="flex-1 border-primary/20 hover:bg-primary/5"
+                      className="w-full"
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X className="h-4 w-4 mr-1" />
                       Annuler
                     </Button>
                     <Button 
                       type="submit" 
-                      className="flex-1 bg-gradient-to-r from-primary via-primary to-accent shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-primary to-primary/90"
                     >
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="h-4 w-4 mr-1" />
                       {isEditing ? "Mettre à jour" : "Ajouter"}
                     </Button>
-                  </motion.div>
+                  </div>
                 </DialogFooter>
               </form>
             </motion.div>
