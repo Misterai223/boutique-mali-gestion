@@ -27,8 +27,8 @@ export interface OrderItem {
   created_at: string;
 }
 
-// For creating orders, we don't include order_number as it's auto-generated
-export type CreateOrderData = Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>;
+// For creating orders, include order_number as it's required by the database
+export type CreateOrderData = Omit<Order, 'id' | 'created_at' | 'updated_at'>;
 export type UpdateOrderData = Partial<CreateOrderData>;
 
 export type CreateOrderItemData = Omit<OrderItem, 'id' | 'created_at'>;
