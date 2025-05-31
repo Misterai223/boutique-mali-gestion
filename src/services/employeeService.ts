@@ -1,109 +1,98 @@
 
-import { Employee } from '@/types/employee';
-
-const STORAGE_KEY = 'employees_data';
-
-// Helper function to generate UUID
-const generateId = () => {
-  return 'emp_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-};
-
-// Helper function to get employees from localStorage
-const getStoredEmployees = (): Employee[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('Erreur lors de la lecture des employés:', error);
-    return [];
-  }
-};
-
-// Helper function to save employees to localStorage
-const saveEmployees = (employees: Employee[]): boolean => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
-    return true;
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde des employés:', error);
-    return false;
-  }
-};
+import { supabase } from "@/integrations/supabase/client";
+import { Employee } from "@/types/employee";
 
 export const employeeService = {
   // Récupérer tous les employés
   async getEmployees(): Promise<Employee[]> {
-    try {
-      return getStoredEmployees();
-    } catch (error) {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*')
+      .order('full_name');
+
+    if (error) {
       console.error('Erreur lors de la récupération des employés:', error);
-      return [];
+      throw error;
     }
+
+    return data || [];
+  },
+
+  // Récupérer un employé par ID
+  async getEmployeeById(id: string): Promise<Employee | null> {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Erreur lors de la récupération de l\'employé:', error);
+      throw error;
+    }
+
+    return data;
   },
 
   // Créer un nouvel employé
-  async createEmployee(employeeData: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee | null> {
-    try {
-      const employees = getStoredEmployees();
-      const now = new Date().toISOString();
-      
-      const newEmployee: Employee = {
-        ...employeeData,
-        id: generateId(),
-        created_at: now,
-        updated_at: now
-      };
+  async createEmployee(employeeData: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
+    const { data, error } = await supabase
+      .from('employees')
+      .insert(employeeData)
+      .select()
+      .single();
 
-      employees.push(newEmployee);
-      
-      if (saveEmployees(employees)) {
-        return newEmployee;
-      }
-      return null;
-    } catch (error) {
+    if (error) {
       console.error('Erreur lors de la création de l\'employé:', error);
-      return null;
+      throw error;
     }
+
+    return data;
   },
 
   // Mettre à jour un employé
-  async updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee | null> {
-    try {
-      const employees = getStoredEmployees();
-      const employeeIndex = employees.findIndex(emp => emp.id === id);
-      
-      if (employeeIndex === -1) {
-        return null;
-      }
+  async updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee> {
+    const { data, error } = await supabase
+      .from('employees')
+      .update(employeeData)
+      .eq('id', id)
+      .select()
+      .single();
 
-      const updatedEmployee: Employee = {
-        ...employees[employeeIndex],
-        ...employeeData,
-        updated_at: new Date().toISOString()
-      };
-
-      employees[employeeIndex] = updatedEmployee;
-      
-      if (saveEmployees(employees)) {
-        return updatedEmployee;
-      }
-      return null;
-    } catch (error) {
+    if (error) {
       console.error('Erreur lors de la mise à jour de l\'employé:', error);
-      return null;
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Supprimer un employé (désactiver)
+  async deleteEmployee(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('employees')
+      .update({ is_active: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erreur lors de la désactivation de l\'employé:', error);
+      throw error;
     }
   },
 
-  // Supprimer un employé
-  async deleteEmployee(id: string): Promise<boolean> {
-    try {
-      const employees = getStoredEmployees();
-      const filteredEmployees = employees.filter(emp => emp.id !== id);
-      
-      return saveEmployees(filteredEmployees);
-    } catch (error) {
-      console.error('Erreur lors de la suppression de l\'employé:', error);
-      return false;
+  // Récupérer les employés actifs
+  async getActiveEmployees(): Promise<Employee[]> {
+    const { data, error } = await supabase
+      .from('employees')
+      .select('*')
+      .eq('is_active', true)
+      .order('full_name');
+
+    if (error) {
+      console.error('Erreur lors de la récupération des employés actifs:', error);
+      throw error;
     }
+
+    return data || [];
   }
 };

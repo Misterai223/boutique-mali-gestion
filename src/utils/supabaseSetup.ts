@@ -1,12 +1,11 @@
 
 /**
- * Cette fonction doit être appelée au démarrage de l'application
- * mais ne vérifiera plus la connexion à la base de données
+ * Cette fonction initialise la connexion à Supabase
  */
 export async function initializeSupabase() {
   try {
     console.log("Initialisation de Supabase...");
-    // Nous ne vérifions plus la connexion à Supabase pour éviter les problèmes
+    // La connexion à Supabase est automatiquement gérée par le client
     console.log("Configuration de Supabase terminée");
     return true;
   } catch (error) {

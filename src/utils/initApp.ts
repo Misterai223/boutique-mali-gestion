@@ -10,7 +10,7 @@ export const initializeApp = async () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("accessLevel");
     
-    // Initialiser Supabase sans vérification de connexion
+    // Initialiser Supabase
     await initializeSupabase();
     console.log("Application initialisée avec succès");
     

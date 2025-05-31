@@ -43,7 +43,10 @@ export const getUserActivityLogs = async () => {
     console.log("Récupération des journaux d'activité");
     const { data, error } = await supabase
       .from('user_activity_logs')
-      .select('*')
+      .select(`
+        *,
+        profiles(full_name)
+      `)
       .order('created_at', { ascending: false })
       .limit(100);
       
