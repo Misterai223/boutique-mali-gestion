@@ -1,306 +1,338 @@
-
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderPlus, Search, Filter, Grid3X3, List, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Category } from "@/types/category";
+import { Plus, FolderPlus, Search, Folder, Edit, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Category } from "@/types/category";
 import CategoryForm from "@/components/categories/CategoryForm";
-import CategoryList from "@/components/categories/CategoryList";
-import { AnimatePresence, motion } from "framer-motion";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
 
-const initialCategories: Category[] = [
+// Sample categories data without productCount
+const sampleCategories: Category[] = [
   {
     id: "1",
     name: "Téléphones",
-    description: "Smartphones et téléphones portables dernière génération",
+    description: "Smartphones et téléphones portables de toutes marques",
     slug: "telephones",
-    productCount: 24
+    created_at: "2023-10-01T10:00:00Z",
+    updated_at: "2023-10-01T10:00:00Z"
   },
   {
-    id: "2",
+    id: "2", 
     name: "Accessoires",
-    description: "Accessoires pour appareils électroniques et gadgets",
+    description: "Accessoires pour téléphones et électronique",
     slug: "accessoires",
-    productCount: 36
+    created_at: "2023-10-02T11:00:00Z",
+    updated_at: "2023-10-02T11:00:00Z"
   },
   {
     id: "3",
-    name: "Ordinateurs",
-    description: "Ordinateurs portables et fixes haute performance",
+    name: "Ordinateurs", 
+    description: "Ordinateurs portables et de bureau",
     slug: "ordinateurs",
-    productCount: 12
+    created_at: "2023-10-03T12:00:00Z",
+    updated_at: "2023-10-03T12:00:00Z"
   },
   {
     id: "4",
-    name: "Audio",
-    description: "Écouteurs, casques et enceintes de qualité premium",
-    slug: "audio",
-    productCount: 18
+    name: "Tablettes",
+    description: "Tablettes et iPad de différentes marques",
+    slug: "tablettes", 
+    created_at: "2023-10-04T13:00:00Z",
+    updated_at: "2023-10-04T13:00:00Z"
   }
 ];
 
 const Categories = () => {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>(sampleCategories);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "count">("asc");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-  const handleAddCategory = (category: Category) => {
-    setCategories([...categories, category]);
-    toast.success(`Catégorie "${category.name}" ajoutée avec succès`, {
-      description: "La nouvelle catégorie est maintenant disponible"
-    });
+  const filteredCategories = categories.filter(category => {
+    return (
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleAddCategory = () => {
+    setEditingCategory(null);
+    setFormOpen(true);
   };
 
   const handleEditCategory = (category: Category) => {
-    setCategories(categories.map(c => c.id === category.id ? category : c));
-    setCategoryToEdit(null);
-    toast.success(`Catégorie "${category.name}" mise à jour avec succès`, {
-      description: "Les modifications ont été sauvegardées"
-    });
+    setEditingCategory(category);
+    setFormOpen(true);
   };
 
-  const handleDeleteCategory = (id: string) => {
-    const deletedCategory = categories.find(c => c.id === id);
-    setCategories(categories.filter(c => c.id !== id));
-    toast.success("Catégorie supprimée avec succès", {
-      description: `"${deletedCategory?.name}" a été supprimée définitivement`
-    });
-  };
-
-  const openEditForm = (category: Category) => {
-    setCategoryToEdit(category);
-    setIsFormOpen(true);
-  };
-
-  const sortCategories = useCallback((cats: Category[], order: "asc" | "desc" | "count") => {
-    switch (order) {
-      case "asc":
-        return [...cats].sort((a, b) => a.name.localeCompare(b.name));
-      case "desc":
-        return [...cats].sort((a, b) => b.name.localeCompare(a.name));
-      case "count":
-        return [...cats].sort((a, b) => (b.productCount || 0) - (a.productCount || 0));
-      default:
-        return cats;
+  const handleSaveCategory = (category: Category) => {
+    if (editingCategory) {
+      // Edit existing category
+      setCategories(
+        categories.map((c) => (c.id === category.id ? category : c))
+      );
+      toast.success(`Catégorie "${category.name}" mise à jour avec succès!`);
+    } else {
+      // Add new category
+      setCategories([...categories, category]);
+      toast.success(`Catégorie "${category.name}" ajoutée avec succès!`);
     }
-  }, []);
-
-  const filteredCategories = sortCategories(
-    categories.filter(category => 
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (category.description?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-    ),
-    sortOrder
-  );
-
-  const handleSort = (order: "asc" | "desc" | "count") => {
-    setSortOrder(order);
+    setEditingCategory(null);
+    setFormOpen(false);
   };
 
+  const handleDeleteCategory = (category: Category) => {
+    // Confirm before delete
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${category.name}" ?`)) {
+      setCategories(categories.filter((c) => c.id !== category.id));
+      toast.success(`Catégorie "${category.name}" supprimée avec succès!`);
+    }
+  };
+
+  // Animation variants
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
+  };
+  
+  const headerVariants = {
+    initial: { y: -30, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.2 } }
+  };
+  
+  const searchVariants = {
+    initial: { y: 20, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.4 } }
+  };
+  
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
+    visible: { 
       opacity: 1,
-      transition: {
+      transition: { 
         staggerChildren: 0.1,
-        delayChildren: 0.2
+        delayChildren: 0.2,
       }
     }
   };
 
-  const childVariants = {
-    hidden: { y: 30, opacity: 0 },
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
     visible: { 
       y: 0, 
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
+      opacity: 1, 
+      transition: { 
+        type: "spring", 
+        stiffness: 300,
+        damping: 20
+      } 
+    },
+    hover: { 
+      y: -10, 
+      scale: 1.02, 
+      boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+      transition: { 
+        type: "spring", 
+        stiffness: 400, 
+        damping: 17 
       }
+    },
+    tap: { 
+      scale: 0.98, 
+      transition: { 
+        type: "spring", 
+        stiffness: 400, 
+        damping: 10 
+      } 
     }
   };
 
   return (
     <motion.div 
-      className="space-y-8 p-1"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
+      className="space-y-6 pb-8"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
     >
-      {/* Header Section */}
       <motion.div 
-        variants={childVariants}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-accent/3 to-secondary/5 p-8 border border-primary/10"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0"
+        variants={headerVariants}
       >
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12"
-          animate={{
-            x: ["-100%", "200%"]
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatDelay: 4,
-            ease: "easeInOut"
-          }}
-        />
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-4">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                Catégories
-              </h1>
-              <motion.div
-                className="h-1 w-20 bg-gradient-to-r from-primary to-accent rounded-full mt-2"
-                initial={{ width: 0 }}
-                animate={{ width: 80 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-              />
-            </motion.div>
-            <motion.p 
-              className="text-muted-foreground text-lg max-w-md"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              Organisez et gérez efficacement toutes les catégories de produits de votre boutique
-            </motion.p>
-          </div>
-          
+        <motion.h1 
+          className="text-3xl font-bold tracking-tight flex items-center gap-2"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6, type: "spring" }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            initial={{ rotate: -10, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Button 
-              onClick={() => {
-                setCategoryToEdit(null);
-                setIsFormOpen(true);
-              }} 
-              className="flex-shrink-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white border-0 px-6 py-3 rounded-xl"
-              size="lg"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Nouvelle catégorie
-            </Button>
+            <Folder className="h-8 w-8 text-primary" />
           </motion.div>
+          <motion.span
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            Gestion des Catégories
+          </motion.span>
+        </motion.h1>
+        
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <Button 
+            onClick={handleAddCategory} 
+            className="bg-gradient-to-r from-primary to-primary/90 shadow-md hover:shadow-xl transition-all duration-300"
+          >
+            <motion.div
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              <FolderPlus className="h-4 w-4 mr-2" />
+            </motion.div>
+            Ajouter une catégorie
+          </Button>
+        </motion.div>
+      </motion.div>
+
+      <motion.div 
+        className="flex flex-col md:flex-row gap-4"
+        variants={searchVariants}
+      >
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher une catégorie par nom ou description..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="pl-10 shadow-sm border-input/60 focus-visible:ring-primary/30"
+          />
         </div>
       </motion.div>
 
-      {/* Controls Section */}
-      <motion.div 
-        variants={childVariants} 
-        className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-card/50 backdrop-blur-sm p-6 rounded-xl border border-border/50"
-      >
-        <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full lg:w-auto">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher une catégorie..."
-              className="w-full pl-10 py-3 bg-background/80 border-border/50 focus:border-primary/50 transition-all duration-300"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <ScrollArea className="h-[calc(100vh-220px)] w-full pr-4">
+        {filteredCategories.length > 0 ? (
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredCategories.map((category, index) => (
+              <motion.div
+                key={category.id}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover="hover"
+                whileTap="tap"
+                custom={index}
+                transition={{ delay: index * 0.1 }}
+                className="transform-gpu"
+              >
+                <Card className="group overflow-hidden h-full flex flex-col shadow-md hover:shadow-xl transition-shadow duration-300 border-primary/10">
+                  <div className="p-4 flex-grow">
+                    <h3 className="font-medium text-lg line-clamp-2">{category.name}</h3>
+                    {category.description && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {category.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between p-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                      {categories.length} produits
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => handleEditCategory(category)}
+                        className="h-8 w-8"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="icon" 
+                        onClick={() => handleDeleteCategory(category)}
+                        className="h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div 
+            className="text-center py-16 bg-muted/30 rounded-lg border border-dashed"
+            variants={itemVariants}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 20,
+                delay: 0.3
+              }}
+            >
+              <Folder className="h-16 w-16 mx-auto text-muted-foreground/60" />
+            </motion.div>
+            <motion.p 
+              className="text-muted-foreground mt-4 text-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              Aucune catégorie trouvée
+            </motion.p>
             {searchTerm && (
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchTerm("")}
-                  className="h-6 w-6 p-0 hover:bg-muted"
+                <Button 
+                  onClick={() => setSearchTerm("")} 
+                  variant="link" 
+                  className="mt-2"
                 >
-                  ×
+                  Réinitialiser la recherche
                 </Button>
               </motion.div>
             )}
-          </div>
-          
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 min-w-[120px] bg-background/80 border-border/50 hover:border-primary/50 transition-all duration-300">
-                  <Filter className="h-4 w-4" />
-                  Trier
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-xl border-border/50">
-                <DropdownMenuItem 
-                  onClick={() => handleSort("asc")} 
-                  className={`${sortOrder === "asc" ? "bg-primary/10 text-primary" : ""} transition-colors duration-200`}
-                >
-                  Alphabétique (A-Z)
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleSort("desc")} 
-                  className={`${sortOrder === "desc" ? "bg-primary/10 text-primary" : ""} transition-colors duration-200`}
-                >
-                  Alphabétique (Z-A)
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleSort("count")} 
-                  className={`${sortOrder === "count" ? "bg-primary/10 text-primary" : ""} transition-colors duration-200`}
-                >
-                  Nombre de produits
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground hidden sm:block">
-            {filteredCategories.length} catégorie{filteredCategories.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-      </motion.div>
+          </motion.div>
+        )}
+      </ScrollArea>
 
-      {/* Categories List */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={sortOrder + searchTerm}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4 }}
-          variants={childVariants}
-        >
-          <CategoryList 
-            categories={filteredCategories} 
-            onEdit={openEditForm} 
-            onDelete={handleDeleteCategory} 
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Category Form Modal */}
+      {/* Formulaire d'ajout/modification de catégorie */}
       <CategoryForm
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        initialData={categoryToEdit}
-        onSave={categoryToEdit ? handleEditCategory : handleAddCategory}
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        initialData={editingCategory}
+        onSave={handleSaveCategory}
       />
     </motion.div>
   );

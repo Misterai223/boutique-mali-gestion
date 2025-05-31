@@ -25,5 +25,16 @@ export interface ClientWithPurchases extends Client {
   purchases: ClientPurchase[];
 }
 
+// Legacy type for compatibility with existing components
+export interface PurchasedProduct {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+  };
+  quantity: number;
+}
+
 export type CreateClientData = Omit<Client, 'id' | 'created_at' | 'updated_at'>;
 export type UpdateClientData = Partial<CreateClientData>;

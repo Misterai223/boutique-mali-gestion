@@ -21,8 +21,7 @@ export interface AppSettings {
 }
 
 export const settingsService = {
-  // Récupérer un paramètre par clé
-  async getSetting<K extends keyof AppSettings>(key: K): Promise<AppSettings[K] | null> {
+  async getSetting<K extends keyof AppSettings>(key: K): Promise<AppSettings[K]> {
     const { data, error } = await supabase
       .from('app_settings')
       .select('value')
@@ -30,42 +29,63 @@ export const settingsService = {
       .single();
 
     if (error) {
-      console.error(`Erreur lors de la récupération du paramètre ${key}:`, error);
-      return null;
+      console.error('Error fetching setting:', error);
+      throw error;
     }
 
-    return data?.value as AppSettings[K];
+    return data.value as AppSettings[K];
   },
 
-  // Mettre à jour un paramètre
   async updateSetting<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
     const { error } = await supabase
       .from('app_settings')
-      .update({ value: value as any })
+      .update({ 
+        value: value as any,
+        updated_at: new Date().toISOString()
+      })
       .eq('key', key);
 
     if (error) {
-      console.error(`Erreur lors de la mise à jour du paramètre ${key}:`, error);
+      console.error('Error updating setting:', error);
       throw error;
     }
   },
 
-  // Récupérer tous les paramètres
-  async getAllSettings(): Promise<Partial<AppSettings>> {
+  async getAllSettings(): Promise<AppSettings> {
     const { data, error } = await supabase
       .from('app_settings')
       .select('key, value');
 
     if (error) {
-      console.error('Erreur lors de la récupération des paramètres:', error);
+      console.error('Error fetching all settings:', error);
       throw error;
     }
 
-    const settings: any = {};
-    data?.forEach(setting => {
-      settings[setting.key] = setting.value;
+    const settings = {} as AppSettings;
+    data?.forEach((item) => {
+      (settings as any)[item.key] = item.value;
     });
 
     return settings;
+  },
+
+  // Logo management methods (placeholder implementations)
+  async getLogos(): Promise<string[]> {
+    // This would normally fetch from storage bucket
+    // For now return empty array
+    return [];
+  },
+
+  async uploadLogo(file: File): Promise<string> {
+    // This would normally upload to storage bucket
+    // For now return a placeholder URL
+    console.log('Uploading logo:', file.name);
+    return `https://placeholder.com/logo/${file.name}`;
+  },
+
+  async deleteLogoByUrl(url: string): Promise<boolean> {
+    // This would normally delete from storage bucket
+    console.log('Deleting logo:', url);
+    return true;
   }
 };

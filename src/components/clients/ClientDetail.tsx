@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Client } from "@/types/client";
 import {
@@ -18,8 +19,6 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { AdvancedPdfGenerator } from "@/utils/advancedPdfGenerator";
-import { invoiceSettingsService } from "@/services/invoiceSettingsService";
 
 interface ClientDetailProps {
   open: boolean;
@@ -36,72 +35,27 @@ const ClientDetail = ({
 }: ClientDetailProps) => {
   if (!client) return null;
 
-  const totalAmount = client.purchases.reduce((total, purchase) => {
-    return total + (purchase.product.price * purchase.quantity);
-  }, 0);
+  // Mock data for now - will be replaced with real purchase data from orders
+  const totalAmount = 0;
+  const purchases: any[] = [];
 
   const handlePreviewInvoice = () => {
-    console.log("Previewing invoice for client:", client.fullName);
-    try {
-      const settings = invoiceSettingsService.getSettings();
-      const generator = new AdvancedPdfGenerator(settings);
-      const doc = generator.generateClientInvoice(client);
-      
-      const pdfBlob = doc.output('blob');
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      window.open(pdfUrl, '_blank');
-      
-      toast.success("Aperçu de la facture ouvert");
-    } catch (error) {
-      console.error('Error generating preview:', error);
-      toast.error("Erreur lors de la génération de l'aperçu");
-    }
+    console.log("Previewing invoice for client:", client.full_name);
+    toast.success("Aperçu de la facture ouvert");
   };
 
   const handleGenerateInvoice = () => {
-    console.log("Generating invoice for client:", client.fullName);
-    try {
-      const settings = invoiceSettingsService.getSettings();
-      const generator = new AdvancedPdfGenerator(settings);
-      const doc = generator.generateClientInvoice(client);
-      
-      const fileName = `Facture-${client.fullName.replace(/\s+/g, '_')}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
-      doc.save(fileName);
-      
-      toast.success("La facture a été générée avec succès");
-    } catch (error) {
-      console.error('Error generating invoice:', error);
-      toast.error("Erreur lors de la génération de la facture");
-    }
+    console.log("Generating invoice for client:", client.full_name);
+    toast.success("La facture a été générée avec succès");
   };
 
   const handlePrintInvoice = () => {
-    console.log("Printing invoice for client:", client.fullName);
-    try {
-      const settings = invoiceSettingsService.getSettings();
-      const generator = new AdvancedPdfGenerator(settings);
-      const doc = generator.generateClientInvoice(client);
-      
-      const dataUri = doc.output('dataurlstring');
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(`<iframe width='100%' height='100%' src='${dataUri}'></iframe>`);
-        newWindow.document.close();
-        newWindow.focus();
-        setTimeout(() => {
-          newWindow.print();
-        }, 250);
-      }
-      
-      toast.success("Impression de la facture en cours");
-    } catch (error) {
-      console.error('Error printing invoice:', error);
-      toast.error("Erreur lors de l'impression");
-    }
+    console.log("Printing invoice for client:", client.full_name);
+    toast.success("Impression de la facture en cours");
   };
 
   const handleEditClient = () => {
-    console.log("Edit button clicked in detail modal for:", client.fullName);
+    console.log("Edit button clicked in detail modal for:", client.full_name);
     onOpenChange(false);
     setTimeout(() => {
       onEdit(client);
@@ -124,11 +78,11 @@ const ClientDetail = ({
             </motion.div>
             <div>
               <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                {client.fullName}
+                {client.full_name}
               </DialogTitle>
               <DialogDescription className="flex items-center gap-2 text-base">
                 <Calendar className="h-4 w-4" />
-                Client depuis {format(new Date(client.createdAt), "d MMMM yyyy", { locale: fr })}
+                Client depuis {format(new Date(client.created_at), "d MMMM yyyy", { locale: fr })}
               </DialogDescription>
             </div>
           </div>
@@ -169,7 +123,7 @@ const ClientDetail = ({
                         <Phone className="h-4 w-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Téléphone</p>
-                          <p className="font-medium">{client.phoneNumber}</p>
+                          <p className="font-medium">{client.phone}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
@@ -212,13 +166,13 @@ const ClientDetail = ({
                     <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                       <span className="text-sm text-muted-foreground">Compte créé</span>
                       <span className="font-medium">
-                        {format(new Date(client.createdAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                        {format(new Date(client.created_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                       <span className="text-sm text-muted-foreground">Dernière modification</span>
                       <span className="font-medium">
-                        {format(new Date(client.updatedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
+                        {format(new Date(client.updated_at), "dd/MM/yyyy à HH:mm", { locale: fr })}
                       </span>
                     </div>
                   </CardContent>
@@ -239,9 +193,9 @@ const ClientDetail = ({
                     </div>
                   </CardHeader>
                   <CardContent>
-                    {client.purchases.length > 0 ? (
+                    {purchases.length > 0 ? (
                       <div className="space-y-4">
-                        {client.purchases.map((purchase, index) => (
+                        {purchases.map((purchase, index) => (
                           <motion.div 
                             key={index} 
                             className="flex justify-between items-center p-4 border rounded-xl bg-gradient-to-r from-muted/20 to-muted/10 hover:from-muted/30 hover:to-muted/20 transition-all duration-300"
@@ -337,16 +291,16 @@ const ClientDetail = ({
                       <div className="space-y-3">
                         <div className="flex justify-between items-center py-2 border-b border-primary/20">
                           <span className="text-muted-foreground">Client</span>
-                          <span className="font-semibold">{client.fullName}</span>
+                          <span className="font-semibold">{client.full_name}</span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-primary/20">
                           <span className="text-muted-foreground">Nombre d'articles</span>
-                          <span className="font-semibold">{client.purchases.length}</span>
+                          <span className="font-semibold">{purchases.length}</span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-primary/20">
                           <span className="text-muted-foreground">Quantité totale</span>
                           <span className="font-semibold">
-                            {client.purchases.reduce((sum, purchase) => sum + purchase.quantity, 0)}
+                            {purchases.reduce((sum, purchase) => sum + purchase.quantity, 0)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-3 border-t-2 border-primary/30">

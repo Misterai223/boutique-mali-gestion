@@ -14,19 +14,19 @@ interface ClientCardProps {
 }
 
 const ClientCard = ({ client, onView, onEdit }: ClientCardProps) => {
-  const totalAmount = client.purchases.reduce((total, purchase) => {
-    return total + (purchase.product.price * purchase.quantity);
-  }, 0);
+  // Mock purchases calculation for now - will be replaced with real data from orders
+  const totalAmount = 0; // client.purchases?.reduce((total, purchase) => total + (purchase.product.price * purchase.quantity), 0) || 0;
+  const purchaseCount = 0; // client.purchases?.length || 0;
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Edit button clicked for client:", client.fullName);
+    console.log("Edit button clicked for client:", client.full_name);
     onEdit(client);
   };
 
   const handleView = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("View button clicked for client:", client.fullName);
+    console.log("View button clicked for client:", client.full_name);
     onView(client);
   };
 
@@ -61,11 +61,11 @@ const ClientCard = ({ client, onView, onEdit }: ClientCardProps) => {
                 </motion.div>
                 <div>
                   <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors duration-300">
-                    {client.fullName}
+                    {client.full_name}
                   </h3>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    Depuis {format(new Date(client.createdAt), "MMM yyyy", { locale: fr })}
+                    Depuis {format(new Date(client.created_at), "MMM yyyy", { locale: fr })}
                   </p>
                 </div>
               </div>
@@ -77,7 +77,7 @@ const ClientCard = ({ client, onView, onEdit }: ClientCardProps) => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm group/item hover:text-primary transition-colors duration-200">
                 <Phone className="h-4 w-4 text-muted-foreground group-hover/item:text-primary" />
-                <span className="font-medium">{client.phoneNumber}</span>
+                <span className="font-medium">{client.phone}</span>
               </div>
               
               {client.email && (
@@ -104,7 +104,7 @@ const ClientCard = ({ client, onView, onEdit }: ClientCardProps) => {
               <div className="bg-muted/30 rounded-lg p-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    {client.purchases.length} produit(s)
+                    {purchaseCount} produit(s)
                   </span>
                   <span className="font-bold text-primary">
                     {totalAmount.toLocaleString()} F CFA

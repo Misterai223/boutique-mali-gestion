@@ -1,150 +1,154 @@
-
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import { Employee } from '@/types/employee';
-import { employeeService } from '@/services/employeeService';
-import EmployeeCard from './EmployeeCard';
-import { UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import EmployeeSearchFilter from './EmployeeSearchFilter';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Employee } from "@/types/employee";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Search } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EmployeeListProps {
-  onAddEmployee: () => void;
-  onEditEmployee: (employee: Employee) => void;
-  refreshTrigger?: number; // Add trigger prop for refreshing
+  employees?: Employee[];
+  onEdit?: (employee: Employee) => void;
+  onDelete?: (employee: Employee) => void;
+  isLoading?: boolean;
 }
 
-const EmployeeList = ({ onAddEmployee, onEditEmployee, refreshTrigger }: EmployeeListProps) => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string | undefined>(undefined);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+const EmployeeList = ({ 
+  employees = [], 
+  onEdit, 
+  onDelete,
+  isLoading = false 
+}: EmployeeListProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<keyof Employee>("full_name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Effectue le chargement initial des employés
-  useEffect(() => {
-    fetchEmployees();
-  }, [refreshTrigger]); // Refresh when trigger changes
-
-  // Fonction pour récupérer les employés
-  const fetchEmployees = async () => {
-    setIsLoading(true);
-    try {
-      const data = await employeeService.getEmployees();
-      setEmployees(data);
-    } catch (error: any) {
-      toast.error(`Erreur lors du chargement des employés: ${error.message}`);
-      console.error('Erreur lors du chargement des employés:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Fonction pour confirmer la suppression d'un employé
-  const handleDeleteConfirm = (employee: Employee) => {
-    setEmployeeToDelete(employee);
-    setIsDeleteDialogOpen(true);
-  };
-
-  // Fonction pour supprimer un employé
-  const handleDelete = async () => {
-    if (!employeeToDelete) return;
-
-    try {
-      const success = await employeeService.deleteEmployee(employeeToDelete.id);
-      
-      if (success) {
-        // Mettre à jour l'état local
-        setEmployees(employees.filter(emp => emp.id !== employeeToDelete.id));
-        toast.success(`Employé "${employeeToDelete.full_name}" supprimé avec succès`);
-      } else {
-        toast.error("Erreur lors de la suppression de l'employé");
-      }
-    } catch (error: any) {
-      toast.error(`Erreur lors de la suppression: ${error.message}`);
-      console.error("Erreur lors de la suppression de l'employé:", error);
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setEmployeeToDelete(null);
-    }
-  };
-
-  // Filtrer les employés en fonction de la recherche et du filtre de rôle
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesRole = !roleFilter || employee.role === roleFilter;
-    
-    return matchesSearch && matchesRole;
+    const fullName = employee.full_name || "";
+    const email = employee.email || "";
+    return (
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
+    const aValue = a[sortBy] || "";
+    const bValue = b[sortBy] || "";
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    } else {
+      return 0;
+    }
+  });
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSort = (column: keyof Employee) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleEdit = (employee: Employee) => {
+    if (onEdit) {
+      onEdit(employee);
+    }
+  };
+
+  const handleDelete = (employee: Employee) => {
+    if (onDelete) {
+      onDelete(employee);
+    }
+  };
+
   return (
-    <>
-      <EmployeeSearchFilter 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-      />
-
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      ) : filteredEmployees.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredEmployees.map((employee) => (
-            <EmployeeCard 
-              key={employee.id} 
-              employee={employee} 
-              onEdit={() => onEditEmployee(employee)} 
-              onDelete={() => handleDeleteConfirm(employee)} 
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg p-8">
-          <UserPlus className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">Aucun employé trouvé</h3>
-          <p className="text-muted-foreground text-center mb-4">
-            {searchTerm || roleFilter ? "Essayez de modifier vos filtres." : "Ajoutez votre premier employé pour commencer."}
-          </p>
-          <Button onClick={onAddEmployee}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Ajouter un employé
-          </Button>
-        </div>
-      )}
-
-      {/* Boîte de dialogue de confirmation de suppression */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action supprimera définitivement l'employé {employeeToDelete?.full_name}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Rechercher un employé par nom ou email..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="pl-10"
+          disabled={isLoading}
+        />
+      </div>
+      <ScrollArea>
+        <Table>
+          <TableCaption>Liste des employés de l'entreprise.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort("full_name")} className="cursor-pointer">
+                Nom
+                {sortBy === "full_name" && (sortOrder === "asc" ? " ▲" : " ▼")}
+              </TableHead>
+              <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
+                Email
+                {sortBy === "email" && (sortOrder === "asc" ? " ▲" : " ▼")}
+              </TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedEmployees.map((employee) => (
+              <TableRow key={employee.id}>
+                <TableCell>{employee.full_name}</TableCell>
+                <TableCell>{employee.email}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(employee)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifier
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(employee)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+            {employees.length === 0 && !isLoading && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  Aucun employé trouvé.
+                </TableCell>
+              </TableRow>
+            )}
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  Chargement...
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ScrollArea>
+    </div>
   );
 };
 

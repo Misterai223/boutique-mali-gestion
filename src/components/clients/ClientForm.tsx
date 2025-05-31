@@ -12,19 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Client, PurchasedProduct } from "@/types/client";
+import { Client } from "@/types/client";
 import { Product } from "@/types/product";
 import { toast } from "sonner";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Users, Save, X, Plus, Minus, MapPin, ShoppingCart } from "lucide-react";
+import { Users, Save, X, MapPin } from "lucide-react";
 
 interface ClientFormProps {
   open: boolean;
@@ -43,13 +36,13 @@ const ClientForm = ({
 }: ClientFormProps) => {
   const [formData, setFormData] = useState<Client>({
     id: Date.now().toString(),
-    fullName: "",
-    phoneNumber: "",
+    full_name: "",
+    phone: "",
     address: "",
     email: "",
-    purchases: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    country: "Côte d'Ivoire",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 
   // Reset form data when initialData changes or dialog opens
@@ -59,13 +52,13 @@ const ClientForm = ({
     } else if (open) {
       setFormData({
         id: Date.now().toString(),
-        fullName: "",
-        phoneNumber: "",
+        full_name: "",
+        phone: "",
         address: "",
         email: "",
-        purchases: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        country: "Côte d'Ivoire",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
     }
   }, [initialData, open]);
@@ -82,70 +75,11 @@ const ClientForm = ({
     });
   };
 
-  const handleAddPurchase = () => {
-    if (products.length === 0) {
-      toast.error("Aucun produit disponible");
-      return;
-    }
-    
-    setFormData({
-      ...formData,
-      purchases: [
-        ...formData.purchases,
-        { 
-          product: products[0], 
-          quantity: 1 
-        }
-      ]
-    });
-  };
-
-  const handleRemovePurchase = (index: number) => {
-    const newPurchases = [...formData.purchases];
-    newPurchases.splice(index, 1);
-    
-    setFormData({
-      ...formData,
-      purchases: newPurchases
-    });
-  };
-
-  const handleProductChange = (index: number, productId: string) => {
-    const selectedProduct = products.find(p => p.id === productId);
-    
-    if (!selectedProduct) return;
-    
-    const newPurchases = [...formData.purchases];
-    newPurchases[index] = {
-      ...newPurchases[index],
-      product: selectedProduct
-    };
-    
-    setFormData({
-      ...formData,
-      purchases: newPurchases
-    });
-  };
-
-  const handleQuantityChange = (index: number, quantity: number) => {
-    const newPurchases = [...formData.purchases];
-    
-    newPurchases[index] = {
-      ...newPurchases[index],
-      quantity: Math.max(1, quantity) // Ensure quantity is at least 1
-    };
-    
-    setFormData({
-      ...formData,
-      purchases: newPurchases
-    });
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.fullName || !formData.phoneNumber) {
+    if (!formData.full_name || !formData.phone) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
@@ -153,7 +87,7 @@ const ClientForm = ({
     // Update timestamps for editing
     const updatedData = {
       ...formData,
-      updatedAt: new Date().toISOString()
+      updated_at: new Date().toISOString()
     };
     
     // Pass the form data to parent component
@@ -191,13 +125,13 @@ const ClientForm = ({
                     
                     {/* Client Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="fullName" className="text-sm font-medium">
+                      <Label htmlFor="full_name" className="text-sm font-medium">
                         Nom complet*
                       </Label>
                       <Input
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
+                        id="full_name"
+                        name="full_name"
+                        value={formData.full_name}
                         onChange={handleChange}
                         required
                         className="focus-visible:ring-primary/30 transition-all duration-200"
@@ -206,13 +140,13 @@ const ClientForm = ({
                     
                     {/* Phone Number */}
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                      <Label htmlFor="phone" className="text-sm font-medium">
                         Numéro de téléphone*
                       </Label>
                       <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
                         onChange={handleChange}
                         required
                         className="focus-visible:ring-primary/30 transition-all duration-200"
@@ -228,7 +162,7 @@ const ClientForm = ({
                         id="email"
                         name="email"
                         type="email"
-                        value={formData.email}
+                        value={formData.email || ""}
                         onChange={handleChange}
                         className="focus-visible:ring-primary/30 transition-all duration-200"
                       />
@@ -238,7 +172,7 @@ const ClientForm = ({
                     <div className="space-y-2 border border-dashed p-4 rounded-md bg-muted/10">
                       <Label htmlFor="address" className="text-sm font-medium flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-primary" />
-                        Adresse de résidence
+                        Adresse de résidence*
                       </Label>
                       <Textarea
                         id="address"
@@ -247,118 +181,23 @@ const ClientForm = ({
                         onChange={handleChange}
                         className="focus-visible:ring-primary/30 transition-all duration-200 min-h-[100px]"
                         placeholder="Entrez l'adresse complète du client..."
+                        required
                       />
                     </div>
-                  </div>
-                  
-                  <Separator className="my-6" />
-                  
-                  {/* Purchases - More prominently displayed */}
-                  <div className="space-y-4 border border-dashed p-4 rounded-md bg-muted/10">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-sm font-medium flex items-center gap-2">
-                        <ShoppingCart className="h-4 w-4 text-primary" />
-                        Produits achetés
-                      </h3>
-                      <Button 
-                        type="button" 
-                        onClick={handleAddPurchase} 
-                        size="sm"
-                        variant="outline"
-                        className="transition-all duration-300 hover:shadow-md"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Ajouter un produit
-                      </Button>
+
+                    {/* Country */}
+                    <div className="space-y-2">
+                      <Label htmlFor="country" className="text-sm font-medium">
+                        Pays
+                      </Label>
+                      <Input
+                        id="country"
+                        name="country"
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="focus-visible:ring-primary/30 transition-all duration-200"
+                      />
                     </div>
-                    
-                    {formData.purchases.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md">
-                        Aucun produit ajouté
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {formData.purchases.map((purchase, index) => (
-                          <div 
-                            key={index} 
-                            className="flex items-start gap-4 p-4 border rounded-md bg-muted/20 hover:bg-muted/30 transition-colors duration-200"
-                          >
-                            {/* Product Selection */}
-                            <div className="flex-grow">
-                              <Label htmlFor={`product-${index}`} className="text-xs mb-1 block">
-                                Produit
-                              </Label>
-                              <Select
-                                value={purchase.product.id}
-                                onValueChange={(value) => handleProductChange(index, value)}
-                              >
-                                <SelectTrigger id={`product-${index}`} className="focus-visible:ring-primary/30">
-                                  <SelectValue placeholder="Sélectionner un produit" />
-                                </SelectTrigger>
-                                <SelectContent 
-                                  position="popper"
-                                  className="bg-popover shadow-xl border border-border/50 backdrop-blur-sm" 
-                                  align="start"
-                                  sideOffset={8}
-                                >
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} - {product.price.toLocaleString()} F CFA
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            {/* Quantity */}
-                            <div className="w-32">
-                              <Label htmlFor={`quantity-${index}`} className="text-xs mb-1 block">
-                                Quantité
-                              </Label>
-                              <div className="flex items-center">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity - 1)}
-                                  className="h-8 w-8 transition-all duration-200"
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <Input
-                                  id={`quantity-${index}`}
-                                  type="number"
-                                  value={purchase.quantity}
-                                  onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
-                                  min="1"
-                                  className="h-8 text-center mx-1 px-1 w-12"
-                                />
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  onClick={() => handleQuantityChange(index, purchase.quantity + 1)}
-                                  className="h-8 w-8 transition-all duration-200"
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {/* Remove Button */}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemovePurchase(index)}
-                              className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive transition-colors duration-200"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                   
                   {/* Add some bottom padding to ensure last elements are accessible */}

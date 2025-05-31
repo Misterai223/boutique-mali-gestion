@@ -8,5 +8,9 @@ export interface Category {
   updated_at: string;
 }
 
+export interface CategoryWithProductCount extends Category {
+  productCount: number;
+}
+
 export type CreateCategoryData = Omit<Category, 'id' | 'created_at' | 'updated_at'>;
 export type UpdateCategoryData = Partial<CreateCategoryData>;

@@ -18,32 +18,44 @@ const sampleProducts: Product[] = [
   {
     id: "1",
     name: "iPhone 13",
-    category: "Téléphones",
-    price: 350000,
-    stockQuantity: 15,
-    threshold: 5,
     description: "Un smartphone haut de gamme avec d'excellentes performances",
-    imageUrl: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    price: 350000,
+    stock_quantity: 15,
+    threshold: 5,
+    category_id: "1",
+    image_url: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    sku: "IPH13-128",
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: "2",
     name: "Samsung Galaxy S21",
-    category: "Téléphones",
-    price: 280000,
-    stockQuantity: 3,
-    threshold: 5,
     description: "Un smartphone puissant avec un excellent appareil photo",
-    imageUrl: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    price: 280000,
+    stock_quantity: 3,
+    threshold: 5,
+    category_id: "1",
+    image_url: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    sku: "SGS21-256",
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: "3",
     name: "Écouteurs Bluetooth",
-    category: "Accessoires",
-    price: 25000,
-    stockQuantity: 5,
-    threshold: 10,
     description: "Écouteurs sans fil avec réduction de bruit",
-    imageUrl: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    price: 25000,
+    stock_quantity: 5,
+    threshold: 10,
+    category_id: "2",
+    image_url: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    sku: "BT-EARBUDS",
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ];
 
@@ -51,37 +63,23 @@ const sampleProducts: Product[] = [
 const sampleClients: Client[] = [
   {
     id: "1",
-    fullName: "Jean Dupont",
-    phoneNumber: "+225 01 23 45 67 89",
+    full_name: "Jean Dupont",
+    phone: "+225 01 23 45 67 89",
     address: "Abidjan Cocody, Rue des Jardins",
     email: "jean.dupont@example.com",
-    purchases: [
-      {
-        product: sampleProducts[0],
-        quantity: 1
-      },
-      {
-        product: sampleProducts[2],
-        quantity: 2
-      }
-    ],
-    createdAt: "2023-10-15T10:30:00Z",
-    updatedAt: "2023-10-15T10:30:00Z"
+    country: "Côte d'Ivoire",
+    created_at: "2023-10-15T10:30:00Z",
+    updated_at: "2023-10-15T10:30:00Z"
   },
   {
     id: "2",
-    fullName: "Marie Kouassi",
-    phoneNumber: "+225 07 89 01 23 45",
+    full_name: "Marie Kouassi",
+    phone: "+225 07 89 01 23 45",
     address: "Abidjan Plateau, Avenue de la République",
     email: "marie.k@example.com",
-    purchases: [
-      {
-        product: sampleProducts[1],
-        quantity: 1
-      }
-    ],
-    createdAt: "2023-11-05T14:20:00Z",
-    updatedAt: "2023-11-05T14:20:00Z"
+    country: "Côte d'Ivoire",
+    created_at: "2023-11-05T14:20:00Z",
+    updated_at: "2023-11-05T14:20:00Z"
   }
 ];
 
@@ -97,8 +95,8 @@ const Clients = () => {
   // Filtered clients based on search term
   const filteredClients = clients.filter(client => {
     return (
-      client.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phoneNumber.includes(searchTerm) ||
+      client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.phone.includes(searchTerm) ||
       client.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
@@ -132,11 +130,11 @@ const Clients = () => {
         setClients(
           clients.map((c) => (c.id === client.id ? client : c))
         );
-        toast.success(`Client "${client.fullName}" mis à jour avec succès!`);
+        toast.success(`Client "${client.full_name}" mis à jour avec succès!`);
       } else {
         // Add new client
         setClients([...clients, client]);
-        toast.success(`Client "${client.fullName}" ajouté avec succès!`);
+        toast.success(`Client "${client.full_name}" ajouté avec succès!`);
       }
       setCurrentClient(undefined);
       setFormOpen(false);
@@ -258,10 +256,9 @@ const Clients = () => {
   return (
     <motion.div 
       className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background relative overflow-hidden"
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -295,7 +292,9 @@ const Clients = () => {
         {/* Enhanced Header */}
         <motion.div 
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0"
-          variants={headerVariants}
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
         >
           <motion.div className="space-y-2">
             <motion.h1 
@@ -404,7 +403,11 @@ const Clients = () => {
         </motion.div>
 
         {/* Enhanced Search Section */}
-        <motion.div variants={searchVariants}>
+        <motion.div
+          initial={{ y: 20, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
           <Card className="p-6 shadow-lg border-0 bg-card/50 backdrop-blur-sm">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-grow group">
@@ -449,27 +452,38 @@ const Clients = () => {
         {/* Enhanced Content Area */}
         <motion.div
           className="relative"
-          variants={floatingElementVariants}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 260,
+            damping: 20,
+            delay: 0.8
+          }}
         >
           <ScrollArea className="h-[calc(100vh-320px)] pr-4">
             <AnimatePresence mode="wait">
               {filteredClients.length > 0 ? (
                 <motion.div 
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ staggerChildren: 0.08, delayChildren: 0.4 }}
                   key="clients-grid"
                 >
                   {filteredClients.map((client, index) => (
                     <motion.div
                       key={client.id}
-                      variants={itemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                      whileTap="tap"
-                      custom={index}
+                      initial={{ opacity: 0, y: 30, scale: 0.95, rotateX: -15 }}
+                      animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
+                      whileHover={{ y: -8, scale: 1.03, rotateY: 2 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 300,
+                        damping: 25,
+                        delay: index * 0.1
+                      }}
                       layout
                       className="transform-gpu perspective-1000"
                     >
@@ -484,9 +498,8 @@ const Clients = () => {
               ) : (
                 <motion.div 
                   className="flex flex-col items-center justify-center py-20"
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
+                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   key="empty-state"
                 >
                   <Card className="p-12 text-center max-w-md mx-auto shadow-xl border-0 bg-gradient-to-br from-muted/50 to-muted/30 backdrop-blur-sm">
@@ -558,7 +571,7 @@ const Clients = () => {
                           className="group bg-gradient-to-r from-primary to-secondary"
                         >
                           <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                          Ajouter le premier client
+                          Ajouter votre premier client
                         </Button>
                       </motion.div>
                     )}

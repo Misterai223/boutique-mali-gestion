@@ -22,5 +22,17 @@ export interface ProductWithCategory extends Product {
   };
 }
 
+// Legacy interface for components that expect old property names
+export interface LegacyProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  stockQuantity: number;
+  threshold: number;
+  category: string;
+  imageUrl: string;
+}
+
 export type CreateProductData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
 export type UpdateProductData = Partial<CreateProductData>;
