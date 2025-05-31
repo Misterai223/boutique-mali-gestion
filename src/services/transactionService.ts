@@ -18,7 +18,11 @@ export const transactionService = {
       throw error;
     }
 
-    return data || [];
+    // Cast the type to proper union type
+    return (data || []).map(transaction => ({
+      ...transaction,
+      type: transaction.type as Transaction['type']
+    }));
   },
 
   // Récupérer une transaction par ID
@@ -34,7 +38,10 @@ export const transactionService = {
       throw error;
     }
 
-    return data;
+    return data ? {
+      ...data,
+      type: data.type as Transaction['type']
+    } : null;
   },
 
   // Créer une nouvelle transaction
@@ -50,7 +57,10 @@ export const transactionService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      type: data.type as Transaction['type']
+    };
   },
 
   // Mettre à jour une transaction
@@ -67,7 +77,10 @@ export const transactionService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      type: data.type as Transaction['type']
+    };
   },
 
   // Supprimer une transaction

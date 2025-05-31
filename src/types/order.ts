@@ -27,6 +27,7 @@ export interface OrderItem {
   created_at: string;
 }
 
+// For creating orders, we don't include order_number as it's auto-generated
 export type CreateOrderData = Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>;
 export type UpdateOrderData = Partial<CreateOrderData>;
 

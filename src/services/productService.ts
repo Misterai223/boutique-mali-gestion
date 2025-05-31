@@ -101,7 +101,7 @@ export const productService = {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .where('stock_quantity', 'lte', 'threshold')
+      .lte('stock_quantity', 'threshold')
       .eq('is_active', true);
 
     if (error) {
