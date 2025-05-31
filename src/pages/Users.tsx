@@ -5,43 +5,58 @@ import { Plus, User, Search, Filter, Users as UsersIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Client } from "@/types/client";
-import { Product } from "@/types/product";
+import { ProductWithCategory } from "@/types/product";
 import ClientForm from "@/components/clients/ClientForm";
 import ClientCard from "@/components/clients/ClientCard";
 import ClientDetail from "@/components/clients/ClientDetail";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Sample products data
-const sampleProducts: Product[] = [
+const sampleProducts: ProductWithCategory[] = [
   {
     id: "1",
     name: "iPhone 13",
-    category: "Téléphones",
+    category_id: "cat1",
     price: 350000,
-    stockQuantity: 15,
+    stock_quantity: 15,
     threshold: 5,
     description: "Un smartphone haut de gamme avec d'excellentes performances",
-    imageUrl: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat1", name: "Téléphones", slug: "telephones" }
   },
   {
     id: "2",
     name: "Samsung Galaxy S21",
-    category: "Téléphones",
+    category_id: "cat1",
     price: 280000,
-    stockQuantity: 3,
+    stock_quantity: 3,
     threshold: 5,
     description: "Un smartphone puissant avec un excellent appareil photo",
-    imageUrl: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat1", name: "Téléphones", slug: "telephones" }
   },
   {
     id: "3",
     name: "Écouteurs Bluetooth",
-    category: "Accessoires",
+    category_id: "cat2",
     price: 25000,
-    stockQuantity: 5,
+    stock_quantity: 5,
     threshold: 10,
     description: "Écouteurs sans fil avec réduction de bruit",
-    imageUrl: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat2", name: "Accessoires", slug: "accessoires" }
   },
 ];
 
@@ -49,37 +64,23 @@ const sampleProducts: Product[] = [
 const sampleClients: Client[] = [
   {
     id: "1",
-    fullName: "Jean Dupont",
-    phoneNumber: "+225 01 23 45 67 89",
+    full_name: "Jean Dupont",
+    phone: "+225 01 23 45 67 89",
     address: "Abidjan Cocody, Rue des Jardins",
     email: "jean.dupont@example.com",
-    purchases: [
-      {
-        product: sampleProducts[0],
-        quantity: 1
-      },
-      {
-        product: sampleProducts[2],
-        quantity: 2
-      }
-    ],
-    createdAt: "2023-10-15T10:30:00Z",
-    updatedAt: "2023-10-15T10:30:00Z"
+    country: "Côte d'Ivoire",
+    created_at: "2023-10-15T10:30:00Z",
+    updated_at: "2023-10-15T10:30:00Z"
   },
   {
     id: "2",
-    fullName: "Marie Kouassi",
-    phoneNumber: "+225 07 89 01 23 45",
+    full_name: "Marie Kouassi",
+    phone: "+225 07 89 01 23 45",
     address: "Abidjan Plateau, Avenue de la République",
     email: "marie.k@example.com",
-    purchases: [
-      {
-        product: sampleProducts[1],
-        quantity: 1
-      }
-    ],
-    createdAt: "2023-11-05T14:20:00Z",
-    updatedAt: "2023-11-05T14:20:00Z"
+    country: "Côte d'Ivoire",
+    created_at: "2023-11-05T14:20:00Z",
+    updated_at: "2023-11-05T14:20:00Z"
   }
 ];
 
@@ -89,13 +90,13 @@ const Users = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [currentClient, setCurrentClient] = useState<Client | undefined>(undefined);
-  const [products] = useState<Product[]>(sampleProducts);
+  const [products] = useState<ProductWithCategory[]>(sampleProducts);
 
   // Filtered clients based on search term
   const filteredClients = clients.filter(client => {
     return (
-      client.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phoneNumber.includes(searchTerm) ||
+      client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.phone.includes(searchTerm) ||
       client.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
@@ -125,11 +126,11 @@ const Users = () => {
       setClients(
         clients.map((c) => (c.id === client.id ? client : c))
       );
-      toast.success(`Client "${client.fullName}" mis à jour avec succès!`);
+      toast.success(`Client "${client.full_name}" mis à jour avec succès!`);
     } else {
       // Add new client
       setClients([...clients, client]);
-      toast.success(`Client "${client.fullName}" ajouté avec succès!`);
+      toast.success(`Client "${client.full_name}" ajouté avec succès!`);
     }
     setCurrentClient(undefined);
     setFormOpen(false);

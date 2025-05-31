@@ -5,87 +5,117 @@ import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/products/ProductCard";
 import ProductForm from "@/components/products/ProductForm";
 import ProductDetailModal from "@/components/products/ProductDetailModal";
-import { Product } from "@/types/product";
+import { ProductWithCategory } from "@/types/product";
 import { Plus, Search, Filter, PackageOpen, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 // Sample data
-const initialProducts: Product[] = [
+const initialProducts: ProductWithCategory[] = [
   {
     id: "1",
     name: "iPhone 13",
-    category: "Téléphones",
+    category_id: "cat1",
     price: 350000,
-    stockQuantity: 15,
+    stock_quantity: 15,
     threshold: 5,
     description: "Un smartphone haut de gamme avec d'excellentes performances",
-    imageUrl: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat1", name: "Téléphones", slug: "telephones" }
   },
   {
     id: "2",
     name: "Samsung Galaxy S21",
-    category: "Téléphones",
+    category_id: "cat1",
     price: 280000,
-    stockQuantity: 3,
+    stock_quantity: 3,
     threshold: 5,
     description: "Un smartphone puissant avec un excellent appareil photo",
-    imageUrl: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat1", name: "Téléphones", slug: "telephones" }
   },
   {
     id: "3",
     name: "Écouteurs Bluetooth",
-    category: "Accessoires",
+    category_id: "cat2",
     price: 25000,
-    stockQuantity: 5,
+    stock_quantity: 5,
     threshold: 10,
     description: "Écouteurs sans fil avec réduction de bruit",
-    imageUrl: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1606400082777-ef05f3c5e084?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat2", name: "Accessoires", slug: "accessoires" }
   },
   {
     id: "4",
     name: "Câble USB-C",
-    category: "Accessoires",
+    category_id: "cat2",
     price: 5000,
-    stockQuantity: 4,
+    stock_quantity: 4,
     threshold: 20,
     description: "Câble de charge pour appareils USB-C",
-    imageUrl: "https://images.unsplash.com/photo-1621370115429-cf6c8f4e0f54?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1621370115429-cf6c8f4e0f54?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat2", name: "Accessoires", slug: "accessoires" }
   },
   {
     id: "5",
     name: "iPad Pro",
-    category: "Tablettes",
+    category_id: "cat3",
     price: 450000,
-    stockQuantity: 0,
+    stock_quantity: 0,
     threshold: 3,
     description: "Tablette professionnelle avec écran Liquid Retina",
-    imageUrl: "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat3", name: "Tablettes", slug: "tablettes" }
   },
   {
     id: "6",
     name: "MacBook Air",
-    category: "Ordinateurs",
+    category_id: "cat4",
     price: 650000,
-    stockQuantity: 8,
+    stock_quantity: 8,
     threshold: 2,
     description: "Ordinateur portable léger et puissant",
-    imageUrl: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=400&fit=crop",
+    image_url: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=400&fit=crop",
+    sku: null,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category: { id: "cat4", name: "Ordinateurs", slug: "ordinateurs" }
   },
 ];
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<ProductWithCategory[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<Product | undefined>(undefined);
-  const [viewProduct, setViewProduct] = useState<Product | null>(null);
+  const [currentProduct, setCurrentProduct] = useState<ProductWithCategory | undefined>(undefined);
+  const [viewProduct, setViewProduct] = useState<ProductWithCategory | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("Tous");
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   // Extraire les catégories uniques des produits
-  const categories = ["Tous", ...Array.from(new Set(products.map(p => p.category)))];
+  const categories = ["Tous", ...Array.from(new Set(products.map(p => p.category?.name).filter(Boolean)))];
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -95,16 +125,16 @@ const Products = () => {
     (product) => {
       const matchesSearch = 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesCategory = activeCategory === "Tous" || product.category === activeCategory;
+      const matchesCategory = activeCategory === "Tous" || product.category?.name === activeCategory;
       
       return matchesSearch && matchesCategory;
     }
   );
 
-  const handleAddEditProduct = (product: Product) => {
+  const handleAddEditProduct = (product: ProductWithCategory) => {
     if (currentProduct) {
       // Edit existing product
       setProducts(
@@ -124,12 +154,12 @@ const Products = () => {
     setDialogOpen(false);
   };
 
-  const handleEditClick = (product: Product) => {
+  const handleEditClick = (product: ProductWithCategory) => {
     setCurrentProduct({...product}); // Make a copy to avoid direct mutation
     setDialogOpen(true);
   };
 
-  const handleViewClick = (product: Product) => {
+  const handleViewClick = (product: ProductWithCategory) => {
     setViewProduct(product);
     setDetailModalOpen(true);
   };

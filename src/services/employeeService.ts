@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Employee } from "@/types/employee";
+import { Employee, CreateEmployeeData, UpdateEmployeeData } from "@/types/employee";
 
 export const employeeService = {
   // Récupérer tous les employés
@@ -15,7 +15,17 @@ export const employeeService = {
       throw error;
     }
 
-    return data || [];
+    // Map database fields to interface fields
+    return (data || []).map(emp => ({
+      id: emp.id,
+      full_name: emp.full_name,
+      email: emp.email,
+      phone: emp.phone,
+      role: emp.position, // Map position to role
+      photo_url: undefined, // Not in database yet
+      created_at: emp.created_at,
+      updated_at: emp.updated_at
+    }));
   },
 
   // Récupérer un employé par ID
@@ -31,14 +41,33 @@ export const employeeService = {
       throw error;
     }
 
-    return data;
+    if (!data) return null;
+
+    // Map database fields to interface fields
+    return {
+      id: data.id,
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone,
+      role: data.position, // Map position to role
+      photo_url: undefined, // Not in database yet
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
   },
 
   // Créer un nouvel employé
-  async createEmployee(employeeData: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
+  async createEmployee(employeeData: CreateEmployeeData): Promise<Employee> {
+    const dbData = {
+      full_name: employeeData.full_name,
+      email: employeeData.email,
+      phone: employeeData.phone,
+      position: employeeData.role, // Map role to position for database
+    };
+
     const { data, error } = await supabase
       .from('employees')
-      .insert(employeeData)
+      .insert(dbData)
       .select()
       .single();
 
@@ -47,14 +76,31 @@ export const employeeService = {
       throw error;
     }
 
-    return data;
+    // Map database fields back to interface fields
+    return {
+      id: data.id,
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone,
+      role: data.position, // Map position to role
+      photo_url: undefined, // Not in database yet
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
   },
 
   // Mettre à jour un employé
-  async updateEmployee(id: string, employeeData: Partial<Employee>): Promise<Employee> {
+  async updateEmployee(id: string, employeeData: UpdateEmployeeData): Promise<Employee> {
+    const dbData: any = {};
+    
+    if (employeeData.full_name !== undefined) dbData.full_name = employeeData.full_name;
+    if (employeeData.email !== undefined) dbData.email = employeeData.email;
+    if (employeeData.phone !== undefined) dbData.phone = employeeData.phone;
+    if (employeeData.role !== undefined) dbData.position = employeeData.role; // Map role to position
+
     const { data, error } = await supabase
       .from('employees')
-      .update(employeeData)
+      .update(dbData)
       .eq('id', id)
       .select()
       .single();
@@ -64,7 +110,17 @@ export const employeeService = {
       throw error;
     }
 
-    return data;
+    // Map database fields back to interface fields
+    return {
+      id: data.id,
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone,
+      role: data.position, // Map position to role
+      photo_url: undefined, // Not in database yet
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
   },
 
   // Supprimer un employé (désactiver)
@@ -93,6 +149,16 @@ export const employeeService = {
       throw error;
     }
 
-    return data || [];
+    // Map database fields to interface fields
+    return (data || []).map(emp => ({
+      id: emp.id,
+      full_name: emp.full_name,
+      email: emp.email,
+      phone: emp.phone,
+      role: emp.position, // Map position to role
+      photo_url: undefined, // Not in database yet
+      created_at: emp.created_at,
+      updated_at: emp.updated_at
+    }));
   }
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -400,7 +399,7 @@ const ProductForm = ({
                           transition={{ delay: 0.1 }}
                         >
                           <ProductImageUploader
-                            currentImageUrl={formData.image_url || ""}
+                            initialImageUrl={formData.image_url || ""}
                             onImageChange={handleImageChange}
                           />
                         </motion.div>

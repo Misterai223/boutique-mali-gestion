@@ -19,3 +19,6 @@ export type EmployeeRole =
   | 'secretary'
   | 'technician'
   | 'other';
+
+export type CreateEmployeeData = Omit<Employee, 'id' | 'created_at' | 'updated_at'>;
+export type UpdateEmployeeData = Partial<CreateEmployeeData>;

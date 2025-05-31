@@ -45,7 +45,6 @@ export const Employees = () => {
       </div>
       
       <EmployeeList 
-        onAddEmployee={openAddEmployeeDialog}
         onEditEmployee={openEditEmployeeDialog}
         refreshTrigger={refreshTrigger}
       />

@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Employee } from "@/types/employee";
 import {
   Table,
@@ -13,23 +14,41 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { employeeService } from "@/services/employeeService";
+import { toast } from "sonner";
 
 interface EmployeeListProps {
-  employees?: Employee[];
-  onEdit?: (employee: Employee) => void;
-  onDelete?: (employee: Employee) => void;
-  isLoading?: boolean;
+  onEditEmployee?: (employee: Employee) => void;
+  refreshTrigger?: number;
 }
 
 const EmployeeList = ({ 
-  employees = [], 
-  onEdit, 
-  onDelete,
-  isLoading = false 
+  onEditEmployee,
+  refreshTrigger = 0
 }: EmployeeListProps) => {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<keyof Employee>("full_name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Load employees
+  useEffect(() => {
+    loadEmployees();
+  }, [refreshTrigger]);
+
+  const loadEmployees = async () => {
+    setIsLoading(true);
+    try {
+      const data = await employeeService.getEmployees();
+      setEmployees(data);
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      toast.error('Erreur lors du chargement des employés');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredEmployees = employees.filter(employee => {
     const fullName = employee.full_name || "";
@@ -67,14 +86,21 @@ const EmployeeList = ({
   };
 
   const handleEdit = (employee: Employee) => {
-    if (onEdit) {
-      onEdit(employee);
+    if (onEditEmployee) {
+      onEditEmployee(employee);
     }
   };
 
-  const handleDelete = (employee: Employee) => {
-    if (onDelete) {
-      onDelete(employee);
+  const handleDelete = async (employee: Employee) => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'employé ${employee.full_name} ?`)) {
+      try {
+        await employeeService.deleteEmployee(employee.id);
+        toast.success('Employé supprimé avec succès');
+        loadEmployees(); // Refresh the list
+      } catch (error) {
+        console.error('Error deleting employee:', error);
+        toast.error('Erreur lors de la suppression de l\'employé');
+      }
     }
   };
 
