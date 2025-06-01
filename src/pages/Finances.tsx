@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TransactionList from "@/components/finances/TransactionList";
+import FinancialDetailsModal from "@/components/finances/FinancialDetailsModal";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
 import { PlusCircle, Download, FileText, Eye, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
@@ -46,6 +47,7 @@ const financialData = [
 const Finances = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -259,7 +261,12 @@ const Finances = () => {
                       Évolution des revenus, dépenses et bénéfices
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" className="hover:bg-accent transition-colors duration-200">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsDetailsModalOpen(true)}
+                    className="hover:bg-accent transition-colors duration-200"
+                  >
                     <FileText className="h-4 w-4 mr-2" />
                     Détails
                   </Button>
@@ -409,6 +416,11 @@ const Finances = () => {
           open={isAddTransactionOpen} 
           onOpenChange={setIsAddTransactionOpen} 
           onAddTransaction={handleAddTransaction}
+        />
+
+        <FinancialDetailsModal 
+          open={isDetailsModalOpen} 
+          onOpenChange={setIsDetailsModalOpen} 
         />
       </div>
     </div>

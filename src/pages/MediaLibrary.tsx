@@ -118,6 +118,10 @@ const MediaLibrary = () => {
                   <Folder className="h-4 w-4" />
                   <span>Catégories</span>
                 </TabsTrigger>
+                <TabsTrigger value="logos" className="flex items-center gap-1">
+                  <Image className="h-4 w-4" />
+                  <span>Logos</span>
+                </TabsTrigger>
                 <TabsTrigger value="general" className="flex items-center gap-1">
                   <Folder className="h-4 w-4" />
                   <span>Général</span>
