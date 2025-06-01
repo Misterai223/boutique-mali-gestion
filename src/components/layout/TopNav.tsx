@@ -23,13 +23,13 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="h-14 sm:h-16 border-b bg-background/80 backdrop-blur-xl flex items-center px-2 sm:px-4 justify-between shadow-lg sticky top-0 z-50 border-border/50"
+      className="h-14 sm:h-16 border-b bg-background/95 backdrop-blur-xl flex items-center px-3 sm:px-4 lg:px-6 justify-between shadow-sm sticky top-0 z-50 border-border/50"
       style={{
         borderBottomColor: 'hsl(var(--primary) / 0.2)',
         boxShadow: '0 4px 6px -1px hsl(var(--primary) / 0.1), 0 2px 4px -2px hsl(var(--primary) / 0.1)'
       }}
     >
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -37,29 +37,32 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
         >
           <SidebarToggle toggleSidebar={toggleSidebar} collapsed={collapsed} />
         </motion.div>
+        
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
+          className="min-w-0"
         >
           <ShopBranding />
         </motion.div>
+        
         {!isMobile && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.3 }}
-            className="ml-4"
+            className="ml-2 lg:ml-4"
           >
             <RoleIndicator />
           </motion.div>
         )}
       </div>
       
-      <div className="flex items-center gap-1 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         {!isMobile && (
           <motion.div 
-            className="flex items-center mr-2"
+            className="flex items-center mr-2 lg:mr-4"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -74,6 +77,7 @@ const TopNav = ({ toggleSidebar, collapsed, onLogout }: TopNavProps) => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
+              className="mr-1"
             >
               <SearchBar />
             </motion.div>

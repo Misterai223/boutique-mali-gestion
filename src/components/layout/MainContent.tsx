@@ -14,10 +14,10 @@ export const MainContent = ({ children }: MainContentProps) => {
   
   // Calculer l'espacement en fonction de la taille de l'écran
   const getPadding = () => {
-    if (breakpoint === 'xs') return 'p-3 sm:p-4';
-    if (breakpoint === 'sm') return 'p-4 sm:p-5';
-    if (breakpoint === 'md') return 'p-5 sm:p-6';
-    return 'p-6 lg:p-8';
+    if (breakpoint === 'xs') return 'p-2 sm:p-3';
+    if (breakpoint === 'sm') return 'p-3 sm:p-4';
+    if (breakpoint === 'md') return 'p-4 sm:p-5';
+    return 'p-4 sm:p-6 lg:p-8';
   };
   
   // Animations de page
@@ -51,9 +51,9 @@ export const MainContent = ({ children }: MainContentProps) => {
     <main className={`
       flex-1 overflow-y-auto overflow-x-hidden ${getPadding()} 
       bg-gradient-to-br from-background via-background to-muted/20
-      relative min-h-full
+      relative min-h-full w-full
     `}>
-      {/* Animated background elements */}
+      {/* Animated background elements - réduits sur mobile */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{
@@ -66,7 +66,9 @@ export const MainContent = ({ children }: MainContentProps) => {
             repeat: Infinity,
             ease: "linear"
           }}
-          className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"
+          className={`absolute -top-32 -right-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl ${
+            isMobile ? 'w-48 h-48' : 'w-96 h-96'
+          }`}
         />
         <motion.div
           animate={{
@@ -80,7 +82,9 @@ export const MainContent = ({ children }: MainContentProps) => {
             ease: "linear",
             delay: 5
           }}
-          className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-accent/10 to-secondary/10 rounded-full blur-3xl"
+          className={`absolute -bottom-32 -left-32 bg-gradient-to-br from-accent/10 to-secondary/10 rounded-full blur-3xl ${
+            isMobile ? 'w-48 h-48' : 'w-96 h-96'
+          }`}
         />
       </div>
       
@@ -97,10 +101,12 @@ export const MainContent = ({ children }: MainContentProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="backdrop-blur-sm bg-background/30 rounded-2xl p-1 shadow-sm border border-border/20"
+            className={`backdrop-blur-sm bg-background/30 rounded-lg sm:rounded-2xl p-0.5 sm:p-1 shadow-sm border border-border/20 ${
+              isMobile ? 'mx-1' : ''
+            }`}
           >
-            <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/30 shadow-lg">
-              <div className="p-4 sm:p-6 lg:p-8">
+            <div className="bg-background/80 backdrop-blur-sm rounded-md sm:rounded-xl border border-border/30 shadow-lg">
+              <div className={`${isMobile ? 'p-3 sm:p-4' : 'p-4 sm:p-6 lg:p-8'}`}>
                 {children}
               </div>
             </div>

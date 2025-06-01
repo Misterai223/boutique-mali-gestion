@@ -136,6 +136,16 @@
   }
   body {
     @apply bg-background text-foreground font-sans transition-colors duration-200;
+    /* Amélioration pour mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Amélioration de la lisibilité sur mobile */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
 }
 
@@ -145,7 +155,7 @@
   }
   
   .stat-card {
-    @apply p-6 rounded-lg bg-card shadow-md border flex flex-col justify-between space-y-2 relative overflow-hidden;
+    @apply p-4 sm:p-6 rounded-lg bg-card shadow-md border flex flex-col justify-between space-y-2 relative overflow-hidden;
   }
   
   .stat-card::before {
@@ -153,7 +163,7 @@
   }
   
   .dashboard-section {
-    @apply space-y-6 animate-fade-in;
+    @apply space-y-4 sm:space-y-6 animate-fade-in;
   }
   
   .btn-animated {
@@ -165,7 +175,7 @@
   }
   
   .menu-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20;
+    @apply flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-md transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20;
   }
   
   .menu-item-active {
@@ -173,7 +183,7 @@
   }
   
   .input-enhanced {
-    @apply rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors
+    @apply rounded-md border border-input bg-transparent px-3 py-2 text-sm sm:text-base shadow-sm transition-colors
     focus:outline-none focus:ring-1 focus:ring-primary file:border-0 file:bg-transparent 
     file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
   }
@@ -181,28 +191,57 @@
   .glass-card {
     @apply backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/10 dark:border-white/5 shadow-lg;
   }
+  
+  /* Améliorations spécifiques pour mobile */
+  .mobile-optimized {
+    @apply text-base leading-relaxed;
+  }
+  
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .mobile-container {
+    @apply px-4 py-3 mx-auto max-w-screen-xl;
+  }
 }
 
-/* Typography */
+/* Typography améliorée pour la responsivité */
 h1, h2, h3, h4, h5, h6 {
   @apply tracking-tight;
 }
 
 h1 {
-  @apply text-3xl md:text-4xl font-extrabold;
+  @apply text-2xl sm:text-3xl md:text-4xl font-extrabold;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 h2 {
-  @apply text-2xl md:text-3xl font-bold;
+  @apply text-xl sm:text-2xl md:text-3xl font-bold;
   letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 h3 {
-  @apply text-xl md:text-2xl font-bold;
+  @apply text-lg sm:text-xl md:text-2xl font-bold;
+  line-height: 1.4;
 }
 
-/* Animation keyframes */
+/* Responsive text utilities */
+.text-responsive-sm {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-base {
+  @apply text-base sm:text-lg;
+}
+
+.text-responsive-lg {
+  @apply text-lg sm:text-xl;
+}
+
+/* Animation keyframes - optimisés pour mobile */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -249,27 +288,29 @@ h3 {
   animation: pulse 3s ease-in-out infinite;
 }
 
-/* Staggered animations */
-@for $i from 1 through 10 {
-  .stagger-[$i] {
-    animation-delay: calc($i * 75ms);
+/* Staggered animations - réduits sur mobile */
+@media (min-width: 768px) {
+  @for $i from 1 through 10 {
+    .stagger-[$i] {
+      animation-delay: calc($i * 75ms);
+    }
   }
 }
 
-/* Enhanced scrollbar */
+/* Enhanced scrollbar - amélioré pour mobile */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 8px;
+  width: 8px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  border-radius: 4px;
   transition: background-color 0.3s;
 }
 
@@ -283,4 +324,26 @@ h3 {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Améliorations pour les interactions tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+  
+  .hover\:shadow-lg:hover {
+    box-shadow: none;
+  }
+  
+  .btn-animated:hover {
+    transform: none;
+  }
+}
+
+/* Support pour les écrans haute densité */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
 }

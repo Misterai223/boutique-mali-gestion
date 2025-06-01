@@ -26,8 +26,8 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30 p-4">
-      {/* Animated background elements */}
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30 p-3 sm:p-4">
+      {/* Animated background elements - optimisés pour mobile */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           animate={{
@@ -40,7 +40,9 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
             repeat: Infinity,
             ease: "linear"
           }}
-          className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"
+          className={`absolute -top-1/2 -left-1/2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl ${
+            isMobile ? 'w-64 h-64' : 'w-full h-full'
+          }`}
         />
         <motion.div
           animate={{
@@ -54,11 +56,13 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
             ease: "linear",
             delay: 5
           }}
-          className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-secondary/20 to-primary/20 rounded-full blur-3xl"
+          className={`absolute -bottom-1/2 -right-1/2 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-full blur-3xl ${
+            isMobile ? 'w-64 h-64' : 'w-full h-full'
+          }`}
         />
         
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
+        {/* Floating particles - réduits sur mobile */}
+        {!isMobile && [...Array(6)].map((_, i) => (
           <motion.div
             key={i}
             animate={{
@@ -90,7 +94,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
           type: "spring",
           stiffness: 100
         }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-sm sm:max-w-md relative z-10"
       >
         <Card className="overflow-hidden border-0 shadow-2xl backdrop-blur-xl bg-background/80 relative">
           {/* Card glow effect */}
@@ -116,7 +120,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
               <LoginHeader />
             </motion.div>
             
-            <CardContent className="space-y-6 px-6 pb-6">
+            <CardContent className={`space-y-4 sm:space-y-6 ${isMobile ? 'px-4 pb-4' : 'px-6 pb-6'}`}>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -157,12 +161,14 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
               </motion.div>
             </CardContent>
             
-            <CardFooter className="flex flex-col space-y-4 border-t border-border/50 pt-6 px-6 pb-6 bg-muted/30">
+            <CardFooter className={`flex flex-col space-y-3 sm:space-y-4 border-t border-border/50 pt-4 sm:pt-6 bg-muted/30 ${
+              isMobile ? 'px-4 pb-4' : 'px-6 pb-6'
+            }`}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.9, duration: 0.4 }}
-                className="text-sm text-center text-muted-foreground leading-relaxed"
+                className={`${isMobile ? 'text-xs' : 'text-sm'} text-center text-muted-foreground leading-relaxed`}
               >
                 <div className="space-y-2">
                   <p className="flex items-center justify-center gap-2">
@@ -183,7 +189,7 @@ const LoginFormContainer = ({ onLogin }: LoginFormContainerProps) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.1, duration: 0.4 }}
-                className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80"
+                className={`flex items-center justify-center gap-2 ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground/80`}
               >
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}

@@ -97,7 +97,7 @@ export function Sidebar({ className }: SidebarProps) {
         />
       </div>
 
-      <div className="py-3 sm:py-4 px-2 sm:px-3 flex flex-col h-full w-full relative z-10">
+      <div className={`${isMobile ? 'py-2 px-2' : 'py-3 sm:py-4 px-2 sm:px-3'} flex flex-col h-full w-full relative z-10`}>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export function Sidebar({ className }: SidebarProps) {
         </motion.div>
         
         <motion.div 
-          className="mt-4 flex-grow overflow-y-auto pb-10 space-y-2"
+          className={`${isMobile ? 'mt-3' : 'mt-4'} flex-grow overflow-y-auto ${isMobile ? 'pb-6' : 'pb-10'} space-y-1 sm:space-y-2`}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
@@ -124,7 +124,9 @@ export function Sidebar({ className }: SidebarProps) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/5 to-transparent pointer-events-none"
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none ${
+            isMobile ? 'h-16' : 'h-20'
+          }`}
         />
       </div>
     </motion.aside>
