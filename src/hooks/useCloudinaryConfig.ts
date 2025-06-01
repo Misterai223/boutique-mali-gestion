@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { cloudinaryService } from "@/services/cloudinaryService";
+import { getCloudName, getApiKey, getApiSecret, getUploadPreset } from "@/integrations/cloudinary/client";
 import { toast } from "sonner";
 
 export const useCloudinaryConfig = () => {
-  const [cloudName, setCloudName] = useState<string>(localStorage.getItem('CLOUDINARY_CLOUD_NAME') || 'dqhdjnmrq');
-  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('CLOUDINARY_API_KEY') || '833693739153773');
-  const [apiSecret, setApiSecret] = useState<string>(localStorage.getItem('CLOUDINARY_API_SECRET') || '7spozpGI-CN333Qo8Zp_FMXWzg0');
-  const [uploadPreset, setUploadPreset] = useState<string>(localStorage.getItem('CLOUDINARY_UPLOAD_PRESET') || 'testprojet');
+  const [cloudName, setCloudName] = useState<string>(getCloudName());
+  const [apiKey, setApiKey] = useState<string>(getApiKey());
+  const [apiSecret, setApiSecret] = useState<string>(getApiSecret());
+  const [uploadPreset, setUploadPreset] = useState<string>(getUploadPreset());
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
 
   useEffect(() => {
@@ -17,6 +18,14 @@ export const useCloudinaryConfig = () => {
   const checkConfiguration = () => {
     const configured = cloudinaryService.isConfigured();
     setIsConfigured(configured);
+    
+    if (configured) {
+      console.log('✅ Cloudinary est correctement configuré');
+      toast.success("Cloudinary configuré avec succès");
+    } else {
+      console.warn('⚠️ Cloudinary n\'est pas configuré');
+    }
+    
     return configured;
   };
 

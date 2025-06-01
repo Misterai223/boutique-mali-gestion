@@ -31,7 +31,9 @@ export const cloudinaryService = {
    * Vérifie si Cloudinary est correctement configuré
    */
   isConfigured: (): boolean => {
-    return isCloudinaryConfigured();
+    const configured = isCloudinaryConfigured();
+    console.log('Cloudinary configuré:', configured);
+    return configured;
   },
 
   /**
@@ -39,6 +41,7 @@ export const cloudinaryService = {
    */
   configureCredentials: (cloudName: string, apiKey: string, apiSecret: string, uploadPreset?: string): void => {
     configureCloudinary(cloudName, apiKey, apiSecret, uploadPreset);
+    console.log('✅ Identifiants Cloudinary mis à jour');
     toast.success('Identifiants Cloudinary enregistrés');
   },
 
@@ -46,16 +49,19 @@ export const cloudinaryService = {
    * Télécharge un fichier sur Cloudinary
    */
   uploadFile: async (file: File, options: UploadOptions = {}): Promise<string | null> => {
+    console.log('=== DÉBUT UPLOAD CLOUDINARY ===');
+    console.log('Fichier:', file.name, 'Taille:', file.size);
+    
     if (!isCloudinaryConfigured()) {
       toast.error('Cloudinary n\'est pas configuré. Veuillez configurer vos identifiants.');
       return null;
     }
 
     try {
-      // Cette fonction utilise l'API Upload de Cloudinary directement via le frontend
+      // Création du FormData pour l'upload
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', getUploadPreset()); // Preset non signé configuré dans Cloudinary
+      formData.append('upload_preset', getUploadPreset());
       formData.append('cloud_name', getCloudName());
       
       if (options.folder) {
@@ -72,20 +78,28 @@ export const cloudinaryService = {
 
       // URL de l'API d'upload de Cloudinary
       const uploadUrl = getUploadUrl();
+      console.log('Upload URL:', uploadUrl);
       
       const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData
       });
 
+      console.log('Réponse Cloudinary:', response.status, response.statusText);
+
       if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Erreur Cloudinary:', errorText);
+        throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('✅ Upload réussi:', data.secure_url);
+      
       return data.secure_url;
     } catch (error: any) {
-      console.error('Erreur lors du téléchargement sur Cloudinary:', error);
+      console.error('=== ERREUR UPLOAD CLOUDINARY ===');
+      console.error('Erreur:', error);
       toast.error(`Erreur de téléchargement: ${error.message}`);
       return null;
     }
@@ -96,15 +110,15 @@ export const cloudinaryService = {
    */
   getFilesByFolder: async (folder: string): Promise<string[]> => {
     try {
-      // Cette fonction devrait idéalement être implémentée via le backend
-      // Pour le moment, nous allons utiliser une approche simplifiée
-      
-      console.log(`Recherche des fichiers dans le dossier ${folder} (fonctionnalité limitée en frontend)`);
+      console.log(`Recherche des fichiers dans le dossier ${folder}`);
       
       // En production, il faudrait faire une requête à un backend qui utilise l'Admin API de Cloudinary
-      // Pour le MVP, nous pouvons stocker les URLs des fichiers uploadés dans localStorage
+      // Pour le MVP, nous utilisons le stockage local
       const storedUrls = localStorage.getItem(`cloudinary_${folder}_files`);
-      return storedUrls ? JSON.parse(storedUrls) : [];
+      const urls = storedUrls ? JSON.parse(storedUrls) : [];
+      
+      console.log(`Fichiers trouvés dans ${folder}:`, urls.length);
+      return urls;
     } catch (error) {
       console.error('Erreur lors de la récupération des fichiers:', error);
       return [];
@@ -115,11 +129,10 @@ export const cloudinaryService = {
    * Supprime une ressource de Cloudinary
    */
   deleteResource: async (publicId: string): Promise<boolean> => {
-    // Cette fonction doit être implémentée côté serveur pour des raisons de sécurité
-    // Pour le moment, nous allons simuler la suppression en frontend
-    console.log(`Suppression de la ressource ${publicId} (simulée)`);
+    console.log(`Tentative de suppression de la ressource ${publicId}`);
     
-    // En production, il faudrait implémenter cette fonction via un backend
+    // Cette fonction doit être implémentée côté serveur pour des raisons de sécurité
+    // Pour le moment, nous simulons la suppression
     toast.warning('La suppression nécessite une implémentation backend');
     
     return false;
@@ -136,6 +149,7 @@ export const cloudinaryService = {
     if (!urls.includes(url)) {
       urls.push(url);
       localStorage.setItem(key, JSON.stringify(urls));
+      console.log(`✅ URL sauvegardée dans ${category}:`, url);
     }
   },
   
@@ -150,6 +164,7 @@ export const cloudinaryService = {
       const urls = JSON.parse(existingUrls);
       const updatedUrls = urls.filter((existingUrl: string) => existingUrl !== url);
       localStorage.setItem(key, JSON.stringify(updatedUrls));
+      console.log(`✅ URL supprimée de ${category}:`, url);
       return true;
     }
     
