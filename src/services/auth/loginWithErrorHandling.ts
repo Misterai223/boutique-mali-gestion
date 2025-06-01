@@ -10,66 +10,114 @@ import { toast } from "sonner";
 // Login with detailed error handling
 export async function loginWithErrorHandling(email: string, password: string) {
   try {
-    console.log("Tentative de connexion avec email:", email);
+    console.log("=== DÉBUT DE LA CONNEXION ===");
+    console.log("Email utilisé:", email);
+    console.log("Configuration Supabase:", {
+      url: "https://jnvtgxdnoenmgrxizmxj.supabase.co",
+      hasClient: !!supabase
+    });
+    
+    // Test de la connexion Supabase d'abord
+    console.log("Test de la connexion à Supabase...");
+    
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     });
     
+    console.log("Réponse de Supabase:", { data: !!data, error: error?.message });
+    
     if (error) {
-      console.error("Erreur de connexion Supabase:", error);
+      console.error("=== ERREUR SUPABASE ===");
+      console.error("Code d'erreur:", error.message);
+      console.error("Détails complets:", error);
       
-      // Detailed and user-friendly error message
+      // Gestion d'erreurs plus spécifique
       if (error.message.includes("Invalid login credentials")) {
         return { 
           data: null, 
-          error: new Error("Email ou mot de passe incorrect. Veuillez réessayer.") 
+          error: new Error("Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.") 
         };
       }
       
-      return { data: null, error };
+      if (error.message.includes("Email not confirmed")) {
+        return { 
+          data: null, 
+          error: new Error("Veuillez confirmer votre email avant de vous connecter.") 
+        };
+      }
+      
+      if (error.message.includes("Too many requests")) {
+        return { 
+          data: null, 
+          error: new Error("Trop de tentatives de connexion. Veuillez patienter quelques minutes.") 
+        };
+      }
+      
+      if (error.message.includes("Network")) {
+        return { 
+          data: null, 
+          error: new Error("Problème de connexion réseau. Vérifiez votre connexion internet.") 
+        };
+      }
+      
+      // Erreur générique avec plus de détails
+      return { 
+        data: null, 
+        error: new Error(`Erreur de connexion: ${error.message}`) 
+      };
     }
     
-    console.log("Connexion réussie, récupération du profil utilisateur");
+    if (!data.session) {
+      console.error("=== AUCUNE SESSION CRÉÉE ===");
+      return { 
+        data: null, 
+        error: new Error("Impossible d'établir la session. Veuillez réessayer.") 
+      };
+    }
+    
+    console.log("=== CONNEXION RÉUSSIE ===");
+    console.log("Utilisateur:", data.user.email);
+    console.log("Session créée:", !!data.session);
     
     // Get user profile after login
-    if (data.session) {
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, access_level')
-          .eq('id', data.user.id)
-          .maybeSingle();
-          
-        if (!profileError && profileData) {
-          localStorage.setItem("userRole", profileData.role);
-          localStorage.setItem("accessLevel", profileData.access_level.toString());
-          console.log("Profil utilisateur chargé:", profileData);
-        } else if (profileError) {
-          console.warn("Impossible de récupérer le profil:", profileError);
-          // Set default role if error occurs
-          localStorage.setItem("userRole", "user");
-          localStorage.setItem("accessLevel", "1");
-        } else {
-          // Set default role if no profile is found
-          console.log("Aucun profil trouvé pour l'utilisateur. Utilisation des valeurs par défaut");
-          localStorage.setItem("userRole", "user");
-          localStorage.setItem("accessLevel", "1");
-        }
-      } catch (profileFetchError) {
-        console.error("Erreur lors de la récupération du profil:", profileFetchError);
+    try {
+      console.log("Récupération du profil utilisateur...");
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, access_level')
+        .eq('id', data.user.id)
+        .maybeSingle();
+        
+      if (profileError) {
+        console.warn("Erreur lors de la récupération du profil:", profileError);
         // Don't block login if profile retrieval fails
         localStorage.setItem("userRole", "user");
         localStorage.setItem("accessLevel", "1");
+      } else if (profileData) {
+        console.log("Profil utilisateur récupéré:", profileData);
+        localStorage.setItem("userRole", profileData.role);
+        localStorage.setItem("accessLevel", profileData.access_level.toString());
+      } else {
+        console.log("Aucun profil trouvé, utilisation des valeurs par défaut");
+        localStorage.setItem("userRole", "user");
+        localStorage.setItem("accessLevel", "1");
       }
+    } catch (profileFetchError) {
+      console.error("Exception lors de la récupération du profil:", profileFetchError);
+      localStorage.setItem("userRole", "user");
+      localStorage.setItem("accessLevel", "1");
     }
     
     return { data, error: null };
-  } catch (error: any) {
-    console.error("Exception lors de la connexion:", error);
+  } catch (exception: any) {
+    console.error("=== EXCEPTION DURANT LA CONNEXION ===");
+    console.error("Exception:", exception);
+    console.error("Stack trace:", exception.stack);
+    
     return { 
       data: null, 
-      error: new Error("Une erreur inattendue s'est produite. Veuillez réessayer.") 
+      error: new Error("Erreur technique inattendue. Vérifiez la console pour plus de détails.") 
     };
   }
 }
@@ -77,18 +125,20 @@ export async function loginWithErrorHandling(email: string, password: string) {
 // Basic login function for simpler use cases
 export async function login(email: string, password: string): Promise<boolean> {
   try {
+    console.log("Login simple pour:", email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password
     });
     
     if (error) {
-      console.error("Erreur de connexion:", error);
+      console.error("Erreur de connexion simple:", error);
       return false;
     }
     
     if (data.session) {
-      // Explicitly verify session is established
+      console.log("Session établie avec succès");
       localStorage.setItem("isAuthenticated", "true");
       
       // Get user profile

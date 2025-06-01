@@ -34,6 +34,8 @@ const LoginFormFields = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("=== DÉBUT DU PROCESSUS DE CONNEXION ===");
+    
     // Validation des entrées
     if (!email.trim()) {
       setErrorMsg("L'adresse email est requise");
@@ -45,37 +47,64 @@ const LoginFormFields = ({
       return;
     }
     
+    // Validation du format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setErrorMsg("Format d'email invalide");
+      return;
+    }
+    
     // Réinitialiser l'état d'erreur et activer le chargement
     setErrorMsg("");
     setIsLoading(true);
     
     try {
-      console.log("Tentative de connexion avec:", email);
+      console.log("Tentative de connexion avec email:", email.trim());
+      console.log("Longueur du mot de passe:", password.length);
       
-      // Utiliser simpleLogin pour une meilleure compatibilité
-      const { data, error } = await authService.simpleLogin(email, password);
+      // Utiliser loginWithErrorHandling pour une meilleure gestion d'erreurs
+      const { data, error } = await authService.loginWithErrorHandling(
+        email.trim().toLowerCase(), 
+        password
+      );
       
       if (error) {
-        console.error("Erreur lors de la connexion:", error.message);
+        console.error("Erreur retournée par le service:", error.message);
         setErrorMsg(error.message);
         setIsLoading(false);
+        
+        // Afficher aussi un toast pour plus de visibilité
+        toast.error(error.message);
         return;
       }
       
       if (data?.session) {
-        console.log("Session établie avec succès:", data.session.user.email);
+        console.log("=== CONNEXION RÉUSSIE ===");
+        console.log("Email utilisateur:", data.session.user.email);
+        console.log("ID utilisateur:", data.session.user.id);
+        
         localStorage.setItem("isAuthenticated", "true");
         toast.success("Connexion réussie!");
-        onLogin();
-        navigate('/', { replace: true });
+        
+        // Attendre un peu avant la redirection pour laisser le temps à l'état de se mettre à jour
+        setTimeout(() => {
+          onLogin();
+          navigate('/dashboard', { replace: true });
+        }, 100);
       } else {
-        console.error("Session non établie malgré une réponse sans erreur");
-        setErrorMsg("Impossible d'établir la session. Veuillez réessayer.");
+        console.error("=== ÉCHEC: AUCUNE SESSION ===");
+        const errorMsg = "Impossible d'établir la session. Veuillez réessayer.";
+        setErrorMsg(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
       }
-    } catch (error: any) {
-      console.error("Exception non gérée lors de la connexion:", error);
-      setErrorMsg(error.message || "Une erreur inattendue s'est produite");
+    } catch (exception: any) {
+      console.error("=== EXCEPTION NON GÉRÉE ===");
+      console.error("Exception:", exception);
+      
+      const errorMsg = "Erreur technique. Consultez la console pour plus de détails.";
+      setErrorMsg(errorMsg);
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };
@@ -98,7 +127,6 @@ const LoginFormFields = ({
           setPassword={setPassword}
           onForgotPassword={(e) => {
             e.preventDefault();
-            // Use the ForgotPassword component functionality
             if (!email.trim()) {
               setErrorMsg("Veuillez entrer votre email pour réinitialiser votre mot de passe");
               return;
