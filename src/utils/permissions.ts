@@ -28,6 +28,17 @@ export const ROLE_PERMISSIONS: Record<UserRole, AllowedPage[]> = {
     'media',
     'settings'
   ],
+  manager: [
+    'dashboard',
+    'products',
+    'categories',
+    'clients',
+    'employees',
+    'finances',
+    'reports',
+    'media',
+    'settings'
+  ],
   cashier: [
     'dashboard',
     'products',
@@ -43,17 +54,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, AllowedPage[]> = {
     'categories',
     'clients', 
     'media'
-  ],
-  manager: [
-    'dashboard',
-    'products',
-    'categories',
-    'clients',
-    'employees',
-    'finances',
-    'reports',
-    'media',
-    'settings'
   ],
   user: [
     'dashboard'
@@ -79,7 +79,7 @@ export const hasPageAccess = (userRole: UserRole, page: string): boolean => {
 // Fonction pour obtenir les pages autorisées pour un rôle
 export const getAllowedPages = (userRole: UserRole): string[] => {
   if (!userRole || !ROLE_PERMISSIONS[userRole]) {
-    return [];
+    return ['dashboard']; // Au minimum le tableau de bord
   }
   
   return ROLE_PERMISSIONS[userRole];
@@ -90,9 +90,14 @@ export const isAdmin = (userRole: UserRole): boolean => {
   return userRole === 'admin';
 };
 
+// Fonction pour vérifier si l'utilisateur est manager
+export const isManager = (userRole: UserRole): boolean => {
+  return userRole === 'manager';
+};
+
 // Fonction pour vérifier si l'utilisateur est caissier
 export const isCashier = (userRole: UserRole): boolean => {
-  return userRole === 'cashier';
+  return userRole === 'caissier';
 };
 
 // Fonction pour vérifier si l'utilisateur est vendeur

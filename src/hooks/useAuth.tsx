@@ -1,26 +1,52 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = () => {
-  // Initialize authentication state from localStorage, if available
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated");
-    return storedAuth === "true";
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Effect to initialize auth state on component mount
   useEffect(() => {
     console.log("Hook useAuth initialisé");
     
-    // Just ensure loading state is updated after a brief delay
-    setTimeout(() => {
-      setLoading(false);
-      console.log("État d'authentification initialisé à:", isAuthenticated);
-    }, 500);
-    
-  }, [isAuthenticated]);
+    // Vérifier la session actuelle
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+        console.log("État d'authentification initialisé à:", !!session);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de session:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Changement d'état auth:", event, !!session);
+        setIsAuthenticated(!!session);
+        
+        if (!session) {
+          // Nettoyer le localStorage quand l'utilisateur se déconnecte
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("accessLevel");
+        } else {
+          localStorage.setItem("isAuthenticated", "true");
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   
   const handleLogin = () => {
     console.log("handleLogin appelé, mise à jour de l'état");
@@ -29,13 +55,20 @@ export const useAuth = () => {
     toast.success("Connexion réussie");
   };
   
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log("Déconnexion initiée");
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("accessLevel");
-    setIsAuthenticated(false);
-    toast.success("Déconnexion réussie");
+    
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("accessLevel");
+      setIsAuthenticated(false);
+      toast.success("Déconnexion réussie");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
   };
   
   return {
