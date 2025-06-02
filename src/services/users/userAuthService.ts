@@ -7,6 +7,12 @@ export const createUser = async (email: string, password: string, userData: any)
   try {
     console.log("Tentative de création d'un utilisateur:", email, userData);
     
+    // S'assurer que le rôle par défaut est 'user' et non 'admin'
+    const userRole = userData.role || 'user';
+    const accessLevel = userData.access_level || 1;
+    
+    console.log("Rôle assigné:", userRole, "Niveau d'accès:", accessLevel);
+    
     // Création d'un utilisateur via l'API publique
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -14,8 +20,8 @@ export const createUser = async (email: string, password: string, userData: any)
       options: {
         data: {
           full_name: userData.full_name,
-          role: userData.role || 'user',
-          access_level: userData.access_level || 1
+          role: userRole,
+          access_level: accessLevel
         }
       }
     });
@@ -37,8 +43,8 @@ export const createUser = async (email: string, password: string, userData: any)
         .insert({
           id: data.user.id,
           full_name: userData.full_name,
-          role: userData.role || 'user',
-          access_level: userData.access_level || 1,
+          role: userRole, // Utiliser le rôle spécifié, pas admin par défaut
+          access_level: accessLevel,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -46,6 +52,8 @@ export const createUser = async (email: string, password: string, userData: any)
       if (profileError) {
         console.error("Erreur lors de la création du profil:", profileError);
         // Ne pas bloquer le processus, le trigger handle_new_user devrait le créer automatiquement
+      } else {
+        console.log("Profil créé avec le rôle:", userRole);
       }
       
       // Enregistrer l'activité
@@ -59,8 +67,8 @@ export const createUser = async (email: string, password: string, userData: any)
           {
             created_user_id: data.user.id,
             created_user_email: email,
-            role: userData.role,
-            access_level: userData.access_level
+            role: userRole,
+            access_level: accessLevel
           }
         );
       } catch (activityError) {

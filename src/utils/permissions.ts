@@ -97,7 +97,7 @@ export const isManager = (userRole: UserRole): boolean => {
 
 // Fonction pour vérifier si l'utilisateur est caissier
 export const isCashier = (userRole: UserRole): boolean => {
-  return userRole === 'caissier';
+  return userRole === 'cashier';
 };
 
 // Fonction pour vérifier si l'utilisateur est vendeur

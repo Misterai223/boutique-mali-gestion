@@ -33,19 +33,28 @@ export const usePermissions = () => {
 
         if (error) {
           console.error('Erreur lors de la récupération du profil:', error);
-          setUserRole('user');
+          setUserRole('user'); // Toujours defaulter à 'user' en cas d'erreur
         } else if (profile) {
           console.log('Rôle récupéré de la DB:', profile.role);
-          setUserRole(profile.role as UserRole);
-          // Mettre à jour localStorage avec le vrai rôle
-          localStorage.setItem("userRole", profile.role);
+          // Vérifier que le rôle est valide, sinon defaulter à 'user'
+          const validRoles: UserRole[] = ['admin', 'manager', 'cashier', 'salesperson', 'user'];
+          const roleFromDB = profile.role as UserRole;
+          
+          if (validRoles.includes(roleFromDB)) {
+            setUserRole(roleFromDB);
+            localStorage.setItem("userRole", roleFromDB);
+          } else {
+            console.warn('Rôle invalide récupéré:', profile.role, 'Defaulting à user');
+            setUserRole('user');
+            localStorage.setItem("userRole", 'user');
+          }
         } else {
           console.log('Aucun profil trouvé, rôle par défaut: user');
           setUserRole('user');
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du rôle utilisateur:', error);
-        setUserRole('user');
+        setUserRole('user'); // Toujours defaulter à 'user' en cas d'exception
       } finally {
         setLoading(false);
       }
